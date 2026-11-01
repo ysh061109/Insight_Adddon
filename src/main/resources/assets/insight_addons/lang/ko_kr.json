@@ -100,7 +100,6 @@
   "insight_addons.list.shown": "재료 목록을 표시합니다",
   "insight_addons.list.hidden": "재료 목록을 숨깁니다",
   "insight_addons.list.empty": "재료 목록이 비어 있습니다",
-  "insight_addons.configuration.ae2.physics": "물리로 쌓이는 연출 (기본 꺼짐)",
   "insight_addons.configuration.ae2.physicsMax": "물리 연출 최대 조각 수",
   "insight_addons.configuration.effects": "효과 (소리/파티클)",
   "insight_addons.configuration.effects.soundVolume": "효과음 음량",
@@ -126,5 +125,6 @@
   "insight_addons.configuration.craftEffect.desc": "제작할 때 재료가 날아가고 머리 위 작업대에 나타나는 연출입니다.",
   "insight_addons.configuration.wrenchScan.desc": "렌치류 도구를 들었을 때 주변 보관함 아이템을 띄우는 기능입니다.",
   "insight_addons.configuration.insightChestsIntegration.hideBackpackCavity": "배낭 내부 숨기기 (검은 화면 방지)",
-  "insight_addons.configuration.insightChestsIntegration.glassSlotAlpha": "슬롯 칸 밝기 (0~255)"
+  "insight_addons.configuration.insightChestsIntegration.glassSlotAlpha": "슬롯 칸 밝기 (0~255)",
+  "insight_addons.configuration.ae2.pileBox": "물리 쌓기 가상 상자 (ME 제어기 바닥 + 드라이브 벽)"
 }

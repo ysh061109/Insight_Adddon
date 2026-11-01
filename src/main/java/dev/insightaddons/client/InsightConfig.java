@@ -166,9 +166,9 @@ public final class InsightConfig {
         AE2_ENABLED = b.comment("Applied Energistics 2의 ME 상자/드라이브/인터페이스를 바라보면 그 ME 저장소 내용을 3D로 표시하고 클릭으로 꺼냅니다.",
                         "ME 상자는 안에 든 셀, 드라이브와 인터페이스는 연결된 네트워크 전체를 보여줍니다. 서버에도 이 모드가 있어야 합니다.")
                 .translation("insight_addons.configuration.ae2.enabled").define("enabled", true);
-        AE2_PHYSICS = b.comment("AE2 단말기를 열었을 때 아이템을 격자 진열대 대신, 유리 상자 안에 물리로 쏟아져 쌓이는 연출로 보여줍니다.",
-                        "꺼내면 해당 아이템이 플레이어에게 날아가고, 넣으면 위에서 떨어집니다. 기본은 꺼져 있습니다.")
-                .translation("insight_addons.configuration.ae2.physics").define("physics", false);
+        AE2_PHYSICS = b.comment("AE2 단말기를 열었을 때 아이템을 격자 진열대 대신, 바닥은 ME 제어기, 양쪽 벽은 ME 드라이브 모델로 꾸민 가상 상자 안에 물리로 쌓아 보여줍니다.",
+                        "꺼내면 해당 아이템이 플레이어에게 날아가고, 넣으면 위에서 떨어집니다. 끄면 예전 격자 진열대로 돌아갑니다.")
+                .translation("insight_addons.configuration.ae2.pileBox").define("pileBox", true);
         AE2_MAX_SHOWN = b.comment("AE2 단말기를 열었을 때 3D로 보여줄 아이템 종류의 최대 개수 (많이 든 순)")
                 .translation("insight_addons.configuration.ae2.maxShown").defineInRange("maxShown", 40, 8, 80);
         AE2_PHYSICS_MAX = b.comment("물리 연출에서 동시에 그리는 아이템 조각의 최대 개수. 낮추면 가벼워집니다.")
