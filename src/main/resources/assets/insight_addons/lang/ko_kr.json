@@ -128,5 +128,9 @@
   "insight_addons.configuration.insightChestsIntegration.backpackInterior": "배낭 내부 그리기 방식",
   "insight_addons.configuration.choice.insight": "InSight 원래 방식",
   "insight_addons.configuration.choice.bright": "밝게 (권장)",
-  "insight_addons.configuration.insightChestsIntegration.backpackInteriorTexture": "배낭 내부 질감"
+  "insight_addons.configuration.insightChestsIntegration.backpackInteriorTexture": "배낭 내부 질감",
+  "insight_addons.configuration.insightChestsIntegration.itemScale": "3D 아이템 크기 (전체)",
+  "insight_addons.configuration.insightChestsIntegration.itemScaleBackpack": "3D 아이템 크기 - 배낭",
+  "insight_addons.configuration.insightChestsIntegration.itemScaleShulker": "3D 아이템 크기 - 셜커 상자",
+  "insight_addons.configuration.insightChestsIntegration.itemScaleBarrel": "3D 아이템 크기 - 통"
 }

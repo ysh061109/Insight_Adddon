@@ -34,6 +34,7 @@ public abstract class DropSizeMixin {
         try {
             int mode = InsightConfig.DROP_RATIO.get();
             float factor = mode == 0 ? 0.72f : mode == 1 ? 0.85f : 1.0f;
+            factor *= dev.insightaddons.client.ContainerKind.itemScale();
             if (ItemSize.enabled() && item != null && item.getRawStack() instanceof ItemStack stack) {
                 factor *= ItemSize.factor(stack);
             }

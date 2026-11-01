@@ -31,6 +31,14 @@ public abstract class ChestBoundsMixin {
 
     @Inject(method = "fromChest", at = @At("RETURN"), cancellable = true, remap = false, require = 0)
     private static void insightaddons$fit(BlockState state, BlockPos pos, CallbackInfoReturnable<Object> cir) {
+        if (state != null) {
+            ResourceLocation kid = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            String kp = kid.getPath();
+            String kind = kp.contains("shulker_box") ? "shulker"
+                    : kp.endsWith("barrel") || kp.startsWith("barrel") ? "barrel"
+                    : kid.getNamespace().equals("sophisticatedbackpacks") ? "backpack" : "other";
+            dev.insightaddons.client.ContainerKind.set(kind);
+        }
         if (failed || state == null || cir.getReturnValue() == null || !InsightConfig.INSIGHT_MODE_ENABLED.get()) {
             return;
         }

@@ -36,6 +36,10 @@ public final class InsightConfig {
     public static final ModConfigSpec.ConfigValue<String> ITEM_SIZE_SCALING;
     public static final ModConfigSpec.ConfigValue<String> BACKPACK_CAVITY_TEXTURE;
     public static final ModConfigSpec.ConfigValue<String> BACKPACK_INTERIOR;
+    public static final ModConfigSpec.DoubleValue ITEM_SCALE;
+    public static final ModConfigSpec.DoubleValue ITEM_SCALE_BACKPACK;
+    public static final ModConfigSpec.DoubleValue ITEM_SCALE_SHULKER;
+    public static final ModConfigSpec.DoubleValue ITEM_SCALE_BARREL;
     public static final ModConfigSpec.IntValue GLASS_SLOT_ALPHA;
     public static final ModConfigSpec.ConfigValue<String> ITEM_GLOW;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> FANCY_MOD_IDS;
@@ -143,6 +147,14 @@ public final class InsightConfig {
                         "bright = 조명 계산 없이 질감 색 그대로 환하게(권장, 검게 나오는 문제 방지), insight = InSight Chests 원래 방식, off = 내부를 그리지 않음")
                 .translation("insight_addons.configuration.insightChestsIntegration.backpackInterior")
                 .define("backpackInterior", "bright", v -> v instanceof String x && (x.equals("bright") || x.equals("insight") || x.equals("off")));
+        ITEM_SCALE = b.comment("보관함 안에 쌓이는 3D 아이템의 전체 크기 배율 (1.0 = 기본). 줄이면 더 많이 들어가 보입니다.")
+                .translation("insight_addons.configuration.insightChestsIntegration.itemScale").defineInRange("itemScale", 1.0, 0.3, 2.0);
+        ITEM_SCALE_BACKPACK = b.comment("배낭에 쌓이는 3D 아이템의 추가 크기 배율 (전체 배율과 곱해집니다)")
+                .translation("insight_addons.configuration.insightChestsIntegration.itemScaleBackpack").defineInRange("itemScaleBackpack", 1.0, 0.3, 2.0);
+        ITEM_SCALE_SHULKER = b.comment("셜커 상자에 쌓이는 3D 아이템의 추가 크기 배율")
+                .translation("insight_addons.configuration.insightChestsIntegration.itemScaleShulker").defineInRange("itemScaleShulker", 1.0, 0.3, 2.0);
+        ITEM_SCALE_BARREL = b.comment("통에 쌓이는 3D 아이템의 추가 크기 배율")
+                .translation("insight_addons.configuration.insightChestsIntegration.itemScaleBarrel").defineInRange("itemScaleBarrel", 1.0, 0.3, 2.0);
         ITEM_GLOW = b.comment("보관함 안에서 떨어지는 3D 아이템에 등급 색 빛(후광) 효과를 줍니다.",
                         "auto = 아래 fancyModIds 중 하나가 설치되어 있을 때만, on = 항상, off = 끔")
                 .translation("insight_addons.configuration.insightChestsIntegration.itemGlow").define("itemGlow", "auto");

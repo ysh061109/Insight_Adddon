@@ -128,5 +128,9 @@
   "insight_addons.configuration.insightChestsIntegration.backpackInterior": "Backpack interior style",
   "insight_addons.configuration.choice.insight": "InSight original",
   "insight_addons.configuration.choice.bright": "Bright (recommended)",
-  "insight_addons.configuration.insightChestsIntegration.backpackInteriorTexture": "Backpack interior texture"
+  "insight_addons.configuration.insightChestsIntegration.backpackInteriorTexture": "Backpack interior texture",
+  "insight_addons.configuration.insightChestsIntegration.itemScale": "3D item size (all)",
+  "insight_addons.configuration.insightChestsIntegration.itemScaleBackpack": "3D item size - backpack",
+  "insight_addons.configuration.insightChestsIntegration.itemScaleShulker": "3D item size - shulker box",
+  "insight_addons.configuration.insightChestsIntegration.itemScaleBarrel": "3D item size - barrel"
 }
