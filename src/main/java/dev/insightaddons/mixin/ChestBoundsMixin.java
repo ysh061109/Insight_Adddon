@@ -27,6 +27,7 @@ public abstract class ChestBoundsMixin {
     private static Constructor<?> ctor;
     private static Field fDouble, fEnder, fIron, fFacing, fType, fCavity;
     private static boolean failed;
+    private static boolean logged;
 
     @Inject(method = "fromChest", at = @At("RETURN"), cancellable = true, remap = false, require = 0)
     private static void insightaddons$fit(BlockState state, BlockPos pos, CallbackInfoReturnable<Object> cir) {
@@ -77,8 +78,13 @@ public abstract class ChestBoundsMixin {
                     fDouble.getBoolean(old), fFacing.get(old), fType.get(old),
                     fIron.getBoolean(old), cavity, fEnder.getBoolean(old));
             cir.setReturnValue(fixed);
+            if (!logged) {
+                logged = true;
+                dev.insightaddons.InsightAddons.LOGGER.info("InSight 내부 크기 적용: {} -> x {}~{}, y {}~{}, 질감 {}", id, minX, maxX, minY, maxY, cavity);
+            }
         } catch (Throwable t) {
             failed = true;
+            dev.insightaddons.InsightAddons.LOGGER.warn("InSight 내부 크기 적용 실패(원래 값을 그대로 씁니다): {}", t.toString());
         }
     }
 }

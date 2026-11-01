@@ -20,8 +20,13 @@ public abstract class HollowCavityMixin {
     @Inject(method = "renderHollowCavity(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lcom/mrsun/insightchests/physics/ChestBoundingBox;I)V",
             at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private static void insightaddons$skipBackpack(PoseStack ps, MultiBufferSource buffers, ChestBoundingBox box, int light, CallbackInfo ci) {
-        if (box != null && box.cavityTexture != null && box.cavityTexture == BackpackCavity.get()
-                && InsightConfig.BACKPACK_HIDE_CAVITY.get()) {
+        if (box == null || box.cavityTexture == null || box.cavityTexture != BackpackCavity.get()) {
+            return;
+        }
+        String mode = InsightConfig.BACKPACK_INTERIOR.get();
+        if ("off".equals(mode)) {
+            ci.cancel();
+        } else if ("bright".equals(mode) && dev.insightaddons.client.BackpackInteriorAccess.render(ps, buffers, box)) {
             ci.cancel();
         }
     }

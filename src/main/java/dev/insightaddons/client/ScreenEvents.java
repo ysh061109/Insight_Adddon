@@ -144,7 +144,7 @@ public final class ScreenEvents {
             Slot slot = acs.getSlotUnderMouse();
             if (slot != null) {
                 if (slot.hasItem() && CraftTable.isResultSlot(acs.getMenu(), slot)) {
-                    CraftTable.onResult(slot.getItem().copy());
+                    CraftTable.onResult(slot.getItem().copy(), acs.getMenu());
                 }
                 CraftFx.onResultClicked(Minecraft.getInstance(), acs.getMenu(), slot);
             }

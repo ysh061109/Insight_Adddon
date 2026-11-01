@@ -43,6 +43,10 @@ public final class CraftTable {
 
     private static ItemStack burst = ItemStack.EMPTY;
     private static long burstStart = -1;
+    /** 실제로 만들어진 개수를 나중에 인벤토리 변화로 확인하기 위한 값 */
+    private static ItemStack pendingItem = ItemStack.EMPTY;
+    private static int pendingBefore;
+    private static long pendingStart = -1;
     private static final int BURST_IN = 8;
     private static final int BURST_HOLD = 30;
     private static final int BURST_OUT = 18;
@@ -67,19 +71,31 @@ public final class CraftTable {
         preview = ItemStack.EMPTY;
         burst = ItemStack.EMPTY;
         burstStart = -1;
+        pendingStart = -1;
+        pendingItem = ItemStack.EMPTY;
         anim = 0;
         prevAnim = 0;
         open = false;
     }
 
     /** 결과 칸을 눌렀을 때: 완성품 연출 시작 */
-    public static void onResult(ItemStack result) {
+    public static void onResult(ItemStack result, AbstractContainerMenu menu) {
         Minecraft mc = Minecraft.getInstance();
         if (!InsightConfig.CRAFT_FX.get() || mc.level == null || mc.player == null || result.isEmpty() || !open) {
             return;
         }
         burst = result.copy();
+        // Shift+클릭은 재료가 떨어질 때까지 반복해서 만들므로, 그만큼 곱한 개수를 보여준다
+        if (net.minecraft.client.gui.screens.Screen.hasShiftDown()) {
+            int total = shiftTotal(mc.player, menu, result);
+            if (total > burst.getCount()) {
+                burst.setCount(total);
+            }
+        }
         burstStart = mc.level.getGameTime();
+        pendingItem = result.copy();
+        pendingBefore = countOwned(mc.player, result);
+        pendingStart = burstStart;
         sound(SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, 0.9f, 1.0f);
         sound(SoundEvents.AMETHYST_BLOCK_CHIME, 1.4f, 0.7f);
         sound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.7f, 0.5f);
@@ -93,6 +109,83 @@ public final class CraftTable {
             mc.level.addParticle(ParticleTypes.FIREWORK, o.x, o.y, o.z,
                     (mc.level.random.nextDouble() - 0.5) * 0.18, 0.05 + mc.level.random.nextDouble() * 0.08,
                     (mc.level.random.nextDouble() - 0.5) * 0.18);
+        }
+    }
+
+    /**
+     * Shift+클릭으로 한꺼번에 만들 때의 총 개수 추정. 작업대/스톤커터처럼 한 번에 재료를 1개씩 쓰는 메뉴만 곱한다.
+     * 인벤토리에 들어갈 수 있는 개수까지만 센다.
+     */
+    private static int shiftTotal(Player player, AbstractContainerMenu menu, ItemStack result) {
+        boolean repeating = menu instanceof net.minecraft.world.inventory.CraftingMenu
+                || menu instanceof net.minecraft.world.inventory.InventoryMenu
+                || menu instanceof net.minecraft.world.inventory.StonecutterMenu;
+        Layout l = layout(menu);
+        if (!repeating || l == null) {
+            return result.getCount();
+        }
+        int crafts = Integer.MAX_VALUE;
+        for (Slot s : l.inputs()) {
+            ItemStack st = s.getItem();
+            if (!st.isEmpty()) {
+                crafts = Math.min(crafts, st.getCount());
+            }
+        }
+        if (crafts == Integer.MAX_VALUE || crafts < 1) {
+            return result.getCount();
+        }
+        long total = (long) result.getCount() * crafts;
+        // 인벤토리 빈 공간 + 같은 아이템 남은 자리
+        long room = 0;
+        int max = result.getMaxStackSize();
+        for (int i = 0; i < 36; i++) {
+            ItemStack inv = player.getInventory().getItem(i);
+            if (inv.isEmpty()) {
+                room += max;
+            } else if (ItemStack.isSameItemSameComponents(inv, result)) {
+                room += Math.max(0, inv.getMaxStackSize() - inv.getCount());
+            }
+        }
+        return (int) Math.max(result.getCount(), Math.min(total, room));
+    }
+
+    /** 인벤토리(보조 손 포함)와 마우스에 든 것까지 합쳐 같은 아이템 개수 */
+    private static int countOwned(Player player, ItemStack like) {
+        int n = 0;
+        for (ItemStack st : player.getInventory().items) {
+            if (ItemStack.isSameItemSameComponents(st, like)) {
+                n += st.getCount();
+            }
+        }
+        for (ItemStack st : player.getInventory().offhand) {
+            if (ItemStack.isSameItemSameComponents(st, like)) {
+                n += st.getCount();
+            }
+        }
+        ItemStack carried = player.containerMenu.getCarried();
+        if (ItemStack.isSameItemSameComponents(carried, like)) {
+            n += carried.getCount();
+        }
+        return n;
+    }
+
+    /** 클릭 뒤 몇 틱 지나 서버 응답이 반영되면, 늘어난 개수를 실제로 만들어진 개수로 보여준다 (Shift 반복 제작 포함) */
+    private static void settleCount(Minecraft mc, long now) {
+        if (pendingStart < 0 || pendingItem.isEmpty()) {
+            return;
+        }
+        long age = now - pendingStart;
+        if (age < 2) {
+            return;
+        }
+        int delta = countOwned(mc.player, pendingItem) - pendingBefore;
+        if (delta > 0 && burstStart >= 0 && !burst.isEmpty()) {
+            burst.setCount(delta);
+        }
+        // 응답이 오고도 변화가 안정될 시간을 준 뒤 확정
+        if (age >= 8 || (delta > 0 && age >= 5)) {
+            pendingStart = -1;
+            pendingItem = ItemStack.EMPTY;
         }
     }
 
@@ -110,6 +203,7 @@ public final class CraftTable {
             return;
         }
         long now = mc.level.getGameTime();
+        settleCount(mc, now);
         AbstractContainerMenu menu = mc.screen instanceof AbstractContainerScreen<?> acs ? acs.getMenu() : null;
         Layout layout = menu == null ? null : layout(menu);
         Slot result = layout == null ? null : layout.result();
