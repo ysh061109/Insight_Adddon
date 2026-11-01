@@ -138,7 +138,7 @@ public final class InsightConfig {
         ITEM_SIZE_SCALING = b.comment("아이템 실제 크기에 맞춰 떨어지는 아이템 크기를 조절합니다. auto = Fancy Items 모드가 있을 때만, on = 항상, off = 끔")
                 .translation("insight_addons.configuration.insightChestsIntegration.itemSizeScaling").define("itemSizeScaling", "auto");
         BACKPACK_CAVITY_TEXTURE = b.comment("배낭 내부(바닥/벽) 질감. 리소스팩이 바꾼 블록 질감도 그대로 반영됩니다.")
-                .translation("insight_addons.configuration.insightChestsIntegration.backpackCavityTexture").define("backpackCavityTexture", "minecraft:textures/block/oak_planks.png");
+                .translation("insight_addons.configuration.insightChestsIntegration.backpackInteriorTexture").define("backpackInteriorTexture", "minecraft:textures/block/brown_terracotta.png");
         BACKPACK_INTERIOR = b.comment("배낭을 열 때 보이는 속 빈 내부(바닥/벽)를 그리는 방식.",
                         "bright = 조명 계산 없이 질감 색 그대로 환하게(권장, 검게 나오는 문제 방지), insight = InSight Chests 원래 방식, off = 내부를 그리지 않음")
                 .translation("insight_addons.configuration.insightChestsIntegration.backpackInterior")

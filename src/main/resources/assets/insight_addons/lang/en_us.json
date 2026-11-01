@@ -48,7 +48,6 @@
   "insight_addons.configuration.insightChestsIntegration.dropRatio": "Falling item ratio (0=1:1, 1=half, 2=original)",
   "insight_addons.configuration.insightChestsIntegration.dropMaxTotal": "Max falling items",
   "insight_addons.configuration.insightChestsIntegration.itemSizeScaling": "Item size scaling (auto/on/off)",
-  "insight_addons.configuration.insightChestsIntegration.backpackCavityTexture": "Backpack interior texture",
   "insight_addons.configuration.insightChestsIntegration.itemGlow": "Rarity glow (auto/on/off)",
   "insight_addons.configuration.insightChestsIntegration.fancyModIds": "Fancy Items mod IDs",
   "insight_addons.configuration.insightChestsIntegration.keepOriginalScreen": "Keep Sophisticated screen",
@@ -128,5 +127,6 @@
   "insight_addons.configuration.ae2.pileBox": "Physics pile box (ME controller floor + drive walls)",
   "insight_addons.configuration.insightChestsIntegration.backpackInterior": "Backpack interior style",
   "insight_addons.configuration.choice.insight": "InSight original",
-  "insight_addons.configuration.choice.bright": "Bright (recommended)"
+  "insight_addons.configuration.choice.bright": "Bright (recommended)",
+  "insight_addons.configuration.insightChestsIntegration.backpackInteriorTexture": "Backpack interior texture"
 }

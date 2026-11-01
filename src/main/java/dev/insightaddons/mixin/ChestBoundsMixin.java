@@ -53,9 +53,9 @@ public abstract class ChestBoundsMixin {
             cavity = ResourceLocation.withDefaultNamespace("textures/block/" + color + "_concrete.png");
         } else if (ns.equals("sophisticatedbackpacks")) {
             // 배낭: 좁고 통통한 모양
-            // InSight 상자(가로 약 0.875)처럼 크게 잡아야 화면 대부분을 밝은 내부가 채우고, 배낭 모델 껍데기가 가려진다.
-            minX = 0.06f; maxX = 0.94f; minZ = 0.06f; maxZ = 0.94f;
-            minY = 0.02f; maxY = 0.72f;
+            // 배낭 모양에 맞춰 좁고 통통하게 (배낭 모델 안쪽 크기)
+            minX = 0.2f; maxX = 0.8f; minZ = 0.2f; maxZ = 0.8f;
+            minY = 0.06f; maxY = 0.62f;
             cavity = dev.insightaddons.client.BackpackCavity.get();
         } else {
             return;

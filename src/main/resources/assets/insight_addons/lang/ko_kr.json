@@ -48,7 +48,6 @@
   "insight_addons.configuration.insightChestsIntegration.dropRatio": "떨어지는 아이템 비율(0=1:1, 1=절반, 2=원래)",
   "insight_addons.configuration.insightChestsIntegration.dropMaxTotal": "떨어지는 아이템 최대 개수",
   "insight_addons.configuration.insightChestsIntegration.itemSizeScaling": "아이템 크기 보정(auto/on/off)",
-  "insight_addons.configuration.insightChestsIntegration.backpackCavityTexture": "배낭 내부 질감",
   "insight_addons.configuration.insightChestsIntegration.itemGlow": "등급 빛 효과(auto/on/off)",
   "insight_addons.configuration.insightChestsIntegration.fancyModIds": "Fancy Items 모드 ID 목록",
   "insight_addons.configuration.insightChestsIntegration.keepOriginalScreen": "Sophisticated 원래 화면 유지",
@@ -128,5 +127,6 @@
   "insight_addons.configuration.ae2.pileBox": "물리 쌓기 가상 상자 (ME 제어기 바닥 + 드라이브 벽)",
   "insight_addons.configuration.insightChestsIntegration.backpackInterior": "배낭 내부 그리기 방식",
   "insight_addons.configuration.choice.insight": "InSight 원래 방식",
-  "insight_addons.configuration.choice.bright": "밝게 (권장)"
+  "insight_addons.configuration.choice.bright": "밝게 (권장)",
+  "insight_addons.configuration.insightChestsIntegration.backpackInteriorTexture": "배낭 내부 질감"
 }
