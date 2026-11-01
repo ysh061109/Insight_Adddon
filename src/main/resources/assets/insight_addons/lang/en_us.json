@@ -124,7 +124,9 @@
   "insight_addons.configuration.effects.desc": "Adjust sounds and particles in one place.",
   "insight_addons.configuration.craftEffect.desc": "Ingredients fly to the overhead crafting grid when you craft.",
   "insight_addons.configuration.wrenchScan.desc": "Show nearby container items around you while holding a wrench-like tool.",
-  "insight_addons.configuration.insightChestsIntegration.hideBackpackCavity": "Hide backpack interior (avoids black screen)",
   "insight_addons.configuration.insightChestsIntegration.glassSlotAlpha": "Slot cell brightness (0-255)",
-  "insight_addons.configuration.ae2.pileBox": "Physics pile box (ME controller floor + drive walls)"
+  "insight_addons.configuration.ae2.pileBox": "Physics pile box (ME controller floor + drive walls)",
+  "insight_addons.configuration.insightChestsIntegration.backpackInterior": "Backpack interior style",
+  "insight_addons.configuration.choice.insight": "InSight original",
+  "insight_addons.configuration.choice.bright": "Bright (recommended)"
 }

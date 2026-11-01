@@ -49,7 +49,7 @@ public final class YaclScreen {
         ins.put("basic", List.of("enabled", "blocks", "keepOriginalScreen"));
         ins.put("glass", List.of("glassSkin", "glassAlpha", "glassSlotAlpha", "followInsightPosition"));
         ins.put("items", List.of("dropRatio", "dropMaxTotal", "itemSizeScaling", "itemGlow", "fancyModIds"));
-        ins.put("backpack", List.of("backpackCavityTexture", "hideBackpackCavity"));
+        ins.put("backpack", List.of("backpackCavityTexture", "backpackInterior"));
         LAYOUT.put("insightChestsIntegration", ins);
     }
 
@@ -285,12 +285,14 @@ public final class YaclScreen {
             } else {
                 factory = controller("DoubleFieldControllerBuilder", optC, b -> b);
             }
-        } else if (current instanceof String str && ("auto".equals(str) || "on".equals(str) || "off".equals(str))) {
+        } else if (current instanceof String str && ("auto".equals(str) || "on".equals(str) || "off".equals(str)
+                || "bright".equals(str) || "insight".equals(str))) {
             defaultForUi = def;
             getter = cv::get;
             setter = v -> set(cv, v);
+            List<String> choices = "backpackInterior".equals(key) ? List.of("bright", "insight", "off") : List.of("auto", "on", "off");
             factory = controller("CyclingListControllerBuilder", optC, b -> {
-                Object x = tryInvoke(b, "values", List.of("auto", "on", "off"));
+                Object x = tryInvoke(b, "values", choices);
                 Function<Object, Component> fmt = v -> Component.translatable("insight_addons.configuration.choice." + v);
                 return tryInvoke(x, "formatValue", fmt);
             });
