@@ -11,6 +11,7 @@
     "ChestBoundsMixin",
     "AbstractContainerScreenAccessor",
     "ScreenBackgroundMixin",
+    "StorageDimMixin",
     "SettingsScreenSkinMixin",
     "StorageGuiHelperMixin",
     "GuiGraphicsTextMixin",

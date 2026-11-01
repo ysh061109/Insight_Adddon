@@ -74,6 +74,10 @@ GitHub에 올리면 `.github/workflows/build.yml`이 자동으로 빌드해 Acti
 - Sophisticated Storage의 상자/통은 모양이 바닐라 상자와 달라서 InSight Chests의 3D 공간이 어색할 수 있습니다.
 - 서버는 요청 좌표의 내용물을 그대로 알려주므로 잠금 상자의 내용물이 노출될 수 있습니다. (서버에 모드를 설치한 경우)
 
+## 1.20.9 변경 사항
+
+- "Sophisticated 원래 화면 유지"를 켠 상태에서 화면이 어두워지는 문제 대응: 월드를 어둡게/흐리게 하는 경로(renderBackground, renderTransparentBackground, renderMenuBackground, renderBlurredBackground)와 Sophisticated 화면의 직접 호출을 모두 막았습니다.
+
 ## 1.20.8 변경 사항
 
 - 배낭 내부를 배낭 모양(좁고 통통, 테라코타 바닥/벽)으로 다시 적용했습니다. 이번에는 별도 렌더러 없이 InSight Chests 기본 내부 렌더링을 그대로 사용합니다(관련 설정 없음).

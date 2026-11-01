@@ -22,4 +22,30 @@ public abstract class ScreenBackgroundMixin {
             ci.cancel();
         }
     }
+
+    // 1.21.1에서 월드를 어둡게/흐리게 하는 경로는 여러 갈래라서(renderBackground가 아니라 아래 메서드를 직접 부르는 화면/모드도 있음)
+    // 같은 조건으로 모두 막아 둔다.
+    @Inject(method = "renderTransparentBackground(Lnet/minecraft/client/gui/GuiGraphics;)V",
+            at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    private void insightaddons$noDimTransparent(GuiGraphics g, CallbackInfo ci) {
+        if (GlassSkin.isStorageScreen(this) || GlassSkin.isAeTerminal(this)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "renderMenuBackground(Lnet/minecraft/client/gui/GuiGraphics;)V",
+            at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    private void insightaddons$noDimMenu(GuiGraphics g, CallbackInfo ci) {
+        if (GlassSkin.isStorageScreen(this) || GlassSkin.isAeTerminal(this)) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "renderBlurredBackground(F)V",
+            at = @At("HEAD"), cancellable = true, remap = false, require = 0)
+    private void insightaddons$noBlur(float partialTick, CallbackInfo ci) {
+        if (GlassSkin.isStorageScreen(this) || GlassSkin.isAeTerminal(this)) {
+            ci.cancel();
+        }
+    }
 }
