@@ -49,7 +49,7 @@ public final class YaclScreen {
         ins.put("basic", List.of("enabled", "blocks", "keepOriginalScreen"));
         ins.put("glass", List.of("glassSkin", "glassAlpha", "followInsightPosition"));
         ins.put("items", List.of("dropRatio", "dropMaxTotal", "itemSizeScaling", "itemGlow", "fancyModIds"));
-        ins.put("backpack", List.of("backpackCavityTexture", "backpackHideCavity"));
+        ins.put("backpack", List.of("backpackCavityTexture", "hideBackpackCavity"));
         LAYOUT.put("insightChestsIntegration", ins);
     }
 

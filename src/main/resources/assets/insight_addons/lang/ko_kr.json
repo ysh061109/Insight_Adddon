@@ -102,7 +102,6 @@
   "insight_addons.list.empty": "재료 목록이 비어 있습니다",
   "insight_addons.configuration.ae2.physics": "물리로 쌓이는 연출 (기본 꺼짐)",
   "insight_addons.configuration.ae2.physicsMax": "물리 연출 최대 조각 수",
-  "insight_addons.configuration.insightChestsIntegration.backpackHideCavity": "배낭 내부 숨기기 (검은 화면 방지)",
   "insight_addons.configuration.effects": "효과 (소리/파티클)",
   "insight_addons.configuration.effects.soundVolume": "효과음 음량",
   "insight_addons.configuration.effects.particles": "파티클 효과",
@@ -125,5 +124,6 @@
   "insight_addons.configuration.mekanism.desc": "Mekanism 개인 상자와 저장통 연동입니다.",
   "insight_addons.configuration.effects.desc": "소리와 파티클을 한꺼번에 조절합니다.",
   "insight_addons.configuration.craftEffect.desc": "제작할 때 재료가 날아가고 머리 위 작업대에 나타나는 연출입니다.",
-  "insight_addons.configuration.wrenchScan.desc": "렌치류 도구를 들었을 때 주변 보관함 아이템을 띄우는 기능입니다."
+  "insight_addons.configuration.wrenchScan.desc": "렌치류 도구를 들었을 때 주변 보관함 아이템을 띄우는 기능입니다.",
+  "insight_addons.configuration.insightChestsIntegration.hideBackpackCavity": "배낭 내부 숨기기 (검은 화면 방지)"
 }

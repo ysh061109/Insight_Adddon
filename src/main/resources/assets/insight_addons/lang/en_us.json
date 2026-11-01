@@ -102,7 +102,6 @@
   "insight_addons.list.empty": "The material list is empty",
   "insight_addons.configuration.ae2.physics": "Physics pile effect (off by default)",
   "insight_addons.configuration.ae2.physicsMax": "Physics pile max pieces",
-  "insight_addons.configuration.insightChestsIntegration.backpackHideCavity": "Hide backpack interior (avoids black screen)",
   "insight_addons.configuration.effects": "Effects (sound / particles)",
   "insight_addons.configuration.effects.soundVolume": "Effect volume",
   "insight_addons.configuration.effects.particles": "Particle effects",
@@ -125,5 +124,6 @@
   "insight_addons.configuration.mekanism.desc": "Mekanism personal chest and bin support.",
   "insight_addons.configuration.effects.desc": "Adjust sounds and particles in one place.",
   "insight_addons.configuration.craftEffect.desc": "Ingredients fly to the overhead crafting grid when you craft.",
-  "insight_addons.configuration.wrenchScan.desc": "Show nearby container items around you while holding a wrench-like tool."
+  "insight_addons.configuration.wrenchScan.desc": "Show nearby container items around you while holding a wrench-like tool.",
+  "insight_addons.configuration.insightChestsIntegration.hideBackpackCavity": "Hide backpack interior (avoids black screen)"
 }
