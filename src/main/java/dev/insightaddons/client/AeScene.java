@@ -177,6 +177,30 @@ public final class AeScene {
         // 화면 가운데는 단말기 창이 차지하므로, 창 왼쪽 옆 공중에 띄운다
         Vec3 eye = p.getEyePosition(partial);
         Vec3 origin = eye.add(flat.scale(2.6)).add(right.scale(-1.9)).add(0, 0.1 + Math.sin(time * 0.05) * 0.01, 0);
+        // 단말기 창 왼쪽의 빈 공간 한가운데에 오도록 화면 좌표에서 거꾸로 위치를 계산한다 (창이 넓어도 가려지지 않게)
+        if (mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> acs
+                && acs.getGuiLeft() > 40 && mc.screen.width > 0) {
+            org.joml.Matrix4f pm = com.mojang.blaze3d.systems.RenderSystem.getProjectionMatrix();
+            float m00 = pm.m00();
+            float m11 = pm.m11();
+            if (m00 > 0.01f && m11 > 0.01f) {
+                double freeNdc = acs.getGuiLeft() * 2.0 / mc.screen.width;
+                double nx = acs.getGuiLeft() / (double) mc.screen.width - 1.0;
+                double w = physics ? 2.7 : COLS * PITCH + 0.3;
+                double h = physics ? 1.9 : rows * PITCH + 0.5;
+                double d = Math.max(2.2, Math.max(w * m00 / (freeNdc * 0.9), h * m11 / 1.6));
+                d = Math.min(d, 14.0);
+                org.joml.Vector3f look3 = camera.getLookVector();
+                org.joml.Vector3f left3 = camera.getLeftVector();
+                org.joml.Vector3f up3 = camera.getUpVector();
+                double rx = nx * d / m00;
+                double uy = 0.1 * d / m11;
+                origin = camPos.add(look3.x * d - left3.x * rx + up3.x * uy,
+                        look3.y * d - left3.y * rx + up3.y * uy,
+                        look3.z * d - left3.z * rx + up3.z * uy)
+                        .add(0, Math.sin(time * 0.05) * 0.01, 0);
+            }
+        }
         Vec3 chest = eye.add(0, -0.5, 0).add(flat.scale(0.3));
 
         if (physics) {

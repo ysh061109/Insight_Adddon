@@ -121,10 +121,15 @@ public final class ScreenEvents {
         int y;
         if (below + h <= screen.height - 2) {
             y = below;
+        } else if (acs.getGuiLeft() - w - 4 >= 2) {
+            // 아래 공간이 없으면 창 왼쪽 옆 아래쪽에 둔다 (제목/위쪽 탭과 겹치지 않게)
+            x = acs.getGuiLeft() - w - 4;
+            y = Math.min(screen.height - h - 2, acs.getGuiTop() + acs.getYSize() - h - 2);
         } else if (acs.getGuiTop() - h - 3 >= 2) {
             y = acs.getGuiTop() - h - 3;
         } else {
-            y = 2;
+            x = 2;
+            y = screen.height - h - 2;
         }
         event.addListener(new DropRatioSlider(x, y, w, h));
     }
