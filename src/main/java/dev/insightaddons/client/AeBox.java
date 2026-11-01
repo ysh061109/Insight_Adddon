@@ -35,6 +35,19 @@ final class AeBox {
 
     private AeBox() {}
 
+    /** 어떤 이름의 속성이든 값 이름이 value인 것을 찾아 설정한다 (AE2 제어기의 상태 속성 이름은 "state") */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static BlockState withValue(BlockState s, String value) {
+        for (Property p : s.getProperties()) {
+            for (Object v : p.getPossibleValues()) {
+                if (p.getName((Comparable) v).equals(value)) {
+                    return s.setValue(p, (Comparable) v);
+                }
+            }
+        }
+        return s;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static BlockState with(BlockState s, String prop, String value) {
         for (Property p : s.getProperties()) {
@@ -63,7 +76,7 @@ final class AeBox {
                 failed = true;
                 return;
             }
-            controller = with(c.defaultBlockState(), "controller_state", "online");
+            controller = withValue(c.defaultBlockState(), "online");
             driveLeft = with(d.defaultBlockState(), "facing", Direction.EAST.getSerializedName());
             driveRight = with(d.defaultBlockState(), "facing", Direction.WEST.getSerializedName());
             driveData = cells();
@@ -78,36 +91,14 @@ final class AeBox {
     private static ModelData cells() {
         try {
             Item[] items = new Item[10];
-            String[] ids = {"item_cell_1k", "item_cell_4k", "item_cell_16k", "item_cell_64k", "item_cell_256k"};
+            String[] ids = {"item_storage_cell_1k", "item_storage_cell_4k", "item_storage_cell_16k", "item_storage_cell_64k", "item_storage_cell_256k"};
             for (int i = 0; i < items.length; i++) {
                 items[i] = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath("ae2", ids[i % ids.length]));
             }
-            Class<?> cls = null;
-            for (String n : new String[]{"appeng.client.render.model.DriveModelData", "appeng.blockentity.storage.DriveModelData"}) {
-                try {
-                    cls = Class.forName(n);
-                    break;
-                } catch (ClassNotFoundException ignored) {
-                    // 다음 이름 시도
-                }
-            }
-            if (cls == null) {
-                return ModelData.EMPTY;
-            }
-            Object data = null;
-            for (Constructor<?> k : cls.getDeclaredConstructors()) {
-                Class<?>[] pt = k.getParameterTypes();
-                if (pt.length == 1 && pt[0] == Item[].class) {
-                    k.setAccessible(true);
-                    data = k.newInstance((Object) items);
-                    break;
-                }
-            }
-            Field f = cls.getField("STATE");
-            if (data == null) {
-                return ModelData.EMPTY;
-            }
-            return ModelData.builder().with((ModelProperty) f.get(null), data).build();
+            // AE2 소스(19.2.x): appeng.client.render.model.DriveModelData.create(Item[]) -> ModelData
+            Class<?> cls = Class.forName("appeng.client.render.model.DriveModelData");
+            Object data = cls.getMethod("create", Item[].class).invoke(null, (Object) items);
+            return data instanceof ModelData md ? md : ModelData.EMPTY;
         } catch (Throwable t) {
             dev.insightaddons.InsightAddons.LOGGER.info("AE2 드라이브 셀 모델 데이터를 만들지 못해 빈 드라이브로 그립니다: {}", t.toString());
             return ModelData.EMPTY;
@@ -125,7 +116,7 @@ final class AeBox {
     /**
      * @param floor 상자 바닥 중앙(월드 좌표). right/up/flat은 상자의 가로/세로/앞 방향
      */
-    static boolean render(PoseStack ps, Minecraft mc, MultiBufferSource.BufferSource buffers, Vec3 camPos, Vec3 floor, Vec3 right) {
+    static boolean render(PoseStack ps, Minecraft mc, MultiBufferSource.BufferSource buffers, Vec3 camPos, Vec3 floor, Vec3 right, float tiltDeg) {
         if (!tried) {
             init();
         }
@@ -137,6 +128,7 @@ final class AeBox {
             double theta = Math.atan2(-right.z, right.x);
             ps.translate(floor.x - camPos.x, floor.y - camPos.y, floor.z - camPos.z);
             ps.mulPose(Axis.YP.rotation((float) theta));
+            ps.mulPose(Axis.XP.rotationDegrees(tiltDeg));
             // 바닥: 5x2 제어기
             for (int i = 0; i < 5; i++) {
                 for (int j = 0; j < 2; j++) {

@@ -35,6 +35,8 @@ final class AePile {
     private static final double HALF_D = 0.5;
     private static final double HEIGHT = 1.25;
     private static final double R = 0.085;
+    /** 상자를 플레이어 쪽으로 기울여 바닥 위의 아이템 더미가 위에서 내려다보이게 하는 각도(도) */
+    static final float TILT = 18f;
     private static final int MAX_PER_KIND = 8;
     private static final int MAX_KINDS = 24;
     private static final RandomSource RNG = RandomSource.create();
@@ -292,7 +294,7 @@ final class AePile {
                        MultiBufferSource.BufferSource buffers, Vec3 origin, Vec3 right, Vec3 up, Vec3 flat, Vec3 chest) {
         // 바닥: ME 제어기, 양쪽 벽: ME 드라이브 모델 (월드 블록이 아니라 모델만 빌려 그린다)
         Vec3 floorPos = origin.add(up.scale(-HEIGHT / 2));
-        if (AeBox.render(ps, mc, buffers, camPos, floorPos, right)) {
+        if (AeBox.render(ps, mc, buffers, camPos, floorPos, right, TILT)) {
             drawBodies(ps, camera, camPos, mc, partial, a, buffers, origin, right, up, flat, chest);
             return;
         }

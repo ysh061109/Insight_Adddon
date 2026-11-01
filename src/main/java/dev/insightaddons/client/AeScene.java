@@ -204,7 +204,10 @@ public final class AeScene {
         Vec3 chest = eye.add(0, -0.5, 0).add(flat.scale(0.3));
 
         if (physics) {
-            AePile.render(ps, camera, camPos, mc, partial, a, buffers, origin.add(0, 0.2, 0), right, up, flat, chest);
+            double tr = Math.toRadians(AePile.TILT);
+            Vec3 tiltUp = up.scale(Math.cos(tr)).add(flat.scale(-Math.sin(tr)));
+            Vec3 tiltFlat = up.scale(Math.sin(tr)).add(flat.scale(Math.cos(tr)));
+            AePile.render(ps, camera, camPos, mc, partial, a, buffers, origin.add(0, 0.2, 0), right, tiltUp, tiltFlat, chest);
             return;
         }
 
