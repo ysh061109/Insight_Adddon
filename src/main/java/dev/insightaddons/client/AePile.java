@@ -37,8 +37,8 @@ final class AePile {
     private static final double R = 0.085;
     /** 상자를 플레이어 쪽으로 기울여 바닥 위의 아이템 더미가 위에서 내려다보이게 하는 각도(도) */
     static final float TILT = 18f;
-    private static final int MAX_PER_KIND = 8;
-    private static final int MAX_KINDS = 24;
+    private static final int MAX_PER_KIND = 24;
+    private static final int MAX_KINDS = 64;
     private static final RandomSource RNG = RandomSource.create();
 
     private static final class Body {
@@ -85,7 +85,9 @@ final class AePile {
         if (count <= 0 || max <= 0) {
             return 0;
         }
-        return Math.max(1, Math.min(MAX_PER_KIND, (int) Math.round(1 + (MAX_PER_KIND - 1) * Math.sqrt((double) count / max))));
+        // 개수가 많을수록 조각이 많아지되, 로그로 완만하게 (몇 개든 보이게 하고 많은 건 수북하게)
+        double ratio = Math.log(1.0 + count) / Math.log(1.0 + Math.max(1, max));
+        return Math.max(1, Math.min(MAX_PER_KIND, (int) Math.round(1 + (MAX_PER_KIND - 1) * ratio * ratio)));
     }
 
     /** 단말기 목록이 갱신될 때마다 호출: 종류별 목표 조각 수에 맞춘다. */
@@ -157,7 +159,7 @@ final class AePile {
     /** 매 틱: 쏟아 붓기 + 단순 물리 */
     static void step(Minecraft mc) {
         // 한 틱에 최대 3개씩 위에서 떨어뜨린다
-        for (int i = 0; i < 3 && !PENDING.isEmpty(); i++) {
+        for (int i = 0; i < 8 && !PENDING.isEmpty(); i++) {
             Item item = PENDING.remove(PENDING.size() - 1);
             Body b = new Body(item);
             b.x = (RNG.nextDouble() - 0.5) * HALF_W * 1.4;

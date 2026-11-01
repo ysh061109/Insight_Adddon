@@ -714,9 +714,20 @@ public final class StorageRenderer {
      * 레벨 렌더 이벤트의 PoseStack에는 카메라 회전이 들어 있지 않은 경우가 있어서(회전은 RenderSystem 쪽 모델뷰에 있음),
      * 포즈 행렬이 회전 없는 단위 행렬이면 카메라 회전을 직접 곱해 준다. 이미 회전이 들어 있으면 그대로 쓴다.
      */
+    private static Matrix4f eventProjection;
+
+    /** 레벨 렌더 이벤트가 알려 주는 3D 투영 행렬을 저장한다. (이 시점의 RenderSystem 행렬은 GUI용일 수 있어서 이벤트 값을 우선 쓴다) */
+    static void setProjection(Matrix4f m) {
+        eventProjection = m == null ? null : new Matrix4f(m);
+    }
+
+    static Matrix4f projection() {
+        return eventProjection != null ? eventProjection : RenderSystem.getProjectionMatrix();
+    }
+
     private static Matrix4f viewProj(PoseStack ps, Camera camera) {
         Matrix4f pose = ps.last().pose();
-        Matrix4f vp = new Matrix4f(RenderSystem.getProjectionMatrix());
+        Matrix4f vp = new Matrix4f(projection());
         boolean noRotation = Math.abs(pose.m00() - 1f) < 1.0e-3f && Math.abs(pose.m11() - 1f) < 1.0e-3f
                 && Math.abs(pose.m22() - 1f) < 1.0e-3f && Math.abs(pose.m01()) < 1.0e-3f && Math.abs(pose.m10()) < 1.0e-3f;
         if (noRotation) {

@@ -172,7 +172,7 @@ public final class InsightConfig {
         AE2_MAX_SHOWN = b.comment("AE2 단말기를 열었을 때 3D로 보여줄 아이템 종류의 최대 개수 (많이 든 순)")
                 .translation("insight_addons.configuration.ae2.maxShown").defineInRange("maxShown", 40, 8, 80);
         AE2_PHYSICS_MAX = b.comment("물리 연출에서 동시에 그리는 아이템 조각의 최대 개수. 낮추면 가벼워집니다.")
-                .translation("insight_addons.configuration.ae2.physicsMax").defineInRange("physicsMax", 80, 10, 200);
+                .translation("insight_addons.configuration.ae2.physicsMax").defineInRange("physicsMax", 240, 10, 600);
         b.pop();
 
         b.translation("insight_addons.configuration.mekanism").push("mekanism");

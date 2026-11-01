@@ -204,6 +204,7 @@ public final class ClientEvents {
             return;
         }
         Minecraft mc = Minecraft.getInstance();
+        StorageRenderer.setProjection(event.getProjectionMatrix());
         if (mc.player == null || mc.level == null || !insightChestsPresent()) {
             return;
         }

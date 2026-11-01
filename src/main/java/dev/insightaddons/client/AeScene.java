@@ -180,7 +180,7 @@ public final class AeScene {
         // 단말기 창 왼쪽의 빈 공간 한가운데에 오도록 화면 좌표에서 거꾸로 위치를 계산한다 (창이 넓어도 가려지지 않게)
         if (mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> acs
                 && acs.getGuiLeft() > 40 && mc.screen.width > 0) {
-            org.joml.Matrix4f pm = com.mojang.blaze3d.systems.RenderSystem.getProjectionMatrix();
+            org.joml.Matrix4f pm = StorageRenderer.projection();
             float m00 = pm.m00();
             float m11 = pm.m11();
             if (m00 > 0.01f && m11 > 0.01f) {
