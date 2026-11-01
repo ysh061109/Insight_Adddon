@@ -32,7 +32,7 @@ import java.util.Map;
  */
 final class AePile {
     private static final double HALF_W = 0.75;
-    private static final double HALF_D = 0.42;
+    private static final double HALF_D = 0.5;
     private static final double HEIGHT = 1.25;
     private static final double R = 0.085;
     private static final int MAX_PER_KIND = 8;
@@ -148,7 +148,7 @@ final class AePile {
                 b.asleep = false;
                 b.still = 0;
             }
-            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.ITEM_PICKUP, 1.2f, 0.35f));
+            Fx.sound(SoundEvents.ITEM_PICKUP, 1.2f, 0.35f);
         }
     }
 
@@ -290,7 +290,13 @@ final class AePile {
 
     static void render(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc, float partial, float a,
                        MultiBufferSource.BufferSource buffers, Vec3 origin, Vec3 right, Vec3 up, Vec3 flat, Vec3 chest) {
-        // 유리 상자 테두리
+        // 바닥: ME 제어기, 양쪽 벽: ME 드라이브 모델 (월드 블록이 아니라 모델만 빌려 그린다)
+        Vec3 floorPos = origin.add(up.scale(-HEIGHT / 2));
+        if (AeBox.render(ps, mc, buffers, camPos, floorPos, right)) {
+            drawBodies(ps, camera, camPos, mc, partial, a, buffers, origin, right, up, flat, chest);
+            return;
+        }
+        // 유리 상자 테두리 (가상 상자를 못 그릴 때의 대체)
         VertexConsumer lines = buffers.getBuffer(RenderType.lines());
         PoseStack.Pose pose = ps.last();
         int alpha = (int) (170 * a);
@@ -316,7 +322,11 @@ final class AePile {
                     .setNormal(pose, (float) (d.x / len), (float) (d.y / len), (float) (d.z / len));
         }
         buffers.endBatch(RenderType.lines());
+        drawBodies(ps, camera, camPos, mc, partial, a, buffers, origin, right, up, flat, chest);
+    }
 
+    private static void drawBodies(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc, float partial, float a,
+                                   MultiBufferSource.BufferSource buffers, Vec3 origin, Vec3 right, Vec3 up, Vec3 flat, Vec3 chest) {
         Vec3 floor = origin.add(up.scale(-HEIGHT / 2));
         for (Body b : BODIES) {
             double t = partial;

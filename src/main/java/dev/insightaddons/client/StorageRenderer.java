@@ -237,8 +237,7 @@ public final class StorageRenderer {
             boolean hv = clickable && considerHover(eye, look, p, 0.32 * mainScale + 0.08, primary.item(), view.pos());
             float ms = hv ? mainScale * 1.25f : mainScale;
             drawIcon(ps, camPos, p, icon(primary.item()), ms, time * 2.5f, buffers, mc);
-            drawLabel(ps, camera, camPos, front(p.add(0, -(0.14 + 0.2 * ms), 0), camPos, 0.25),
-                    Component.literal("x" + compact(primary.count())), 0.019f * textBoost, hv ? GOLD : WHITE, 0.0, 3);
+            drawCount(ps, camera, camPos, front(p, camPos, 0.25), ms, compact(primary.count()), hv ? GOLD : WHITE, 3);
             if (hv) {
                 hovered = icon(primary.item()).getHoverName();
                 hoveredCount = primary.count();
@@ -262,8 +261,7 @@ public final class StorageRenderer {
             float gs = hv ? gridScale * 1.4f : gridScale;
             drawIcon(ps, camPos, p, icon(stack.item()), gs, time * 2.5f + i * 30f, buffers, mc);
             // 작은 아이콘의 개수는 자기 칸 폭 안에 들어갈 때만 그린다 (겹치면 지저분하므로)
-            drawLabel(ps, camera, camPos, front(p.add(0, -(0.07 + 0.2 * gs), 0), camPos, 0.25),
-                    Component.literal(compact(stack.count())), 0.011f * textBoost, hv ? GOLD : WHITE, cell * 0.95, hv ? 3 : 1);
+            drawCount(ps, camera, camPos, front(p, camPos, 0.25), gs, compact(stack.count()), hv ? GOLD : WHITE, hv ? 3 : 1);
             if (hv) {
                 hovered = icon(stack.item()).getHoverName();
                 hoveredCount = stack.count();
@@ -654,7 +652,7 @@ public final class StorageRenderer {
      * 3D 글꼴은 셰이더/렌더 순서/다른 모드에 따라 아이템에 묻히거나 안 보일 수 있어서,
      * 3D 좌표를 화면 좌표로 투영해 GUI 글씨로 그리면 항상 선명하게 보입니다.
      */
-    private record Label(float x, float y, float scale, Component text, int color, int priority, boolean fixed) {}
+    private record Label(float x, float y, float scale, Component text, int color, int priority, boolean fixed, boolean count) {}
 
     private static final List<Label> LABELS = new ArrayList<>();
 
@@ -675,7 +673,7 @@ public final class StorageRenderer {
     static void drawLabel(PoseStack ps, Camera camera, Vec3 camPos, Vec3 p, Component text, float scale,
                                   int color, double maxWorldWidth, int priority) {
         Minecraft mc = Minecraft.getInstance();
-        Matrix4f vp = new Matrix4f(RenderSystem.getProjectionMatrix()).mul(ps.last().pose());
+        Matrix4f vp = viewProj(ps, camera);
         org.joml.Vector4f c = new org.joml.Vector4f((float) (p.x - camPos.x), (float) (p.y - camPos.y), (float) (p.z - camPos.z), 1f);
         vp.transform(c);
         if (c.w <= 0.05f || c.w > 48f) {
@@ -707,7 +705,62 @@ public final class StorageRenderer {
                 return; // 칸에 안 들어가면 지저분하게 겹치느니 그리지 않는다
             }
         }
-        LABELS.add(new Label((nx * 0.5f + 0.5f) * guiW, (0.5f - ny * 0.5f) * guiH - 4f * fs, fs, text, color, priority, false));
+        LABELS.add(new Label((nx * 0.5f + 0.5f) * guiW, (0.5f - ny * 0.5f) * guiH - 4f * fs, fs, text, color, priority, false, false));
+    }
+
+
+    /**
+     * 월드 좌표(카메라 기준 상대값)를 화면으로 보내는 행렬.
+     * 레벨 렌더 이벤트의 PoseStack에는 카메라 회전이 들어 있지 않은 경우가 있어서(회전은 RenderSystem 쪽 모델뷰에 있음),
+     * 포즈 행렬이 회전 없는 단위 행렬이면 카메라 회전을 직접 곱해 준다. 이미 회전이 들어 있으면 그대로 쓴다.
+     */
+    private static Matrix4f viewProj(PoseStack ps, Camera camera) {
+        Matrix4f pose = ps.last().pose();
+        Matrix4f vp = new Matrix4f(RenderSystem.getProjectionMatrix());
+        boolean noRotation = Math.abs(pose.m00() - 1f) < 1.0e-3f && Math.abs(pose.m11() - 1f) < 1.0e-3f
+                && Math.abs(pose.m22() - 1f) < 1.0e-3f && Math.abs(pose.m01()) < 1.0e-3f && Math.abs(pose.m10()) < 1.0e-3f;
+        if (noRotation) {
+            vp.mul(new Matrix4f().rotation(camera.rotation().conjugate(new org.joml.Quaternionf())));
+        }
+        return vp.mul(pose);
+    }
+
+    /**
+     * Jade처럼 아이콘의 오른쪽 아래 모서리에 인벤토리 숫자 모양으로 개수를 그린다. 배경 상자는 없다.
+     * iconSize는 FIXED 표시에서 아이콘의 월드 크기(= 렌더 배율)이다.
+     */
+    static void drawCount(PoseStack ps, Camera camera, Vec3 camPos, Vec3 p, float iconSize, String text, int color, int priority) {
+        Minecraft mc = Minecraft.getInstance();
+        Matrix4f vp = viewProj(ps, camera);
+        org.joml.Vector3f r = new org.joml.Vector3f(camera.getLeftVector()).mul(-0.5f * iconSize);
+        org.joml.Vector3f u = new org.joml.Vector3f(camera.getUpVector()).mul(-0.5f * iconSize);
+        org.joml.Vector4f corner = new org.joml.Vector4f((float) (p.x - camPos.x) + r.x + u.x, (float) (p.y - camPos.y) + r.y + u.y,
+                (float) (p.z - camPos.z) + r.z + u.z, 1f);
+        vp.transform(corner);
+        if (corner.w <= 0.05f || corner.w > 48f) {
+            return;
+        }
+        float nx = corner.x / corner.w;
+        float ny = corner.y / corner.w;
+        if (Math.abs(nx) > 1.4f || Math.abs(ny) > 1.4f) {
+            return;
+        }
+        org.joml.Vector3f full = new org.joml.Vector3f(camera.getUpVector()).mul(iconSize);
+        org.joml.Vector4f top = new org.joml.Vector4f((float) (p.x - camPos.x) + full.x, (float) (p.y - camPos.y) + full.y,
+                (float) (p.z - camPos.z) + full.z, 1f);
+        org.joml.Vector4f bottom = new org.joml.Vector4f((float) (p.x - camPos.x), (float) (p.y - camPos.y), (float) (p.z - camPos.z), 1f);
+        vp.transform(top);
+        vp.transform(bottom);
+        float guiW = mc.getWindow().getGuiScaledWidth();
+        float guiH = mc.getWindow().getGuiScaledHeight();
+        float iconPx = top.w > 0.05f && bottom.w > 0.05f ? Math.abs(top.y / top.w - bottom.y / bottom.w) * 0.5f * guiH : 16f;
+        float fs = Math.max(0.6f, Math.min(2.0f, iconPx / 16f)) * InsightConfig.COUNT_SCALE.get().floatValue();
+        if (iconPx < 7f && priority < 2) {
+            return;
+        }
+        float x = (nx * 0.5f + 0.5f) * guiW;
+        float y = (0.5f - ny * 0.5f) * guiH - 8f * fs + 1f * fs;
+        LABELS.add(new Label(x, y, fs, Component.literal(text), color, priority, false, true));
     }
 
     /** 화면 고정 위치(십자선 아래 등)에 글씨를 하나 올린다. 항상 그린다. */
@@ -715,7 +768,7 @@ public final class StorageRenderer {
         Minecraft mc = Minecraft.getInstance();
         float cx = mc.getWindow().getGuiScaledWidth() / 2f;
         float cy = mc.getWindow().getGuiScaledHeight() / 2f + yOffsetFromCenter;
-        LABELS.add(new Label(cx, cy, 1.0f, text, color, 9, true));
+        LABELS.add(new Label(cx, cy, 1.0f, text, color, 9, true, false));
     }
 
     /** RenderGuiEvent.Post에서 호출: 이번 프레임에 모인 글씨를 그린다. */
@@ -732,8 +785,8 @@ public final class StorageRenderer {
             float hw = w * l.scale() / 2f + 2f;
             float top = l.y() - 1f;
             float bottom = l.y() + 9f * l.scale() + 1f;
-            float left = l.x() - hw;
-            float right = l.x() + hw;
+            float left = l.count() ? l.x() - w * l.scale() - 1f : l.x() - hw;
+            float right = l.count() ? l.x() + 1f : l.x() + hw;
             if (l.priority() < 2) {
                 boolean clash = false;
                 for (float[] r : placed) {
@@ -752,8 +805,12 @@ public final class StorageRenderer {
             ps.pushPose();
             ps.translate(l.x(), l.y(), 200f);
             ps.scale(l.scale(), l.scale(), 1f);
-            g.fill(-w / 2 - 2, -1, w / 2 + 2, 9, 0x48000000);
-            g.drawString(mc.font, l.text(), -w / 2, 0, l.color(), true);
+            if (l.count()) {
+                g.drawString(mc.font, l.text(), -w, 0, l.color(), true);
+            } else {
+                g.fill(-w / 2 - 2, -1, w / 2 + 2, 9, 0x48000000);
+                g.drawString(mc.font, l.text(), -w / 2, 0, l.color(), true);
+            }
             ps.popPose();
         }
         LABELS.clear();

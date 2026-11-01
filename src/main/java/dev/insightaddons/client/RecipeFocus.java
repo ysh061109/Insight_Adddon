@@ -155,9 +155,7 @@ public final class RecipeFocus {
     public static void scroll(int delta) {
         if (!shown.isEmpty()) {
             selected = Math.floorMod(selected + delta, shown.size());
-            net.minecraft.client.Minecraft.getInstance().getSoundManager().play(
-                    net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                            net.minecraft.sounds.SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.4f, 0.45f));
+            Fx.sound(net.minecraft.sounds.SoundEvents.UI_STONECUTTER_SELECT_RECIPE, 1.4f, 0.45f);
         }
     }
 
@@ -322,9 +320,7 @@ public final class RecipeFocus {
         } else if (hadShown) {
             // 보관함에서 다 꺼냈거나 인벤토리에 충분히 생겼다 -> 버튼을 한 번 더 누른 것처럼 표시 모드를 끈다
             me.displayClientMessage(Component.translatable("insight_addons.recipe.done"), true);
-            net.minecraft.client.Minecraft.getInstance().getSoundManager().play(
-                    net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                            net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP, 1.2f, 0.5f));
+            Fx.sound(net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP, 1.2f, 0.5f);
             clear();
         } else if (!reported && !rows.isEmpty()) {
             reported = true;

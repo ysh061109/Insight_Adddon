@@ -57,7 +57,7 @@ public final class CraftTable {
     private CraftTable() {}
 
     private static void sound(SoundEvent event, float pitch, float volume) {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(event, pitch, volume));
+        Fx.sound(event, pitch, volume);
     }
 
     public static void clear() {
@@ -84,12 +84,12 @@ public final class CraftTable {
         sound(SoundEvents.AMETHYST_BLOCK_CHIME, 1.4f, 0.7f);
         sound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.7f, 0.5f);
         Vec3 o = origin(mc, 1f).add(0, 0.55, 0);
-        for (int i = 0; i < 18; i++) {
+        for (int i = 0; Fx.particles() && i < 18; i++) {
             double a = i / 18.0 * Math.PI * 2;
             mc.level.addParticle(ParticleTypes.END_ROD, o.x, o.y, o.z,
                     Math.cos(a) * 0.08, 0.04 + mc.level.random.nextDouble() * 0.04, Math.sin(a) * 0.08);
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; Fx.particles() && i < 10; i++) {
             mc.level.addParticle(ParticleTypes.FIREWORK, o.x, o.y, o.z,
                     (mc.level.random.nextDouble() - 0.5) * 0.18, 0.05 + mc.level.random.nextDouble() * 0.08,
                     (mc.level.random.nextDouble() - 0.5) * 0.18);
@@ -155,7 +155,7 @@ public final class CraftTable {
             if (age > BURST_IN + BURST_HOLD + BURST_OUT) {
                 burstStart = -1;
                 burst = ItemStack.EMPTY;
-            } else if (age < BURST_IN + BURST_HOLD && age % 2 == 0) {
+            } else if (age < BURST_IN + BURST_HOLD && age % 2 == 0 && Fx.particles()) {
                 Vec3 o = origin(mc, 1f).add(0, 0.55, 0);
                 mc.level.addParticle(ParticleTypes.ENCHANT, o.x + (mc.level.random.nextDouble() - 0.5) * 0.6,
                         o.y + (mc.level.random.nextDouble() - 0.3) * 0.5, o.z + (mc.level.random.nextDouble() - 0.5) * 0.6,

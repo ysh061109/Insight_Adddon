@@ -7,7 +7,7 @@ config = "insight_addons.mixins.json"
 
 [[mods]]
 modId = "insight_addons"
-version = "1.17.1"
+version = "1.19.0"
 displayName = "Insight Addons"
 logoFile = "icon.png"
 description = '''

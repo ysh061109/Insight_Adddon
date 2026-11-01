@@ -61,7 +61,7 @@ public final class AeScene {
     }
 
     private static void sound(net.minecraft.sounds.SoundEvent e, float pitch, float vol) {
-        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(e, pitch, vol));
+        Fx.sound(e, pitch, vol);
     }
 
     public static void tick(Minecraft mc) {
@@ -127,7 +127,8 @@ public final class AeScene {
         list.sort((a, b) -> Integer.compare(b.count(), a.count()));
         kinds = list.size();
         total = sum;
-        shown = list.size() > MAX_SHOWN ? new ArrayList<>(list.subList(0, MAX_SHOWN)) : list;
+        int maxShown = InsightConfig.AE2_MAX_SHOWN.get();
+        shown = list.size() > maxShown ? new ArrayList<>(list.subList(0, maxShown)) : list;
     }
 
     private static int slotOf(Item item) {

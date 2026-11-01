@@ -173,8 +173,7 @@ public final class ClientEvents {
         while (Keys.LIST_ADD.consumeClick()) {
             if (RecipeFocus.isActive() && ShoppingList.addCurrent() > 0) {
                 player.displayClientMessage(Component.translatable("insight_addons.list.added"), true);
-                mc.getSoundManager().play(net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                        net.minecraft.sounds.SoundEvents.ITEM_PICKUP, 1.3f, 0.5f));
+                Fx.sound(net.minecraft.sounds.SoundEvents.ITEM_PICKUP, 1.3f, 0.5f);
             } else {
                 player.displayClientMessage(Component.translatable("insight_addons.list.need_focus"), true);
             }

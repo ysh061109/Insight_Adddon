@@ -54,8 +54,7 @@ public abstract class ChestBoundsMixin {
             // 배낭: 좁고 통통한 모양
             minX = 0.2f; maxX = 0.8f; minZ = 0.2f; maxZ = 0.8f;
             minY = 0.06f; maxY = 0.62f;
-            ResourceLocation custom = ResourceLocation.tryParse(InsightConfig.BACKPACK_CAVITY_TEXTURE.get());
-            cavity = custom != null ? custom : ResourceLocation.withDefaultNamespace("textures/block/brown_terracotta.png");
+            cavity = dev.insightaddons.client.BackpackCavity.get();
         } else {
             return;
         }

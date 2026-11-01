@@ -35,6 +35,7 @@ public final class InsightConfig {
     public static final ModConfigSpec.IntValue DROP_MAX_TOTAL;
     public static final ModConfigSpec.ConfigValue<String> ITEM_SIZE_SCALING;
     public static final ModConfigSpec.ConfigValue<String> BACKPACK_CAVITY_TEXTURE;
+    public static final ModConfigSpec.BooleanValue BACKPACK_HIDE_CAVITY;
     public static final ModConfigSpec.ConfigValue<String> ITEM_GLOW;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> FANCY_MOD_IDS;
     public static final ModConfigSpec.BooleanValue KEEP_ORIGINAL_SCREEN;
@@ -49,6 +50,10 @@ public final class InsightConfig {
     public static final ModConfigSpec.BooleanValue AE2_ENABLED;
     public static final ModConfigSpec.BooleanValue AE2_PHYSICS;
     public static final ModConfigSpec.IntValue AE2_PHYSICS_MAX;
+    public static final ModConfigSpec.IntValue AE2_MAX_SHOWN;
+    public static final ModConfigSpec.DoubleValue COUNT_SCALE;
+    public static final ModConfigSpec.DoubleValue SOUND_VOLUME;
+    public static final ModConfigSpec.BooleanValue PARTICLES;
     public static final ModConfigSpec.BooleanValue MEKANISM_ENABLED;
     public static final ModConfigSpec.BooleanValue CRAFT_FX;
     public static final ModConfigSpec.IntValue CRAFT_FX_RADIUS;
@@ -93,6 +98,8 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.nearDisplay.maxStacks").defineInRange("maxStacks", 56, 1, 120);
         NEAR_MAIN_SCALE = b.comment("가장 많은 아이템(앞에 크게 나오는 것)의 크기").translation("insight_addons.configuration.nearDisplay.mainIconScale").defineInRange("mainIconScale", 0.6, 0.2, 1.5);
         NEAR_ICON_SCALE = b.comment("나머지 아이템의 작은 아이콘 크기").translation("insight_addons.configuration.nearDisplay.gridIconScale").defineInRange("gridIconScale", 0.28, 0.1, 1.0);
+        COUNT_SCALE = b.comment("아이콘 오른쪽 아래에 표시되는 개수 숫자의 크기 배율")
+                .translation("insight_addons.configuration.nearDisplay.countScale").defineInRange("countScale", 1.0, 0.5, 2.0);
         STICKY_DISPLAY = b.comment("시선이 보관함에서 벗어나도 마지막으로 본 보관함의 표시를 계속 유지합니다. 다른 보관함을 바라보면 그 보관함으로 바뀝니다.")
                 .translation("insight_addons.configuration.nearDisplay.stickyDisplay").define("stickyDisplay", true);
         STICKY_DISTANCE = b.comment("유지 표시가 이 거리(블록)보다 멀어지면 꺼집니다.")
@@ -129,6 +136,8 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.insightChestsIntegration.itemSizeScaling").define("itemSizeScaling", "auto");
         BACKPACK_CAVITY_TEXTURE = b.comment("배낭 내부(바닥/벽) 질감. 리소스팩이 바꾼 블록 질감도 그대로 반영됩니다.")
                 .translation("insight_addons.configuration.insightChestsIntegration.backpackCavityTexture").define("backpackCavityTexture", "minecraft:textures/block/brown_terracotta.png");
+        BACKPACK_HIDE_CAVITY = b.comment("배낭 내부(바닥/벽) 그리기를 건너뛰어 검은 화면을 막고 투명한 상자처럼 보이게 합니다.")
+                .translation("insight_addons.configuration.insightChestsIntegration.backpackHideCavity").define("backpackHideCavity", true);
         ITEM_GLOW = b.comment("보관함 안에서 떨어지는 3D 아이템에 등급 색 빛(후광) 효과를 줍니다.",
                         "auto = 아래 fancyModIds 중 하나가 설치되어 있을 때만, on = 항상, off = 끔")
                 .translation("insight_addons.configuration.insightChestsIntegration.itemGlow").define("itemGlow", "auto");
@@ -157,6 +166,8 @@ public final class InsightConfig {
         AE2_PHYSICS = b.comment("AE2 단말기를 열었을 때 아이템을 격자 진열대 대신, 유리 상자 안에 물리로 쏟아져 쌓이는 연출로 보여줍니다.",
                         "꺼내면 해당 아이템이 플레이어에게 날아가고, 넣으면 위에서 떨어집니다. 기본은 꺼져 있습니다.")
                 .translation("insight_addons.configuration.ae2.physics").define("physics", false);
+        AE2_MAX_SHOWN = b.comment("AE2 단말기를 열었을 때 3D로 보여줄 아이템 종류의 최대 개수 (많이 든 순)")
+                .translation("insight_addons.configuration.ae2.maxShown").defineInRange("maxShown", 40, 8, 80);
         AE2_PHYSICS_MAX = b.comment("물리 연출에서 동시에 그리는 아이템 조각의 최대 개수. 낮추면 가벼워집니다.")
                 .translation("insight_addons.configuration.ae2.physicsMax").defineInRange("physicsMax", 80, 10, 200);
         b.pop();
@@ -171,6 +182,13 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.craftEffect.enabled").define("enabled", true);
         CRAFT_FX_RADIUS = b.comment("재료가 든 보관함을 찾을 반경(블록). 기억해 둔 보관함 기준입니다.")
                 .translation("insight_addons.configuration.craftEffect.radius").defineInRange("radius", 12, 2, 48);
+        b.pop();
+
+        b.translation("insight_addons.configuration.effects").push("effects");
+        SOUND_VOLUME = b.comment("이 모드가 내는 효과음(제작, 스크롤, AE 단말기 등)의 음량 배율. 0이면 모두 끕니다.")
+                .translation("insight_addons.configuration.effects.soundVolume").defineInRange("soundVolume", 1.0, 0.0, 2.0);
+        PARTICLES = b.comment("제작 완료 등에서 나오는 파티클 효과를 켭니다.")
+                .translation("insight_addons.configuration.effects.particles").define("particles", true);
         b.pop();
 
         b.translation("insight_addons.configuration.wrenchScan").push("wrenchScan");
