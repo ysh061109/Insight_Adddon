@@ -47,7 +47,7 @@ public final class YaclScreen {
 
         Map<String, List<String>> ins = new LinkedHashMap<>();
         ins.put("basic", List.of("enabled", "blocks", "keepOriginalScreen"));
-        ins.put("glass", List.of("glassSkin", "glassAlpha", "followInsightPosition"));
+        ins.put("glass", List.of("glassSkin", "glassAlpha", "glassSlotAlpha", "followInsightPosition"));
         ins.put("items", List.of("dropRatio", "dropMaxTotal", "itemSizeScaling", "itemGlow", "fancyModIds"));
         ins.put("backpack", List.of("backpackCavityTexture", "hideBackpackCavity"));
         LAYOUT.put("insightChestsIntegration", ins);

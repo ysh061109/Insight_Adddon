@@ -36,6 +36,7 @@ public final class InsightConfig {
     public static final ModConfigSpec.ConfigValue<String> ITEM_SIZE_SCALING;
     public static final ModConfigSpec.ConfigValue<String> BACKPACK_CAVITY_TEXTURE;
     public static final ModConfigSpec.BooleanValue BACKPACK_HIDE_CAVITY;
+    public static final ModConfigSpec.IntValue GLASS_SLOT_ALPHA;
     public static final ModConfigSpec.ConfigValue<String> ITEM_GLOW;
     public static final ModConfigSpec.ConfigValue<List<? extends String>> FANCY_MOD_IDS;
     public static final ModConfigSpec.BooleanValue KEEP_ORIGINAL_SCREEN;
@@ -123,6 +124,8 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.insightChestsIntegration.glassSkin").define("glassSkin", true);
         GLASS_ALPHA = b.comment("유리 패널의 투명도 값(0~255). -1이면 InSight Chests의 uiBackgroundOpacity 설정을 그대로 따릅니다.")
                 .translation("insight_addons.configuration.insightChestsIntegration.glassAlpha").defineInRange("glassAlpha", -1, -1, 255);
+        GLASS_SLOT_ALPHA = b.comment("유리 화면의 슬롯 칸 속 흰색 농도(0~255). 올리면 칸이 밝아지고, 0이면 칸 속이 완전히 투명해집니다.")
+                .translation("insight_addons.configuration.insightChestsIntegration.glassSlotAlpha").defineInRange("glassSlotAlpha", 16, 0, 255);
         FOLLOW_INSIGHT_POSITION = b.comment("true면 Sophisticated 화면도 InSight Chests의 guiPosition 설정(왼쪽/가운데/오른쪽)대로 옮깁니다.",
                         "오른쪽이 기본이라 가운데에 3D 아이템이 보입니다.")
                 .translation("insight_addons.configuration.insightChestsIntegration.followInsightPosition").define("followInsightPosition", true);

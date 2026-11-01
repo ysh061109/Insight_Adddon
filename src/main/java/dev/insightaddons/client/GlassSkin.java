@@ -197,7 +197,7 @@ public final class GlassSkin {
             g.blit(TEX_SLOT, x, y, 0f, 0f, 18, 18, 18, 18);
             return;
         }
-        g.fill(x + 1, y + 1, x + 17, y + 17, 0x10FFFFFF);
+        g.fill(x + 1, y + 1, x + 17, y + 17, argb(InsightConfig.GLASS_SLOT_ALPHA.get(), 0xFFFFFF));
         g.renderOutline(x, y, 18, 18, 0x36FFFFFF);
     }
 

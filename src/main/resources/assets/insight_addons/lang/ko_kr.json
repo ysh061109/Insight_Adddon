@@ -125,5 +125,6 @@
   "insight_addons.configuration.effects.desc": "소리와 파티클을 한꺼번에 조절합니다.",
   "insight_addons.configuration.craftEffect.desc": "제작할 때 재료가 날아가고 머리 위 작업대에 나타나는 연출입니다.",
   "insight_addons.configuration.wrenchScan.desc": "렌치류 도구를 들었을 때 주변 보관함 아이템을 띄우는 기능입니다.",
-  "insight_addons.configuration.insightChestsIntegration.hideBackpackCavity": "배낭 내부 숨기기 (검은 화면 방지)"
+  "insight_addons.configuration.insightChestsIntegration.hideBackpackCavity": "배낭 내부 숨기기 (검은 화면 방지)",
+  "insight_addons.configuration.insightChestsIntegration.glassSlotAlpha": "슬롯 칸 밝기 (0~255)"
 }

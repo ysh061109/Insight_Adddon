@@ -74,6 +74,10 @@ GitHub에 올리면 `.github/workflows/build.yml`이 자동으로 빌드해 Acti
 - Sophisticated Storage의 상자/통은 모양이 바닐라 상자와 달라서 InSight Chests의 3D 공간이 어색할 수 있습니다.
 - 서버는 요청 좌표의 내용물을 그대로 알려주므로 잠금 상자의 내용물이 노출될 수 있습니다. (서버에 모드를 설치한 경우)
 
+## 1.19.4 변경 사항
+
+- 유리 화면 설정에 "슬롯 칸 밝기"(`glassSlotAlpha`, 기본 16) 추가. 패널 농도(`glassAlpha`, -1이면 InSight와 같은 값)와 함께 화면 어둡기를 직접 조절할 수 있습니다. 패널/슬롯 계산식은 InSight Chests의 GlassChestScreen과 동일하게 맞춰져 있습니다.
+
 ## 1.19.3 변경 사항
 
 - 배낭 내부 숨기기 설정의 이름을 `hideBackpackCavity`로 바꿨습니다(기본 꺼짐). 이전 버전에서 저장된 `backpackHideCavity=true`가 설정 파일에 남아 있어서 기본값을 되돌려도 계속 내부가 숨겨지던 문제를 고치기 위해서입니다.
