@@ -9,7 +9,6 @@
     "StorageScreenSkinMixin",
     "GuiHelperSkinMixin",
     "ChestBoundsMixin",
-    "HollowCavityMixin",
     "AbstractContainerScreenAccessor",
     "ScreenBackgroundMixin",
     "SettingsScreenSkinMixin",

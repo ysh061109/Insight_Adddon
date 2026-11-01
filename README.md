@@ -74,6 +74,11 @@ GitHub에 올리면 `.github/workflows/build.yml`이 자동으로 빌드해 Acti
 - Sophisticated Storage의 상자/통은 모양이 바닐라 상자와 달라서 InSight Chests의 3D 공간이 어색할 수 있습니다.
 - 서버는 요청 좌표의 내용물을 그대로 알려주므로 잠금 상자의 내용물이 노출될 수 있습니다. (서버에 모드를 설치한 경우)
 
+## 1.20.7 변경 사항
+
+- 배낭 어두운 화면의 실제 원인은 `keepOriginalScreen`(원래 화면 유지)이 꺼져 InSight 유리 화면으로 교체되던 것이었습니다. 이 설정을 켜 두면 업그레이드 탭이 있는 원래 Sophisticated 화면에 유리 스킨이 적용됩니다.
+- 잘못된 진단으로 만들었던 배낭 내부 개조(테라코타 질감, 밝은 내부 렌더러, 배낭 크기 조정, 관련 설정)를 제거하고 InSight Chests 기본 배낭 내부로 되돌렸습니다. 통/셜커 크기 보정은 유지됩니다.
+
 ## 1.20.6 변경 사항
 
 - 배낭을 열면 게임이 튕기던 문제 수정(`Missing elements in vertex: Normal`): 배낭 내부 밝은 렌더러가 정점에 법선(Normal)을 빼먹고 있었습니다.

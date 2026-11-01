@@ -16,7 +16,7 @@ import java.lang.reflect.Field;
 
 /**
  * InSight Chests의 ChestBoundingBox.fromChest()는 상자 모양(높이 약 0.5)의 내부 공간만 계산합니다.
- * 통, 셜커 상자, 배낭은 모양이 달라서 아이템 물리와 속 빈 내부가 어색하게 나오므로
+ * 통, 셜커 상자는 모양이 달라서 아이템 물리와 속 빈 내부가 어색하게 나오므로
  * 블록 종류에 맞는 내부 공간과 바닥 질감으로 바꿔 줍니다.
  *
  * 리플렉션을 쓰는 이유: InSight Chests 클래스를 컴파일 시점에 참조하지 않기 위해서입니다.
@@ -59,12 +59,6 @@ public abstract class ChestBoundsMixin {
             minY = 0.06f; maxY = 0.52f;
             String color = path.equals("shulker_box") ? "purple" : path.substring(0, path.length() - "_shulker_box".length());
             cavity = ResourceLocation.withDefaultNamespace("textures/block/" + color + "_concrete.png");
-        } else if (ns.equals("sophisticatedbackpacks")) {
-            // 배낭: 좁고 통통한 모양
-            // 배낭 모양에 맞춰 좁고 통통하게 (배낭 모델 안쪽 크기)
-            minX = 0.2f; maxX = 0.8f; minZ = 0.2f; maxZ = 0.8f;
-            minY = 0.06f; maxY = 0.62f;
-            cavity = dev.insightaddons.client.BackpackCavity.get();
         } else {
             return;
         }

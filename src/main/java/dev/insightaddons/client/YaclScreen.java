@@ -49,7 +49,6 @@ public final class YaclScreen {
         ins.put("basic", List.of("enabled", "blocks", "keepOriginalScreen"));
         ins.put("glass", List.of("glassSkin", "glassAlpha", "glassSlotAlpha", "followInsightPosition"));
         ins.put("items", List.of("itemScale", "itemScaleBackpack", "itemScaleShulker", "itemScaleBarrel", "dropRatio", "dropMaxTotal", "itemSizeScaling", "itemGlow", "fancyModIds"));
-        ins.put("backpack", List.of("backpackInteriorTexture", "backpackInterior"));
         LAYOUT.put("insightChestsIntegration", ins);
     }
 
@@ -290,7 +289,7 @@ public final class YaclScreen {
             defaultForUi = def;
             getter = cv::get;
             setter = v -> set(cv, v);
-            List<String> choices = "backpackInterior".equals(key) ? List.of("bright", "insight", "off") : List.of("auto", "on", "off");
+            List<String> choices = List.of("auto", "on", "off");
             factory = controller("CyclingListControllerBuilder", optC, b -> {
                 Object x = tryInvoke(b, "values", choices);
                 Function<Object, Component> fmt = v -> Component.translatable("insight_addons.configuration.choice." + v);
