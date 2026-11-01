@@ -74,6 +74,10 @@ GitHub에 올리면 `.github/workflows/build.yml`이 자동으로 빌드해 Acti
 - Sophisticated Storage의 상자/통은 모양이 바닐라 상자와 달라서 InSight Chests의 3D 공간이 어색할 수 있습니다.
 - 서버는 요청 좌표의 내용물을 그대로 알려주므로 잠금 상자의 내용물이 노출될 수 있습니다. (서버에 모드를 설치한 경우)
 
+## 1.20.6 변경 사항
+
+- 배낭을 열면 게임이 튕기던 문제 수정(`Missing elements in vertex: Normal`): 배낭 내부 밝은 렌더러가 정점에 법선(Normal)을 빼먹고 있었습니다.
+
 ## 1.20.5 변경 사항
 
 - 3D 아이템 크기 조절 설정 추가(InSight 연동 → 3D 아이템): 전체 배율 `itemScale`과 배낭/셜커 상자/통 별 추가 배율(`itemScaleBackpack`, `itemScaleShulker`, `itemScaleBarrel`), 각 0.3~2.0(기본 1.0). 전체 x 종류별로 곱해집니다. 보관함을 열 때 새로 만들어지는 아이템부터 적용됩니다.

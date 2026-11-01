@@ -48,7 +48,7 @@ final class BackpackInterior {
     }
 
     private static void v(VertexConsumer c, Matrix4f m, float x, float y, float z, float u, float vv, int shade) {
-        c.addVertex(m, x, y, z).setColor(shade, shade, shade, 255).setUv(u, vv).setLight(15728880);
+        c.addVertex(m, x, y, z).setColor(shade, shade, shade, 255).setUv(u, vv).setLight(15728880).setNormal(0f, 1f, 0f);
     }
 
     /** 앞뒤 어느 쪽에서 봐도 보이게 두 방향 모두 그린다 */
