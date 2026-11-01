@@ -135,9 +135,9 @@ public final class InsightConfig {
         ITEM_SIZE_SCALING = b.comment("아이템 실제 크기에 맞춰 떨어지는 아이템 크기를 조절합니다. auto = Fancy Items 모드가 있을 때만, on = 항상, off = 끔")
                 .translation("insight_addons.configuration.insightChestsIntegration.itemSizeScaling").define("itemSizeScaling", "auto");
         BACKPACK_CAVITY_TEXTURE = b.comment("배낭 내부(바닥/벽) 질감. 리소스팩이 바꾼 블록 질감도 그대로 반영됩니다.")
-                .translation("insight_addons.configuration.insightChestsIntegration.backpackCavityTexture").define("backpackCavityTexture", "minecraft:textures/block/brown_terracotta.png");
-        BACKPACK_HIDE_CAVITY = b.comment("배낭 내부(바닥/벽) 그리기를 건너뛰어 검은 화면을 막고 투명한 상자처럼 보이게 합니다.")
-                .translation("insight_addons.configuration.insightChestsIntegration.backpackHideCavity").define("backpackHideCavity", true);
+                .translation("insight_addons.configuration.insightChestsIntegration.backpackCavityTexture").define("backpackCavityTexture", "minecraft:textures/block/oak_planks.png");
+        BACKPACK_HIDE_CAVITY = b.comment("배낭 내부(바닥/벽) 그리기를 건너뜁니다. 켜면 InSight 상자 같은 속 빈 내부 대신 월드 위에 아이템만 쌓입니다. 기본은 꺼짐(InSight 상자와 같은 모습).")
+                .translation("insight_addons.configuration.insightChestsIntegration.backpackHideCavity").define("backpackHideCavity", false);
         ITEM_GLOW = b.comment("보관함 안에서 떨어지는 3D 아이템에 등급 색 빛(후광) 효과를 줍니다.",
                         "auto = 아래 fancyModIds 중 하나가 설치되어 있을 때만, on = 항상, off = 끔")
                 .translation("insight_addons.configuration.insightChestsIntegration.itemGlow").define("itemGlow", "auto");
