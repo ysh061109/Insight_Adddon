@@ -53,13 +53,13 @@ public abstract class ChestBoundsMixin {
             minX = 0.14f; maxX = 0.86f; minZ = 0.14f; maxZ = 0.86f;
             minY = 0.07f; maxY = 0.93f;
             cavity = "mekanism".equals(ns)
-                    ? ResourceLocation.withDefaultNamespace("textures/block/polished_andesite.png")
+                    ? ResourceLocation.withDefaultNamespace("textures/block/gray_concrete.png")
                     : ResourceLocation.withDefaultNamespace("textures/block/barrel_bottom.png");
         } else if ("mekanism".equals(ns) && path.equals("personal_chest")) {
-            // Mekanism 개인 상자: 상자 모양에 금속 느낌의 바닥/벽
+            // Mekanism 개인 상자: 상자 모양에 어두운 강철 느낌(진회색)의 바닥/벽
             minX = 0.08f; maxX = 0.92f; minZ = 0.08f; maxZ = 0.92f;
             minY = 0.06f; maxY = 0.58f;
-            cavity = ResourceLocation.withDefaultNamespace("textures/block/iron_block.png");
+            cavity = ResourceLocation.withDefaultNamespace("textures/block/gray_concrete.png");
         } else if ("minecraft".equals(ns) && path.endsWith("shulker_box")) {
             // 셜커 상자: 몸통(아래 절반) 안쪽만 쓴다. 뚜껑이 위로 열린다.
             minX = 0.1f; maxX = 0.9f; minZ = 0.1f; maxZ = 0.9f;
