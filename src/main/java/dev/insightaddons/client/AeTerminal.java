@@ -22,6 +22,24 @@ public final class AeTerminal {
     private static BlockPos pos;
     private static boolean warned;
 
+    /** 단말기를 닫은 뒤에도 재료 찾기가 쓸 수 있게, 단말기별로 마지막으로 본 네트워크 목록을 기억한다. */
+    public record Snapshot(BlockPos pos, Map<Item, Integer> counts, long time) {}
+
+    private static final Map<BlockPos, Snapshot> SNAPSHOTS = new HashMap<>();
+
+    public static java.util.Collection<Snapshot> snapshots() {
+        return SNAPSHOTS.values();
+    }
+
+    public static void forget(BlockPos p) {
+        SNAPSHOTS.remove(p);
+    }
+
+    public static void clearSnapshots() {
+        SNAPSHOTS.clear();
+        pos = null;
+    }
+
     private AeTerminal() {}
 
     /** 화면이 열리기 직전에 호출: 단말기 위치(바라보던 블록)를 기억한다. */
@@ -94,6 +112,9 @@ public final class AeTerminal {
                 }
                 Item item = (Item) mItem.invoke(what);
                 out.merge(item, (int) Math.min(Integer.MAX_VALUE, amount), (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
+            }
+            if (!out.isEmpty() && mc.level != null) {
+                SNAPSHOTS.put(pos, new Snapshot(pos, Map.copyOf(out), mc.level.getGameTime()));
             }
             return out;
         } catch (Throwable t) {

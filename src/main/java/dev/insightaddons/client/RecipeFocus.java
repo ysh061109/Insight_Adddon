@@ -240,20 +240,27 @@ public final class RecipeFocus {
                 holders.add(new Holder(nearest(memo.positions, eye), memo.block, memo.all, now - memo.time));
             }
         }
-        // AE2 단말기가 열려 있으면 단말기가 받아 둔 네트워크 목록도 하나의 보관함처럼 취급한다 (서버 조회와 겹치면 생략)
-        boolean aeCovered = false;
+        // AE2 단말기가 받아 둔 네트워크 목록(열려 있으면 최신, 닫았으면 마지막으로 본 내용)도 하나의 보관함처럼 취급한다.
+        // 재료 찾기를 누르면 화면이 닫히므로, 열려 있을 때만 읽으면 ME 저장소가 항상 비어 보인다.
+        net.minecraft.client.Minecraft mcc = net.minecraft.client.Minecraft.getInstance();
+        AeTerminal.contents(mcc); // 열려 있으면 기억을 최신으로 갱신
+        Set<BlockPos> have = new HashSet<>();
         for (Holder h : holders) {
-            if (h.block().getNamespace().equals("ae2")) {
-                aeCovered = true;
-                break;
-            }
+            have.add(h.pos());
         }
-        if (!aeCovered) {
-            Map<Item, Integer> terminal = AeTerminal.contents(net.minecraft.client.Minecraft.getInstance());
-            if (terminal != null && !terminal.isEmpty() && AeTerminal.pos() != null) {
-                holders.add(new Holder(AeTerminal.pos(), blockId(level, AeTerminal.pos()), terminal, -1));
+        List<BlockPos> stale = new ArrayList<>();
+        for (AeTerminal.Snapshot snap : AeTerminal.snapshots()) {
+            if (level.isLoaded(snap.pos()) && !blockId(level, snap.pos()).getNamespace().equals("ae2")) {
+                stale.add(snap.pos()); // 단말기를 치웠다
+                continue;
             }
+            if (have.contains(snap.pos()) || snap.counts().isEmpty()) {
+                continue;
+            }
+            boolean openNow = GlassSkin.isAeTerminal(mcc.screen) && snap.pos().equals(AeTerminal.pos());
+            holders.add(new Holder(snap.pos(), blockId(level, snap.pos()), snap.counts(), openNow ? -1 : now - snap.time()));
         }
+        stale.forEach(AeTerminal::forget);
         holders.removeIf(h -> Vec3.atCenterOf(h.pos()).distanceToSqr(eye) > r2);
         holders.sort(Comparator.comparingDouble(h -> Vec3.atCenterOf(h.pos()).distanceToSqr(eye)));
 

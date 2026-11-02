@@ -44,6 +44,7 @@ public final class ClientEvents {
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientCache.clearAll();
         ContainerMemory.clear();
+        AeTerminal.clearSnapshots();
         RecipeFocus.clear();
         CraftFx.clear();
         CraftTable.clear();
@@ -76,6 +77,7 @@ public final class ClientEvents {
         if (lastDimension != level.dimension()) {
             if (lastDimension != null) {
                 ContainerMemory.clear();
+                AeTerminal.clearSnapshots();
                 ClientCache.clearAll();
                 RecipeFocus.clear();
             }
