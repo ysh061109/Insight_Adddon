@@ -131,10 +131,10 @@ public final class CraftWatcher {
             return false;
         }
         String n = menu.getClass().getName().toLowerCase(java.util.Locale.ROOT);
-        if (n.startsWith("net.minecraft.") || n.startsWith("appeng.") || n.contains("sophisticated")) {
+        if (n.startsWith("net.minecraft.") || n.startsWith("appeng.")) {
             return false;
         }
-        return n.contains("tacz") || n.contains("smith") || n.contains("workbench") || n.contains("craft")
+        return n.contains("sophisticated") || n.contains("tacz") || n.contains("smith") || n.contains("workbench") || n.contains("craft")
                 || n.contains("assembl") || n.contains("fabricat");
     }
 
@@ -144,12 +144,19 @@ public final class CraftWatcher {
             return;
         }
         Map<Item, Integer> now = new HashMap<>();
-        Inventory inv = player.getInventory();
-        for (int i = 0; i < inv.getContainerSize(); i++) {
-            ItemStack st = inv.getItem(i);
+        // 메뉴의 모든 칸(배낭 내용물·제작 격자 포함, 결과 미리보기 칸 제외) + 커서
+        for (Slot slot : menu.slots) {
+            if (slot instanceof net.minecraft.world.inventory.ResultSlot) {
+                continue;
+            }
+            ItemStack st = slot.getItem();
             if (!st.isEmpty()) {
                 now.merge(st.getItem(), st.getCount(), Integer::sum);
             }
+        }
+        ItemStack carried = menu.getCarried();
+        if (!carried.isEmpty()) {
+            now.merge(carried.getItem(), carried.getCount(), Integer::sum);
         }
         Map<Item, Integer> prev = INV.put(player.getUUID(), now);
         if (prev == null) {
