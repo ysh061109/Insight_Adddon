@@ -247,19 +247,18 @@ public final class RecipeFocus {
         // 재료 찾기를 누르면 화면이 닫히므로, 열려 있을 때만 읽으면 ME 저장소가 항상 비어 보인다.
         net.minecraft.client.Minecraft mcc = net.minecraft.client.Minecraft.getInstance();
         AeTerminal.contents(mcc); // 열려 있으면 기억을 최신으로 갱신
-        Set<BlockPos> have = new HashSet<>();
-        for (Holder h : holders) {
-            have.add(h.pos());
-        }
         List<BlockPos> stale = new ArrayList<>();
         for (AeTerminal.Snapshot snap : AeTerminal.snapshots()) {
             if (level.isLoaded(snap.pos()) && !blockId(level, snap.pos()).getNamespace().equals("ae2")) {
                 stale.add(snap.pos()); // 단말기를 치웠다
                 continue;
             }
-            if (have.contains(snap.pos()) || snap.counts().isEmpty()) {
+            if (snap.counts().isEmpty()) {
                 continue;
             }
+            // 같은 위치에 다른 경로(서버 조회, 보관함 기억)의 AE 항목이 있어도, 단말기가 받아 둔 실제 목록이 더 정확하므로 그것으로 바꾼다
+            // (검색으로 걸러진 화면 칸만 본 기억이 "없음"으로 이기지 않게)
+            holders.removeIf(h -> h.pos().equals(snap.pos()) && h.block().getNamespace().equals("ae2"));
             boolean openNow = GlassSkin.isAeTerminal(mcc.screen) && snap.pos().equals(AeTerminal.pos());
             holders.add(new Holder(snap.pos(), blockId(level, snap.pos()), snap.counts(), openNow ? -1 : now - snap.time()));
         }

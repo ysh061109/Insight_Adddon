@@ -196,7 +196,11 @@ public final class ContainerMemory {
         net.minecraft.client.Minecraft mcNow = net.minecraft.client.Minecraft.getInstance();
         if (GlassSkin.isAeTerminal(mcNow.screen)) {
             Map<Item, Integer> ae = AeTerminal.contents(mcNow);
-            if (ae != null && !ae.isEmpty()) {
+            if (ae == null || ae.isEmpty()) {
+                // 실제 목록을 아직 못 읽었다. 화면에 보이는 칸(검색 결과로 걸러진 일부)으로 기억하면 틀리므로 기록하지 않는다.
+                return;
+            }
+            {
                 totals.clear();
                 sum = 0;
                 for (Map.Entry<Item, Integer> e : ae.entrySet()) {
