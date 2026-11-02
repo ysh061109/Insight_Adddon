@@ -687,11 +687,25 @@ public final class StorageRenderer {
         if (known != null && known.block().equals(id)) {
             return known.name();
         }
+        // 시선을 뗀 뒤에도 같은 이름이 나오도록, 마지막으로 바라봤을 때의 이름을 기억해 쓴다 (블록이 바뀌었으면 무시)
+        Object[] remembered = PICKED.get(pos);
+        if (remembered != null && id.equals(remembered[0])) {
+            return (Component) remembered[1];
+        }
         Item item = block.asItem();
         if (item != net.minecraft.world.item.Items.AIR) {
             return new ItemStack(item).getHoverName();
         }
         return block.getName();
+    }
+
+    private static final Map<BlockPos, Object[]> PICKED = new java.util.HashMap<>();
+
+    /** 단말기를 여는 순간에도 이름을 기억해 둔다 (바라보고 있을 때만 알 수 있으므로) */
+    static void rememberName(Minecraft mc, BlockPos pos) {
+        if (mc.level != null) {
+            blockName(mc, BuiltInRegistries.BLOCK.getKey(mc.level.getBlockState(pos).getBlock()), pos);
+        }
     }
 
     static ItemStack icon(Item item) {
