@@ -1,3 +1,20 @@
+        // AE2 단말기의 슬롯은 화면에 보이는 칸의 "표시용 1개짜리 복사본"이라 개수가 모두 1로 잡히고 첫 페이지(18종)만 보인다.
+        // 그래서 단말기 메뉴는 슬롯으로 기억하지 않고, 단말기가 받아 둔 실제 네트워크 목록(AeTerminal)으로만 기억한다.
+        // 화면이 닫히는 순간의 마지막 기록은 화면이 이미 없어서 실제 목록을 읽을 수 없으므로, 열려 있을 때 만든 기록을 그대로 둔다.
+        if (hasSuperclassNamed(menu.getClass(), "MEStorageMenu")) {
+            net.minecraft.client.Minecraft mcNow = net.minecraft.client.Minecraft.getInstance();
+            Map<Item, Integer> ae = GlassSkin.isAeTerminal(mcNow.screen) ? AeTerminal.contents(mcNow) : null;
+            if (ae == null || ae.isEmpty()) {
+                return;
+            }
+            totals.clear();
+            sum = 0;
+            for (Map.Entry<Item, Integer> e : ae.entrySet()) {
+                totals.put(e.getKey(), (long) e.getValue());
+                sum += e.getValue();
+            }
+        }
+
 package dev.insightaddons.client;
 
 import dev.insightaddons.net.ScanResult;

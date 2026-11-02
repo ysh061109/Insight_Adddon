@@ -35,7 +35,7 @@ public final class ContainerFilter {
             return InsightConfig.AE2_ENABLED.get();
         }
         if (id.getNamespace().equals("mekanism") && InsightConfig.MEKANISM_ENABLED.get()
-                && (id.getPath().equals("personal_chest") || id.getPath().endsWith("_bin"))) {
+                && (id.getPath().startsWith("personal_") || id.getPath().endsWith("_bin"))) {
             return true;
         }
         List<? extends String> source = InsightConfig.CONTAINER_BLOCKS.get();
