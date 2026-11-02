@@ -74,6 +74,10 @@ GitHub에 올리면 `.github/workflows/build.yml`이 자동으로 빌드해 Acti
 - Sophisticated Storage의 상자/통은 모양이 바닐라 상자와 달라서 InSight Chests의 3D 공간이 어색할 수 있습니다.
 - 서버는 요청 좌표의 내용물을 그대로 알려주므로 잠금 상자의 내용물이 노출될 수 있습니다. (서버에 모드를 설치한 경우)
 
+## 1.20.21 변경 사항
+
+- Mekanism 개인 상자/개인 통 내부 질감을 Mekanism 개인 상자 모델 텍스처(`textures/block/models/personal_chest.png`)의 안쪽 어두운 패널을 따서 만든 전용 질감(`personal_steel_panel.png`)으로 교체했습니다. 어두운 강철 평면에 밝은 테두리가 있는 실제 내부 모양입니다.
+
 ## 1.20.20 변경 사항
 
 - Mekanism 개인 상자/개인 통의 InSight 내부 모양과 질감을 따로 지정: 실제 개인 상자 내부(어두운 진회색 강철)에 맞춰 진회색 콘크리트 질감을 씁니다. 개인 통은 통 모양 내부입니다.
