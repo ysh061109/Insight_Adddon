@@ -52,8 +52,9 @@ public abstract class ChestBoundsMixin {
             // 통: 위가 뚫린 나무통. 안쪽 높이를 거의 끝까지 쓴다.
             minX = 0.14f; maxX = 0.86f; minZ = 0.14f; maxZ = 0.86f;
             minY = 0.07f; maxY = 0.93f;
+            // Mekanism 개인 통은 열린 뚜껑 안쪽 질감(어두운 강철에 초록 표시등)을 그대로 쓴다
             cavity = "mekanism".equals(ns)
-                    ? ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/personal_steel_panel.png")
+                    ? ResourceLocation.fromNamespaceAndPath("mekanism", "textures/block/personal_barrel/top_open.png")
                     : ResourceLocation.withDefaultNamespace("textures/block/barrel_bottom.png");
         } else if ("mekanism".equals(ns) && path.equals("personal_chest")) {
             // Mekanism 개인 상자: 상자 모양에 어두운 강철 느낌(진회색)의 바닥/벽
