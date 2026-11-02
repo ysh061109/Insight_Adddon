@@ -670,7 +670,7 @@ public final class StorageRenderer {
             double shake = Math.sin(time * 0.9 + i) * 0.012;
             drawIcon(ps, camPos, pos.add(right.scale(shake)), icon(row.item()), s, time * 0.8f + i * 40f, buffers, mc);
             // 아이템 위에 큰 X (아이콘보다 조금 크게)
-            double r = 0.5 * s + 0.08;
+            double r = 0.53 * s;
             Vec3 front = pos.add(fwd.scale(-0.12));
             if (emit) {
                 for (int d = -1; d <= 1; d += 2) {

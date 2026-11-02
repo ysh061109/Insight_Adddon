@@ -182,7 +182,17 @@ public final class CraftWatcher {
                 needSearch.add(item);
             }
         }
-        Map<Item, BlockPos> boxes = needSearch.isEmpty() ? Map.of() : findContainers(level, station, needSearch);
+        // AE2 등 네트워크 단말: 재료가 네트워크에서 오므로, 단말 블록을 바라보고 있으면 그 단말에서 날아오게 한다
+        boolean network = player.containerMenu.getClass().getName().startsWith("appeng.");
+        boolean looking = hit instanceof BlockHitResult b2 && b2.getType() == HitResult.Type.BLOCK;
+        Map<Item, BlockPos> boxes = needSearch.isEmpty() || network ? Map.of() : findContainers(level, station, needSearch);
+        if (network && looking) {
+            Map<Item, BlockPos> m = new HashMap<>();
+            for (Item item : items) {
+                m.put(item, station);
+            }
+            boxes = m;
+        }
 
         List<CraftFxPacket.Fly> flies = new ArrayList<>();
         for (Item item : items) {
