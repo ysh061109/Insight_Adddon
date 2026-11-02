@@ -191,6 +191,21 @@ public final class ContainerMemory {
             sum += stack.getCount();
         }
 
+        // AE2 단말기의 슬롯은 화면에 보이는 칸의 "표시용 1개짜리 복사본"이라 개수가 모두 1로 잡히고 첫 페이지만 보인다.
+        // 단말기가 받아 둔 실제 네트워크 목록(AeTerminal)이 있으면 그것으로 바꿔 쓴다.
+        net.minecraft.client.Minecraft mcNow = net.minecraft.client.Minecraft.getInstance();
+        if (GlassSkin.isAeTerminal(mcNow.screen)) {
+            Map<Item, Integer> ae = AeTerminal.contents(mcNow);
+            if (ae != null && !ae.isEmpty()) {
+                totals.clear();
+                sum = 0;
+                for (Map.Entry<Item, Integer> e : ae.entrySet()) {
+                    totals.put(e.getKey(), (long) e.getValue());
+                    sum += e.getValue();
+                }
+            }
+        }
+
         List<ScanResult.Stack> stacks = totals.entrySet().stream()
                 .sorted(Map.Entry.<Item, Long>comparingByValue().reversed())
                 .limit(MAX_STACKS)
