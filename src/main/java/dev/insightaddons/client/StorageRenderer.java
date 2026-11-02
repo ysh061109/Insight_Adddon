@@ -659,6 +659,15 @@ public final class StorageRenderer {
      * (AE2 케이블 버스는 바라보는 부품(예: ME 패턴 인코딩 터미널) 이름이 나온다).
      * 그 외에는 블록의 아이템 이름, 아이템이 없는 블록(배낭 등)은 블록 이름을 쓴다.
      */
+    private record NamedPos(net.minecraft.resources.ResourceLocation block, Component name) {}
+
+    /** 바라봤을 때 알아낸 이름(케이블 버스의 부품 등). 시선을 떼도 같은 이름을 쓰기 위해 기억한다. */
+    private static final Map<Long, NamedPos> NAMES = new java.util.HashMap<>();
+
+    static void clearNames() {
+        NAMES.clear();
+    }
+
     static Component blockName(Minecraft mc, net.minecraft.resources.ResourceLocation id, net.minecraft.core.BlockPos pos) {
         net.minecraft.world.level.block.Block block = BuiltInRegistries.BLOCK.get(id);
         try {
@@ -666,11 +675,17 @@ public final class StorageRenderer {
                     && hit.getBlockPos().equals(pos)) {
                 ItemStack picked = mc.level.getBlockState(pos).getCloneItemStack(hit, mc.level, pos, mc.player);
                 if (!picked.isEmpty()) {
-                    return picked.getHoverName();
+                    Component name = picked.getHoverName();
+                    NAMES.put(pos.asLong(), new NamedPos(id, name));
+                    return name;
                 }
             }
         } catch (Throwable ignored) {
             // 일부 블록은 집어 올리기 계산이 실패할 수 있다: 아래 기본 이름을 쓴다
+        }
+        NamedPos known = NAMES.get(pos.asLong());
+        if (known != null && known.block().equals(id)) {
+            return known.name();
         }
         Item item = block.asItem();
         if (item != net.minecraft.world.item.Items.AIR) {

@@ -45,6 +45,7 @@ public final class ClientEvents {
         ClientCache.clearAll();
         ContainerMemory.clear();
         AeTerminal.clearAll();
+        StorageRenderer.clearNames();
         RecipeFocus.clear();
         CraftFx.clear();
         CraftTable.clear();
@@ -78,6 +79,7 @@ public final class ClientEvents {
             if (lastDimension != null) {
                 ContainerMemory.clear();
                 AeTerminal.clearSnapshots();
+                StorageRenderer.clearNames();
                 ClientCache.clearAll();
                 RecipeFocus.clear();
             }

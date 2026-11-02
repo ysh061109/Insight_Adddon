@@ -145,6 +145,9 @@ public final class AeTerminal {
         }
         if (mc.hitResult instanceof BlockHitResult hit && hit.getType() == HitResult.Type.BLOCK) {
             pos = hit.getBlockPos().immutable();
+            // 열 때 바라보던 부품 이름을 기억해 둔다 (시선을 뗀 뒤에도 "케이블 버스"가 아니라 부품 이름이 나오게)
+            StorageRenderer.blockName(mc, net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                    .getKey(mc.level.getBlockState(pos).getBlock()), pos);
         } else {
             pos = mc.player.blockPosition();
         }
