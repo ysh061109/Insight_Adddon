@@ -32,7 +32,7 @@ public final class RecipeFocus {
     public record Source(BlockPos pos, ResourceLocation block, int count, long ageTicks) {}
 
     /** 재료 하나의 집계 결과. item은 options 중 가장 많이 가진 것 */
-    public record Row(Need need, Item item, int have, int inv, List<Source> sources) {
+    public record Row(Need need, Item item, int have, int inv, List<Source> sources, int wireless, Item wirelessTerminal) {
         /** 인벤토리만으로 충분한가 */
         public boolean inventoryEnough() {
             return inv >= need.count();
@@ -57,6 +57,7 @@ public final class RecipeFocus {
     /** 3D로 띄울 재료가 한 번이라도 있었는지. 있다가 전부 사라지면(꺼내 갔으면) 표시 모드를 끈다. */
     private static boolean hadShown;
     private static boolean reported;
+    private static boolean reportedWireless;
 
     private RecipeFocus() {}
 
@@ -116,6 +117,7 @@ public final class RecipeFocus {
         expireTick = -1;
         hadShown = false;
         reported = false;
+        reportedWireless = false;
         selected = 0;
         active = true;
     }
@@ -163,6 +165,7 @@ public final class RecipeFocus {
         selected = 0;
         hadShown = false;
         reported = false;
+        reportedWireless = false;
         active = false;
         needs = List.of();
         rows = List.of();
@@ -214,7 +217,7 @@ public final class RecipeFocus {
         if (!active) {
             return;
         }
-        double radius = InsightConfig.WRENCH_RADIUS.get();
+        double radius = InsightConfig.RECIPE_RADIUS.get();
         double r2 = radius * radius;
         long now = level.getGameTime();
 
@@ -265,6 +268,7 @@ public final class RecipeFocus {
         holders.sort(Comparator.comparingDouble(h -> Vec3.atCenterOf(h.pos()).distanceToSqr(eye)));
 
         net.minecraft.world.entity.player.Player player = net.minecraft.client.Minecraft.getInstance().player;
+        List<AeTerminal.WirelessSnap> wireless = InsightConfig.AE2_WIRELESS.get() ? AeTerminal.activeWireless(player) : List.of();
         int maxSources = InsightConfig.RECIPE_MAX_SOURCES.get();
         List<Row> out = new ArrayList<>();
         for (Need need : needs) {
@@ -272,6 +276,8 @@ public final class RecipeFocus {
             long bestScore = -1;
             int bestInv = 0;
             int bestTotal = 0;
+            int bestWireless = 0;
+            Item bestWirelessItem = null;
             List<Source> bestSources = List.of();
             for (Item option : need.options()) {
                 long total = 0;
@@ -284,19 +290,30 @@ public final class RecipeFocus {
                     }
                 }
                 int inv = player == null ? 0 : countInInventory(player, option);
-                long score = total + inv;
+                long wTotal = 0;
+                Item wItem = null;
+                for (AeTerminal.WirelessSnap snap : wireless) {
+                    Integer wc = snap.counts().get(option);
+                    if (wc != null && wc > 0) {
+                        wTotal += wc;
+                        wItem = snap.terminal();
+                    }
+                }
+                long score = total + inv + wTotal;
                 if (score > bestScore) {
                     bestScore = score;
                     best = option;
                     bestInv = inv;
                     bestTotal = (int) Math.min(Integer.MAX_VALUE, total);
                     bestSources = found;
+                    bestWireless = (int) Math.min(Integer.MAX_VALUE, wTotal);
+                    bestWirelessItem = wItem;
                 }
             }
             if (bestSources.size() > maxSources) {
                 bestSources = new ArrayList<>(bestSources.subList(0, maxSources));
             }
-            out.add(new Row(need, best, bestTotal, bestInv, List.copyOf(bestSources)));
+            out.add(new Row(need, best, bestTotal, bestInv, List.copyOf(bestSources), bestWireless, bestWirelessItem));
         }
         rows = List.copyOf(out);
 
@@ -306,7 +323,7 @@ public final class RecipeFocus {
         for (Row row : rows) {
             if (row.inventoryEnough()) {
                 b.add(row);
-            } else if (row.sources().isEmpty()) {
+            } else if (row.sources().isEmpty() && row.wireless() <= 0) {
                 c.add(row);
             } else {
                 a.add(row);
@@ -322,6 +339,16 @@ public final class RecipeFocus {
             return;
         }
         net.minecraft.world.entity.player.Player me = net.minecraft.client.Minecraft.getInstance().player;
+        if (!reportedWireless) {
+            for (Row row : shown) {
+                if (row.wireless() > 0 && row.wirelessTerminal() != null) {
+                    reportedWireless = true;
+                    me.displayClientMessage(Component.translatable("insight_addons.recipe.wireless.notice",
+                            new net.minecraft.world.item.ItemStack(row.wirelessTerminal()).getHoverName()), true);
+                    break;
+                }
+            }
+        }
         if (!shown.isEmpty()) {
             hadShown = true;
         } else if (hadShown) {

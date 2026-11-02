@@ -48,6 +48,8 @@ public final class InsightConfig {
     public static final ModConfigSpec.DoubleValue RECIPE_ICON_SCALE;
     public static final ModConfigSpec.IntValue RECIPE_MAX_SOURCES;
     public static final ModConfigSpec.BooleanValue RECIPE_SCROLL;
+    public static final ModConfigSpec.IntValue RECIPE_RADIUS;
+    public static final ModConfigSpec.BooleanValue AE2_WIRELESS;
 
     // ── 조합 연출 ──
     public static final ModConfigSpec.BooleanValue AE2_ENABLED;
@@ -164,6 +166,8 @@ public final class InsightConfig {
         RECIPE_ICON_SCALE = b.translation("insight_addons.configuration.recipeFocus.iconScale").defineInRange("iconScale", 0.5, 0.2, 1.5);
         RECIPE_MAX_SOURCES = b.comment("재료 하나당 표시할 최대 보관함 수 (가까운 순)")
                 .translation("insight_addons.configuration.recipeFocus.maxSources").defineInRange("maxSources", 8, 1, 24);
+        RECIPE_RADIUS = b.comment("조합 재료 찾기/아이템 찾기가 보관함을 찾는 범위(블록). 서버는 최대 64까지만 응답합니다.")
+                .translation("insight_addons.configuration.recipeFocus.searchRadius").defineInRange("searchRadius", 24, 4, 64);
         RECIPE_SCROLL = b.comment("재료 표시 중 마우스 휠을 굴리면 다음 재료로 넘어가 그 재료가 든 보관함을 강조합니다. (이 동안은 핫바 스크롤이 막힙니다)")
                 .translation("insight_addons.configuration.recipeFocus.scrollToSelect").define("scrollToSelect", true);
         b.pop();
@@ -172,6 +176,9 @@ public final class InsightConfig {
         AE2_ENABLED = b.comment("Applied Energistics 2의 ME 상자/드라이브/인터페이스를 바라보면 그 ME 저장소 내용을 3D로 표시하고 클릭으로 꺼냅니다.",
                         "ME 상자는 안에 든 셀, 드라이브와 인터페이스는 연결된 네트워크 전체를 보여줍니다. 서버에도 이 모드가 있어야 합니다.")
                 .translation("insight_addons.configuration.ae2.enabled").define("enabled", true);
+        AE2_WIRELESS = b.comment("인벤토리에 충전되고 연결된 무선 터미널이 있으면, 마지막으로 열어 본 ME 네트워크의 아이템도 재료 찾기/아이템 찾기에 포함하고",
+                        "다른 차원에 있어도 찾을 수 있도록 알려 줍니다. (무선 터미널을 한 번 열어 본 뒤부터)")
+                .translation("insight_addons.configuration.ae2.wirelessFind").define("wirelessFind", true);
         AE2_PHYSICS = b.comment("AE2 단말기를 열었을 때 아이템을 격자 진열대 대신, 바닥은 ME 제어기, 양쪽 벽은 ME 드라이브 모델로 꾸민 가상 상자 안에 물리로 쌓아 보여줍니다.",
                         "꺼내면 해당 아이템이 플레이어에게 날아가고, 넣으면 위에서 떨어집니다. 끄면 예전 격자 진열대로 돌아갑니다.")
                 .translation("insight_addons.configuration.ae2.pileBox").define("pileBox", true);

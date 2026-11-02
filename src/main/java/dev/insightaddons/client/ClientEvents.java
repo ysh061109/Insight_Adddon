@@ -44,7 +44,7 @@ public final class ClientEvents {
     public static void onLogout(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientCache.clearAll();
         ContainerMemory.clear();
-        AeTerminal.clearSnapshots();
+        AeTerminal.clearAll();
         RecipeFocus.clear();
         CraftFx.clear();
         CraftTable.clear();
@@ -101,7 +101,7 @@ public final class ClientEvents {
                 boolean first = RecipeFocus.rows().isEmpty();  // 처음 한 번은 빨리 집계
                 if ((ticks % 20 == 5 || (first && ticks % 5 == 0)) && serverHasMod()) {
                     List<BlockPos> positions = collect(level, player.blockPosition(),
-                            InsightConfig.WRENCH_RADIUS.get(), 160);
+                            InsightConfig.RECIPE_RADIUS.get(), 160);
                     PacketDistributor.sendToServer(
                             new ScanRequest(2, "", positions, RecipeFocus.wantedIds()));
                 }

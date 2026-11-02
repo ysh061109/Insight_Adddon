@@ -127,5 +127,10 @@
   "insight_addons.configuration.insightChestsIntegration.itemScale": "3D 아이템 크기 (전체)",
   "insight_addons.configuration.insightChestsIntegration.itemScaleBackpack": "3D 아이템 크기 - 배낭",
   "insight_addons.configuration.insightChestsIntegration.itemScaleShulker": "3D 아이템 크기 - 셜커 상자",
-  "insight_addons.configuration.insightChestsIntegration.itemScaleBarrel": "3D 아이템 크기 - 통"
+  "insight_addons.configuration.insightChestsIntegration.itemScaleBarrel": "3D 아이템 크기 - 통",
+  "insight_addons.recipe.wireless.notice": "인벤토리의 %s에 재료가 있습니다 (ME 네트워크)",
+  "insight_addons.recipe.wireless.list": "%s에 있음: %s",
+  "insight_addons.recipe.wireless.where": "무선 터미널에 %s개",
+  "insight_addons.configuration.recipeFocus.searchRadius": "찾기 범위(블록)",
+  "insight_addons.configuration.ae2.wirelessFind": "무선 터미널로 재료 찾기"
 }

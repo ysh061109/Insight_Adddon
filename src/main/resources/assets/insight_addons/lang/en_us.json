@@ -127,5 +127,10 @@
   "insight_addons.configuration.insightChestsIntegration.itemScale": "3D item size (all)",
   "insight_addons.configuration.insightChestsIntegration.itemScaleBackpack": "3D item size - backpack",
   "insight_addons.configuration.insightChestsIntegration.itemScaleShulker": "3D item size - shulker box",
-  "insight_addons.configuration.insightChestsIntegration.itemScaleBarrel": "3D item size - barrel"
+  "insight_addons.configuration.insightChestsIntegration.itemScaleBarrel": "3D item size - barrel",
+  "insight_addons.recipe.wireless.notice": "Ingredients are in your %s (ME network)",
+  "insight_addons.recipe.wireless.list": "In %s: %s",
+  "insight_addons.recipe.wireless.where": "%s in wireless terminal",
+  "insight_addons.configuration.recipeFocus.searchRadius": "Search range (blocks)",
+  "insight_addons.configuration.ae2.wirelessFind": "Find via wireless terminal"
 }

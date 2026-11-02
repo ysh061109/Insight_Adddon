@@ -516,13 +516,27 @@ public final class StorageRenderer {
         double statusY = 0.44;
         if (!inInv.isEmpty()) {
             drawText(ps, camera, camPos, center.add(up.scale(statusY)),
-                    Component.translatable("insight_addons.recipe.inv", rowNames(inInv, true)),
+                    Component.translatable("insight_addons.recipe.inv", rowNames(inInv, true, false)),
                     0.011f, 0xFF7BE07B, true, buffers, mc.font);
+            statusY -= 0.14;
+        }
+        List<RecipeFocus.Row> viaWireless = new ArrayList<>();
+        for (RecipeFocus.Row r : rows) {
+            if (r.wireless() > 0) {
+                viaWireless.add(r);
+            }
+        }
+        if (!viaWireless.isEmpty()) {
+            Component terminal = viaWireless.get(0).wirelessTerminal() == null ? Component.empty()
+                    : new ItemStack(viaWireless.get(0).wirelessTerminal()).getHoverName();
+            drawText(ps, camera, camPos, center.add(up.scale(statusY)),
+                    Component.translatable("insight_addons.recipe.wireless.list", terminal, rowNames(viaWireless, false, true)),
+                    0.011f, 0xFF7FD4FF, true, buffers, mc.font);
             statusY -= 0.14;
         }
         if (!missing.isEmpty()) {
             drawText(ps, camera, camPos, center.add(up.scale(statusY)),
-                    Component.translatable("insight_addons.recipe.missing", rowNames(missing, false)),
+                    Component.translatable("insight_addons.recipe.missing", rowNames(missing, false, false)),
                     0.011f, 0xFFFF6B6B, true, buffers, mc.font);
         }
 
@@ -542,9 +556,15 @@ public final class StorageRenderer {
                     icon(row.item()).getHoverName(), sel ? 0.014f : 0.010f, paletteColor(i), true, buffers, mc.font);
             if (sel) {
                 Component where = row.sources().isEmpty()
-                        ? Component.translatable("insight_addons.recipe.none")
+                        ? (row.wireless() > 0
+                                ? Component.translatable("insight_addons.recipe.wireless.where", compact(row.wireless()))
+                                : Component.translatable("insight_addons.recipe.none"))
                         : Component.translatable("insight_addons.wrench.selected",
                                 compact(row.have()), row.sources().size());
+                if (!row.sources().isEmpty() && row.wireless() > 0) {
+                    where = where.copy().append(Component.literal("  +  "))
+                            .append(Component.translatable("insight_addons.recipe.wireless.where", compact(row.wireless())));
+                }
                 drawText(ps, camera, camPos, pos[i].add(up.scale(0.05 + 0.28 * s)),
                         where, 0.011f, WHITE, true, buffers, mc.font);
             }
@@ -615,7 +635,7 @@ public final class StorageRenderer {
     // ────────────────────────────────────────────────────────────────
     // 공용 그리기 도구
     // ────────────────────────────────────────────────────────────────
-    private static Component rowNames(List<RecipeFocus.Row> list, boolean withCount) {
+    private static Component rowNames(List<RecipeFocus.Row> list, boolean withCount, boolean wirelessCount) {
         MutableComponent out = Component.empty();
         for (int i = 0; i < list.size(); i++) {
             RecipeFocus.Row row = list.get(i);
@@ -623,7 +643,9 @@ public final class StorageRenderer {
                 out.append(Component.literal(", "));
             }
             out.append(icon(row.item()).getHoverName());
-            if (withCount) {
+            if (wirelessCount) {
+                out.append(Component.literal(" x" + compact(row.wireless())));
+            } else if (withCount) {
                 out.append(Component.literal(" x" + row.need().count()));
             } else if (row.inv() > 0) {
                 out.append(Component.literal(" (" + row.inv() + "/" + row.need().count() + ")"));

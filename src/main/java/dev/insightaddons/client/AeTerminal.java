@@ -40,6 +40,102 @@ public final class AeTerminal {
         pos = null;
     }
 
+    /** 로그아웃: 무선 터미널 기억까지 모두 지운다 (차원 이동 때는 무선 기억을 남겨 둔다) */
+    public static void clearAll() {
+        clearSnapshots();
+        WIRELESS.clear();
+    }
+
+    /** 무선 터미널로 마지막으로 본 네트워크 목록. link는 연결된 접속점 위치(없으면 빈 글자) */
+    public record WirelessSnap(String link, Item terminal, Map<Item, Integer> counts, long time) {}
+
+    private static final Map<String, WirelessSnap> WIRELESS = new HashMap<>();
+    private static Method mGetHost;
+    private static Method mItemStack;
+    private static boolean wirelessWarned;
+
+    /** 지금 열린 단말기 화면이 무선 터미널이면 그 아이템 스택, 아니면 null */
+    private static net.minecraft.world.item.ItemStack openWirelessStack(Screen screen) {
+        try {
+            if (!(screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> acs)) {
+                return null;
+            }
+            Object menu = acs.getMenu();
+            if (mGetHost == null || !mGetHost.getDeclaringClass().isInstance(menu)) {
+                mGetHost = menu.getClass().getMethod("getHost");
+            }
+            Object host = mGetHost.invoke(menu);
+            if (host == null) {
+                return null;
+            }
+            boolean itemHost = false;
+            for (Class<?> c = host.getClass(); c != null; c = c.getSuperclass()) {
+                if (c.getName().equals("appeng.api.implementations.menuobjects.ItemMenuHost")) {
+                    itemHost = true;
+                    break;
+                }
+            }
+            if (!itemHost) {
+                return null;
+            }
+            if (mItemStack == null || !mItemStack.getDeclaringClass().isInstance(host)) {
+                mItemStack = host.getClass().getMethod("getItemStack");
+            }
+            Object stack = mItemStack.invoke(host);
+            return stack instanceof net.minecraft.world.item.ItemStack st && !st.isEmpty() ? st : null;
+        } catch (Throwable t) {
+            if (!wirelessWarned) {
+                wirelessWarned = true;
+                dev.insightaddons.InsightAddons.LOGGER.warn("무선 터미널 여부를 확인하지 못했습니다: {}", t.toString());
+            }
+            return null;
+        }
+    }
+
+    /** 터미널 아이템이 연결된 접속점 위치 글자. 연결이 없으면 null */
+    private static String linkOf(net.minecraft.world.item.ItemStack stack) {
+        try {
+            Method m = stack.getItem().getClass().getMethod("getLinkedPosition", net.minecraft.world.item.ItemStack.class);
+            Object gp = m.invoke(stack.getItem(), stack);
+            return gp == null ? null : String.valueOf(gp);
+        } catch (Throwable t) {
+            return "";
+        }
+    }
+
+    private static boolean charged(net.minecraft.world.item.ItemStack stack) {
+        try {
+            Method m = stack.getItem().getClass().getMethod("getAECurrentPower", net.minecraft.world.item.ItemStack.class);
+            return ((Number) m.invoke(stack.getItem(), stack)).doubleValue() > 0;
+        } catch (Throwable t) {
+            return true; // 알 수 없으면 충전된 것으로 본다
+        }
+    }
+
+    /** 인벤토리에 충전되고 연결된 무선 터미널이 아직 있는, 기억해 둔 네트워크들 (같은 네트워크는 한 번만) */
+    public static java.util.List<WirelessSnap> activeWireless(net.minecraft.world.entity.player.Player player) {
+        java.util.List<WirelessSnap> out = new java.util.ArrayList<>();
+        if (player == null || WIRELESS.isEmpty()) {
+            return out;
+        }
+        net.minecraft.world.entity.player.Inventory inv = player.getInventory();
+        for (WirelessSnap snap : WIRELESS.values()) {
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                net.minecraft.world.item.ItemStack st = inv.getItem(i);
+                if (st.isEmpty() || st.getItem() != snap.terminal()) {
+                    continue;
+                }
+                String link = linkOf(st);
+                if (link == null || !(snap.link().isEmpty() || snap.link().equals(link)) || !charged(st)) {
+                    continue;
+                }
+                out.add(snap);
+                break;
+            }
+        }
+        return out;
+    }
+
     private AeTerminal() {}
 
     /** 화면이 열리기 직전에 호출: 단말기 위치(바라보던 블록)를 기억한다. */
@@ -114,7 +210,17 @@ public final class AeTerminal {
                 out.merge(item, (int) Math.min(Integer.MAX_VALUE, amount), (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
             }
             if (!out.isEmpty() && mc.level != null) {
-                SNAPSHOTS.put(pos, new Snapshot(pos, Map.copyOf(out), mc.level.getGameTime()));
+                net.minecraft.world.item.ItemStack wireless = openWirelessStack(screen);
+                if (wireless != null) {
+                    // 무선 터미널: 위치가 아니라 연결된 네트워크 기준으로 기억한다 (다른 차원에서도 쓸 수 있다)
+                    String link = linkOf(wireless);
+                    if (link != null) {
+                        WIRELESS.put(link.isEmpty() ? "?" + wireless.getItem() : link,
+                                new WirelessSnap(link, wireless.getItem(), Map.copyOf(out), mc.level.getGameTime()));
+                    }
+                } else {
+                    SNAPSHOTS.put(pos, new Snapshot(pos, Map.copyOf(out), mc.level.getGameTime()));
+                }
             }
             return out;
         } catch (Throwable t) {
