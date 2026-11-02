@@ -269,7 +269,7 @@ public final class StorageRenderer {
         }
 
         // 이름 · 합계 · 기록 시각은 한 줄로 합쳐서 보여준다
-        Component name = new ItemStack(BuiltInRegistries.BLOCK.get(view.block()).asItem()).getHoverName();
+        Component name = blockName(mc, view.block(), view.pos());
         String custom = ContainerNames.get(mc.level, view.pos());
         MutableComponent header = custom == null ? name.copy()
                 : Component.literal("\u2605 " + custom).append(Component.literal("  (")).append(name).append(Component.literal(")"));
@@ -630,6 +630,31 @@ public final class StorageRenderer {
             }
         }
         return out;
+    }
+
+    /**
+     * 보관함 이름. 바라보는 블록이면 "집어 올리기(pick block)" 아이템 이름을 쓴다
+     * (AE2 케이블 버스는 바라보는 부품(예: ME 패턴 인코딩 터미널) 이름이 나온다).
+     * 그 외에는 블록의 아이템 이름, 아이템이 없는 블록(배낭 등)은 블록 이름을 쓴다.
+     */
+    static Component blockName(Minecraft mc, net.minecraft.resources.ResourceLocation id, net.minecraft.core.BlockPos pos) {
+        net.minecraft.world.level.block.Block block = BuiltInRegistries.BLOCK.get(id);
+        try {
+            if (mc.level != null && mc.player != null && mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult hit
+                    && hit.getBlockPos().equals(pos)) {
+                ItemStack picked = mc.level.getBlockState(pos).getCloneItemStack(hit, mc.level, pos, mc.player);
+                if (!picked.isEmpty()) {
+                    return picked.getHoverName();
+                }
+            }
+        } catch (Throwable ignored) {
+            // 일부 블록은 집어 올리기 계산이 실패할 수 있다: 아래 기본 이름을 쓴다
+        }
+        Item item = block.asItem();
+        if (item != net.minecraft.world.item.Items.AIR) {
+            return new ItemStack(item).getHoverName();
+        }
+        return block.getName();
     }
 
     static ItemStack icon(Item item) {
