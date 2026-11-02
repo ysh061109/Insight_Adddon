@@ -9,5 +9,9 @@ import java.util.List;
 public interface EmiRecipe {
     List<EmiIngredient> getInputs();
 
+    default List<EmiIngredient> getCatalysts() {
+        return List.of();
+    }
+
     List<EmiStack> getOutputs();
 }
