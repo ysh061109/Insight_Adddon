@@ -74,6 +74,10 @@ GitHub에 올리면 `.github/workflows/build.yml`이 자동으로 빌드해 Acti
 - Sophisticated Storage의 상자/통은 모양이 바닐라 상자와 달라서 InSight Chests의 3D 공간이 어색할 수 있습니다.
 - 서버는 요청 좌표의 내용물을 그대로 알려주므로 잠금 상자의 내용물이 노출될 수 있습니다. (서버에 모드를 설치한 경우)
 
+## 1.20.19 변경 사항
+
+- Mekanism 개인 상자/개인 통 화면에 InSight 유리 스킨 적용: 배경 패널과 슬롯 칸을 유리로 바꾸고, 월드를 어둡게 하는 배경을 없애며, 화면을 InSight 위치(오른쪽 등)로 옮깁니다. 보안 탭 등 Mekanism 기능은 그대로이며 다른 Mekanism 기계 화면은 건드리지 않습니다. 표시 비율 슬라이더도 함께 나옵니다.
+
 ## 1.20.18 변경 사항
 
 - Mekanism 개인 상자/개인 통(`mekanism:personal_*`)에 InSight Chests 연출(카메라 전환, 3D 아이템 쌓임)을 적용합니다. 기존에 저장된 설정 목록과 상관없이 Mekanism 설정(`mekanism.enabled`)이 켜져 있으면 적용됩니다. Mekanism 고유 화면(보안 탭 등)은 그대로 유지하고 연출만 입힙니다. 개인 통은 통 모양 내부를 씁니다.

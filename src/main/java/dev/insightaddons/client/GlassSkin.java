@@ -75,7 +75,8 @@ public final class GlassSkin {
     private static boolean isStorageClass(Class<?> c) {
         return SCREEN_CACHE.computeIfAbsent(c, k -> {
             for (Class<?> x = k; x != null; x = x.getSuperclass()) {
-                if (x.getName().equals(STORAGE_SCREEN) || x.getName().equals(SETTINGS_SCREEN)) {
+                if (x.getName().equals(STORAGE_SCREEN) || x.getName().equals(SETTINGS_SCREEN)
+                        || x.getName().startsWith("mekanism.client.gui.GuiPersonalStorage")) {
                     return true;
                 }
             }

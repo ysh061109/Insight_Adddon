@@ -12,6 +12,8 @@
     "AbstractContainerScreenAccessor",
     "ScreenBackgroundMixin",
     "StorageDimMixin",
+    "MekanismScreenSkinMixin",
+    "MekanismSlotSkinMixin",
     "SettingsScreenSkinMixin",
     "StorageGuiHelperMixin",
     "GuiGraphicsTextMixin",

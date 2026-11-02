@@ -52,7 +52,8 @@ public final class ScreenEvents {
         }
         var id = BuiltInRegistries.BLOCK.getKey(mc.level.getBlockState(hit.getBlockPos()).getBlock());
         String ns = id.getNamespace();
-        return (ns.equals("sophisticatedbackpacks") || ns.equals("sophisticatedstorage"))
+        return (ns.equals("sophisticatedbackpacks") || ns.equals("sophisticatedstorage")
+                || (ns.equals("mekanism") && id.getPath().startsWith("personal_")))
                 && mc.level.getBlockEntity(hit.getBlockPos()) != null;
     }
 
