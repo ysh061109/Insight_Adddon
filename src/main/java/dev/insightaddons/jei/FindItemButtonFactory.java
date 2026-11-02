@@ -65,10 +65,26 @@ public final class FindItemButtonFactory implements IRecipeButtonControllerFacto
             this.layout = layout;
         }
 
-        /** 마우스를 올려 둔 아이템, 없으면 이 레시피의 결과 아이템 */
+        /** 이 레시피에 들어 있는 아이템(재료, 촉매, 결과 전부) */
+        private java.util.Set<Item> layoutItems() {
+            java.util.Set<Item> items = new java.util.HashSet<>();
+            for (IRecipeSlotView slot : layout.getRecipeSlotsView().getSlotViews()) {
+                slot.getItemStacks().forEach(st -> {
+                    if (!st.isEmpty()) {
+                        items.add(st.getItem());
+                    }
+                });
+            }
+            return items;
+        }
+
+        /**
+         * 이 레시피 안에서 최근에 마우스를 올려 둔 아이템, 없으면 이 레시피의 결과 아이템.
+         * 옆 목록(아이템 목록 등)에 올렸던 아이템은 이 레시피와 상관없으므로 무시한다.
+         */
         private Item target() {
-            Item hovered = HoverTracker.last();
-            if (hovered != null) {
+            Item hovered = HoverTracker.lastRecent();
+            if (hovered != null && layoutItems().contains(hovered)) {
                 return hovered;
             }
             for (IRecipeSlotView slot : layout.getRecipeSlotsView().getSlotViews(RecipeIngredientRole.OUTPUT)) {

@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 public final class HoverTracker {
     private static Supplier<Item> jeiProbe;
     private static Item last;
+    private static long lastTime;
     private static boolean emiFailed;
     private static Method emiHovered;
 
@@ -27,6 +28,11 @@ public final class HoverTracker {
 
     public static Item last() {
         return last;
+    }
+
+    /** 최근(6초 안)에 마우스를 올렸던 아이템. 오래된 호버는 무시한다. */
+    public static Item lastRecent() {
+        return last != null && System.currentTimeMillis() - lastTime <= 6000 ? last : null;
     }
 
     public static void clear() {
@@ -51,6 +57,7 @@ public final class HoverTracker {
         }
         if (found != null) {
             last = found;
+            lastTime = System.currentTimeMillis();
         }
     }
 
