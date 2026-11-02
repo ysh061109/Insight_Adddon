@@ -48,7 +48,7 @@ public abstract class ChestBoundsMixin {
 
         float minX, maxX, minY, maxY, minZ, maxZ;
         ResourceLocation cavity;
-        if ("minecraft".equals(ns) && path.equals("barrel")) {
+        if (("minecraft".equals(ns) && path.equals("barrel")) || ("mekanism".equals(ns) && path.equals("personal_barrel"))) {
             // 통: 위가 뚫린 나무통. 안쪽 높이를 거의 끝까지 쓴다.
             minX = 0.14f; maxX = 0.86f; minZ = 0.14f; maxZ = 0.86f;
             minY = 0.07f; maxY = 0.93f;

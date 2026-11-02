@@ -121,7 +121,7 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.insightChestsIntegration.enabled").define("enabled", true);
         INSIGHT_MODE_BLOCKS = b.comment("상자 연출(카메라 전환, 유리 화면, 3D 아이템)을 적용할 블록 ID 패턴 (*는 와일드카드)")
                 .translation("insight_addons.configuration.insightChestsIntegration.blocks").defineListAllowEmpty("blocks", List.of("sophisticatedbackpacks:*", "sophisticatedstorage:*",
-                                "minecraft:barrel", "minecraft:*shulker_box"),
+                                "minecraft:barrel", "minecraft:*shulker_box", "mekanism:personal_*"),
                         () -> "", o -> o instanceof String);
         GLASS_SKIN = b.comment("true면 Sophisticated 화면의 배경과 패널(슬롯, 업그레이드 탭, 설정 패널)을 InSight Chests 스타일의 유리로 바꿉니다.",
                         "기능(업그레이드 탭, 정렬, 설정 등)은 원래 그대로입니다.")

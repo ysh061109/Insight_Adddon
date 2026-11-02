@@ -21,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(targets = "com.mrsun.insightchests.compat.ironchest.IronChestsCompat", remap = false)
 public abstract class IronChestsCompatMixin {
     private static final GlobList BLOCKS = new GlobList();
+    private static final java.util.List<String> MEKANISM_PERSONAL = java.util.List.of("mekanism:personal_*");
 
     @Inject(method = "isIronChest", at = @At("HEAD"), cancellable = true, remap = false, require = 0)
     private static void insightaddons$treatAsChest(BlockState state, BlockEntity blockEntity,
@@ -28,7 +29,13 @@ public abstract class IronChestsCompatMixin {
         if (state == null || !InsightConfig.INSIGHT_MODE_ENABLED.get()) {
             return;
         }
-        if (BLOCKS.matches(InsightConfig.INSIGHT_MODE_BLOCKS.get(), BuiltInRegistries.BLOCK.getKey(state.getBlock()))) {
+        net.minecraft.resources.ResourceLocation id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+        if (BLOCKS.matches(InsightConfig.INSIGHT_MODE_BLOCKS.get(), id)) {
+            cir.setReturnValue(true);
+            return;
+        }
+        // Mekanism 개인 상자/개인 통은 설정 목록과 상관없이(이미 저장된 설정에도) 기본으로 적용한다
+        if (InsightConfig.MEKANISM_ENABLED.get() && BLOCKS.matches(MEKANISM_PERSONAL, id)) {
             cir.setReturnValue(true);
         }
     }

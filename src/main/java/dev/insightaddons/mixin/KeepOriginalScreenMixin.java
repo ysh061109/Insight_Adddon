@@ -25,7 +25,8 @@ public abstract class KeepOriginalScreenMixin {
     private void insightaddons$keepOriginal(ScreenEvent.Opening event, Screen replacement) {
         if (InsightConfig.KEEP_ORIGINAL_SCREEN.get()
                 && event.getScreen() instanceof AbstractContainerScreen<?> screen
-                && screen.getMenu().getClass().getName().startsWith("net.p3pp3rf1y.sophisticated")) {
+                && (screen.getMenu().getClass().getName().startsWith("net.p3pp3rf1y.sophisticated")
+                        || screen.getMenu().getClass().getName().startsWith("mekanism."))) {
             return;
         }
         event.setNewScreen(replacement);
