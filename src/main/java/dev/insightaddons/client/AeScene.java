@@ -163,6 +163,10 @@ public final class AeScene {
         if (!visible() || mc.level == null || mc.player == null || shown.isEmpty()) {
             return;
         }
+        // 아이템은 실제 월드 공간에 그려지므로, 단말기 옆 공중이 다른 블록(AE 건물 등) 뒤에 있으면 가려져 숫자만 보인다.
+        // 장면을 그리기 전에 깊이 버퍼를 비워 항상 월드 위에 보이게 한다(장면 안의 앞뒤 순서는 그대로 유지).
+        buffers.endBatch();
+        com.mojang.blaze3d.systems.RenderSystem.clear(com.mojang.blaze3d.platform.GlConst.GL_DEPTH_BUFFER_BIT, Minecraft.ON_OSX);
         boolean physics = InsightConfig.AE2_PHYSICS.get();
         float a = prevAnim + (anim - prevAnim) * partial;
         long now = mc.level.getGameTime();

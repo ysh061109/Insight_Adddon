@@ -74,6 +74,10 @@ GitHub에 올리면 `.github/workflows/build.yml`이 자동으로 빌드해 Acti
 - Sophisticated Storage의 상자/통은 모양이 바닐라 상자와 달라서 InSight Chests의 3D 공간이 어색할 수 있습니다.
 - 서버는 요청 좌표의 내용물을 그대로 알려주므로 잠금 상자의 내용물이 노출될 수 있습니다. (서버에 모드를 설치한 경우)
 
+## 1.20.10 변경 사항
+
+- AE 터미널 옆 3D 아이템이 월드 블록(AE 건물 등)에 가려져 숫자만 보이던 문제 수정: AE 장면을 그리기 전에 깊이 버퍼를 비웁니다.
+
 ## 1.20.9 변경 사항
 
 - "Sophisticated 원래 화면 유지"를 켠 상태에서 화면이 어두워지는 문제 대응: 월드를 어둡게/흐리게 하는 경로(renderBackground, renderTransparentBackground, renderMenuBackground, renderBlurredBackground)와 Sophisticated 화면의 직접 호출을 모두 막았습니다.
