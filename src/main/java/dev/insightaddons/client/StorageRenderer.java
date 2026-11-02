@@ -650,8 +650,9 @@ public final class StorageRenderer {
         float s = scale * 0.85f;
         boolean fx = RecipeFocus.takeMissingFx();
         if (fx) {
-            Fx.sound(net.minecraft.sounds.SoundEvents.VILLAGER_NO, 0.9f, 0.9f);
-            Fx.sound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BASS.value(), 0.6f, 0.8f);
+            // 금고에 열쇠가 안 맞을 때의 "딸깍" 거절음 + 장치가 꺼지는 낮은 소리
+            Fx.sound(net.minecraft.sounds.SoundEvents.VAULT_INSERT_ITEM_FAIL, 1.0f, 1.0f);
+            Fx.sound(net.minecraft.sounds.SoundEvents.BEACON_DEACTIVATE, 1.6f, 0.45f);
         }
         VertexConsumer lines = buffers.getBuffer(ModRenderTypes.LINES_NO_DEPTH);
         PoseStack.Pose pose = ps.last();
@@ -680,14 +681,21 @@ public final class StorageRenderer {
                     Component.translatable("insight_addons.recipe.lack", icon(row.item()).getHoverName()),
                     0.011f, 0xFFFF6B6B, true, buffers, mc.font);
             if (fx && Fx.particles() && mc.level != null) {
-                for (int k = 0; k < 6; k++) {
-                    double ox = (RANDOM.nextDouble() - 0.5) * 0.3;
-                    double oy = (RANDOM.nextDouble() - 0.5) * 0.3;
-                    mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.ANGRY_VILLAGER,
-                            pos.x + right.x * ox + up.x * oy, pos.y + right.y * ox + up.y * oy, pos.z + right.z * ox + up.z * oy,
-                            0, 0.02, 0);
+                // 빨간 X 모양으로 번지는 가루 + 튀는 불꽃
+                net.minecraft.core.particles.DustParticleOptions red =
+                        new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(1f, 0.2f, 0.2f), 1.1f);
+                double pr = 0.2;
+                for (int d = -1; d <= 1; d += 2) {
+                    for (int k = -4; k <= 4; k++) {
+                        double t = k / 4.0;
+                        Vec3 pp = pos.add(right.scale(t * pr)).add(up.scale(t * pr * d));
+                        mc.level.addParticle(red, pp.x, pp.y, pp.z, 0, 0, 0);
+                    }
                 }
-                mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE, pos.x, pos.y, pos.z, 0, 0.03, 0);
+                for (int k = 0; k < 5; k++) {
+                    mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, pos.x, pos.y, pos.z,
+                            (RANDOM.nextDouble() - 0.5) * 0.3, (RANDOM.nextDouble() - 0.5) * 0.3, (RANDOM.nextDouble() - 0.5) * 0.3);
+                }
             }
         }
         buffers.endBatch(ModRenderTypes.LINES_NO_DEPTH);
