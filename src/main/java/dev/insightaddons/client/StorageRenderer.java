@@ -482,6 +482,10 @@ public final class StorageRenderer {
         List<RecipeFocus.Row> rows = RecipeFocus.shownRows();
         List<RecipeFocus.Row> inInv = RecipeFocus.inventoryRows();
         List<RecipeFocus.Row> missing = RecipeFocus.missingRows();
+        if (RecipeFocus.finishing()) {
+            renderFinish(ps, camera, camPos, mc, buffers, time, partialTick);
+            return;
+        }
         if (rows.isEmpty() && inInv.isEmpty() && missing.isEmpty()) {
             return;
         }
@@ -569,6 +573,7 @@ public final class StorageRenderer {
                         where, 0.011f, WHITE, true, buffers, mc.font);
             }
         }
+        renderMissing(ps, camera, camPos, mc, buffers, time, missing, center, right, up, fwd, scale);
         flush(buffers);
 
         // 보관함 테두리와 연결선 (벽 너머에서도 보이게)
@@ -631,6 +636,110 @@ public final class StorageRenderer {
         }
         flush(buffers);
     }
+
+
+    /** 어디에도 없는 재료: 재료 아이콘 위에 배리어 아이템과 빨간 X를 겹쳐 "없음"을 눈에 띄게 보여 준다. */
+    private static void renderMissing(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc,
+                                      MultiBufferSource.BufferSource buffers, float time, List<RecipeFocus.Row> missing,
+                                      Vec3 center, Vec3 right, Vec3 up, Vec3 fwd, float scale) {
+        int m = missing.size();
+        if (m == 0) {
+            return;
+        }
+        double spacing = 0.5;
+        float s = scale * 0.85f;
+        boolean fx = RecipeFocus.takeMissingFx();
+        if (fx) {
+            Fx.sound(net.minecraft.sounds.SoundEvents.VILLAGER_NO, 0.9f, 0.9f);
+            Fx.sound(net.minecraft.sounds.SoundEvents.NOTE_BLOCK_BASS.value(), 0.6f, 0.8f);
+        }
+        VertexConsumer lines = buffers.getBuffer(ModRenderTypes.LINES_NO_DEPTH);
+        PoseStack.Pose pose = ps.last();
+        for (int i = 0; i < m; i++) {
+            RecipeFocus.Row row = missing.get(i);
+            Vec3 pos = center.add(up.scale(-0.95)).add(right.scale((i - (m - 1) / 2.0) * spacing));
+            // 재료는 어둡게 흔들리듯, 그 앞에 배리어 아이템
+            double shake = Math.sin(time * 0.9 + i) * 0.012;
+            drawIcon(ps, camPos, pos.add(right.scale(shake)), icon(row.item()), s, time * 0.8f + i * 40f, buffers, mc);
+            drawIcon(ps, camPos, pos.add(fwd.scale(-0.08)), icon(net.minecraft.world.item.Items.BARRIER), s * 1.05f, 0f, buffers, mc);
+            // 빨간 X (깜빡이며)
+            float pulse = 0.65f + 0.35f * (float) Math.sin(time * 0.35 + i);
+            int alpha = (int) (255 * pulse);
+            double r = 0.22 * s / 0.5;
+            Vec3 c = pos.add(fwd.scale(-0.12)).subtract(camPos);
+            for (int d = -1; d <= 1; d += 2) {
+                Vec3 a = c.add(right.scale(-r)).add(up.scale(-r * d));
+                Vec3 bb = c.add(right.scale(r)).add(up.scale(r * d));
+                Vec3 dir = bb.subtract(a).normalize();
+                lines.addVertex(pose, (float) a.x, (float) a.y, (float) a.z).setColor(255, 60, 60, alpha)
+                        .setNormal(pose, (float) dir.x, (float) dir.y, (float) dir.z);
+                lines.addVertex(pose, (float) bb.x, (float) bb.y, (float) bb.z).setColor(255, 60, 60, alpha)
+                        .setNormal(pose, (float) dir.x, (float) dir.y, (float) dir.z);
+            }
+            drawText(ps, camera, camPos, pos.add(up.scale(-0.2 - 0.25 * s)),
+                    Component.translatable("insight_addons.recipe.lack", icon(row.item()).getHoverName()),
+                    0.011f, 0xFFFF6B6B, true, buffers, mc.font);
+            if (fx && Fx.particles() && mc.level != null) {
+                for (int k = 0; k < 6; k++) {
+                    double ox = (RANDOM.nextDouble() - 0.5) * 0.3;
+                    double oy = (RANDOM.nextDouble() - 0.5) * 0.3;
+                    mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.ANGRY_VILLAGER,
+                            pos.x + right.x * ox + up.x * oy, pos.y + right.y * ox + up.y * oy, pos.z + right.z * ox + up.z * oy,
+                            0, 0.02, 0);
+                }
+                mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.SMOKE, pos.x, pos.y, pos.z, 0, 0.03, 0);
+            }
+        }
+        buffers.endBatch(ModRenderTypes.LINES_NO_DEPTH);
+    }
+
+    /** 재료를 다 챙겼을 때: 재료 아이콘이 커지며 떠오르고 초록 체크와 반짝이는 파티클, 효과음이 나온다. */
+    private static void renderFinish(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc,
+                                     MultiBufferSource.BufferSource buffers, float time, float partialTick) {
+        List<Item> items = RecipeFocus.finishItems();
+        if (items.isEmpty() || mc.level == null) {
+            return;
+        }
+        org.joml.Vector3f lk = camera.getLookVector();
+        org.joml.Vector3f lf = camera.getLeftVector();
+        org.joml.Vector3f upv = camera.getUpVector();
+        Vec3 fwd = new Vec3(lk.x, lk.y, lk.z);
+        Vec3 right = new Vec3(-lf.x, -lf.y, -lf.z);
+        Vec3 up = new Vec3(upv.x, upv.y, upv.z);
+        Vec3 center = camPos.add(fwd.scale(2.3)).add(up.scale(0.55));
+        float p = RecipeFocus.finishProgress(mc.level, partialTick);
+        float baseScale = InsightConfig.RECIPE_ICON_SCALE.get().floatValue();
+        int n = items.size();
+        double spacing = 0.62;
+        boolean fx = RecipeFocus.takeFinishFx();
+        double ease = 1 - Math.pow(1 - p, 3);
+        float pop = (float) (1.0 + 0.45 * Math.sin(Math.min(1.0, p * 2.0) * Math.PI));
+        for (int i = 0; i < n; i++) {
+            Vec3 pos = center.add(right.scale((i - (n - 1) / 2.0) * spacing)).add(up.scale(0.35 * ease));
+            drawIcon(ps, camPos, pos, icon(items.get(i)), baseScale * pop * (1f - 0.35f * p), time * 9f + i * 50f, buffers, mc);
+            drawText(ps, camera, camPos, pos.add(up.scale(-0.3 * baseScale - 0.12)), Component.literal("\u2714"),
+                    0.02f, 0xFF55FF55, true, buffers, mc.font);
+            if (fx && Fx.particles()) {
+                for (int k = 0; k < 8; k++) {
+                    mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.HAPPY_VILLAGER,
+                            pos.x + (RANDOM.nextDouble() - 0.5) * 0.5, pos.y + (RANDOM.nextDouble() - 0.5) * 0.5,
+                            pos.z + (RANDOM.nextDouble() - 0.5) * 0.5, 0, 0.02, 0);
+                }
+            }
+        }
+        drawText(ps, camera, camPos, center.add(up.scale(0.72 + 0.1 * ease)),
+                Component.translatable("insight_addons.recipe.finish"), 0.022f, 0xFF55FF55, true, buffers, mc.font);
+        if (fx && Fx.particles()) {
+            for (int k = 0; k < 24; k++) {
+                mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.FIREWORK,
+                        center.x, center.y, center.z,
+                        (RANDOM.nextDouble() - 0.5) * 0.25, (RANDOM.nextDouble() - 0.2) * 0.25, (RANDOM.nextDouble() - 0.5) * 0.25);
+            }
+        }
+        flush(buffers);
+    }
+
+    private static final java.util.Random RANDOM = new java.util.Random();
 
     // ────────────────────────────────────────────────────────────────
     // 공용 그리기 도구

@@ -58,11 +58,50 @@ public final class RecipeFocus {
     private static boolean hadShown;
     private static boolean reported;
     private static boolean reportedWireless;
+    /** 재료를 다 챙겼을 때 잠깐 보여 주는 완료 연출 */
+    private static final int FINISH_TICKS = 40;
+    private static boolean finishing;
+    private static long finishStart;
+    private static boolean finishFx;
+    private static List<Item> finishItems = List.of();
+    /** 없는 재료의 경고 연출(소리, 파티클)을 이번 표시에서 이미 했는지 */
+    private static boolean missingFx;
 
     private RecipeFocus() {}
 
     public static boolean isActive() {
         return active;
+    }
+
+    public static boolean finishing() {
+        return finishing;
+    }
+
+    public static List<Item> finishItems() {
+        return finishItems;
+    }
+
+    /** 완료 연출 진행도 0~1 */
+    public static float finishProgress(ClientLevel level, float partial) {
+        return Math.max(0f, Math.min(1f, (level.getGameTime() - finishStart + partial) / FINISH_TICKS));
+    }
+
+    /** 완료 연출의 파티클을 이번에 처음 내보내는지(한 번만 true) */
+    public static boolean takeFinishFx() {
+        if (finishFx) {
+            return false;
+        }
+        finishFx = true;
+        return true;
+    }
+
+    /** 없는 재료 경고 연출을 이번에 처음 하는지(한 번만 true) */
+    public static boolean takeMissingFx() {
+        if (missingFx) {
+            return false;
+        }
+        missingFx = true;
+        return true;
     }
 
     public static List<Row> rows() {
@@ -118,6 +157,10 @@ public final class RecipeFocus {
         hadShown = false;
         reported = false;
         reportedWireless = false;
+        finishing = false;
+        finishFx = false;
+        missingFx = false;
+        finishItems = List.of();
         selected = 0;
         active = true;
     }
@@ -166,6 +209,10 @@ public final class RecipeFocus {
         hadShown = false;
         reported = false;
         reportedWireless = false;
+        finishing = false;
+        finishFx = false;
+        missingFx = false;
+        finishItems = List.of();
         active = false;
         needs = List.of();
         rows = List.of();
@@ -202,6 +249,16 @@ public final class RecipeFocus {
             return;
         }
         long now = level.getGameTime();
+        if (finishing) {
+            if (now - finishStart >= FINISH_TICKS) {
+                net.minecraft.world.entity.player.Player me = net.minecraft.client.Minecraft.getInstance().player;
+                if (me != null) {
+                    me.displayClientMessage(Component.translatable("insight_addons.recipe.done"), true);
+                }
+                clear();
+            }
+            return;
+        }
         if (expireTick < 0) {
             expireTick = now + InsightConfig.RECIPE_SECONDS.get() * 20L;
         } else if (now > expireTick) {
@@ -214,7 +271,7 @@ public final class RecipeFocus {
      * 서버에 이 모드가 없으면 열어 본 보관함의 기억을 쓴다.
      */
     public static void rebuild(ClientLevel level, Vec3 eye) {
-        if (!active) {
+        if (!active || finishing) {
             return;
         }
         double radius = InsightConfig.RECIPE_RADIUS.get();
@@ -351,10 +408,17 @@ public final class RecipeFocus {
         if (!shown.isEmpty()) {
             hadShown = true;
         } else if (hadShown) {
-            // 보관함에서 다 꺼냈거나 인벤토리에 충분히 생겼다 -> 버튼을 한 번 더 누른 것처럼 표시 모드를 끈다
-            me.displayClientMessage(Component.translatable("insight_addons.recipe.done"), true);
-            Fx.sound(net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP, 1.2f, 0.5f);
-            clear();
+            // 보관함에서 다 꺼냈거나 인벤토리에 충분히 생겼다 -> 완료 연출을 잠깐 보여 준 뒤(tick에서) 표시 모드를 끈다
+            List<Item> items = new ArrayList<>();
+            for (Row row : rows) {
+                items.add(row.item());
+            }
+            finishItems = items;
+            finishing = true;
+            finishStart = level.getGameTime();
+            finishFx = false;
+            Fx.sound(net.minecraft.sounds.SoundEvents.PLAYER_LEVELUP, 1.3f, 0.7f);
+            Fx.sound(net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME, 1.6f, 0.8f);
         } else if (!reported && !rows.isEmpty()) {
             reported = true;
             me.displayClientMessage(Component.translatable(inInventory.isEmpty()

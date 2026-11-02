@@ -132,5 +132,7 @@
   "insight_addons.recipe.wireless.list": "%s에 있음: %s",
   "insight_addons.recipe.wireless.where": "무선 터미널에 %s개",
   "insight_addons.configuration.recipeFocus.searchRadius": "찾기 범위(블록)",
-  "insight_addons.configuration.ae2.wirelessFind": "무선 터미널로 재료 찾기"
+  "insight_addons.configuration.ae2.wirelessFind": "무선 터미널로 재료 찾기",
+  "insight_addons.recipe.finish": "재료를 모두 챙겼습니다!",
+  "insight_addons.recipe.lack": "%s 없음"
 }
