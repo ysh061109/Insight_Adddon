@@ -656,50 +656,59 @@ public final class StorageRenderer {
         }
         VertexConsumer lines = buffers.getBuffer(ModRenderTypes.LINES_NO_DEPTH);
         PoseStack.Pose pose = ps.last();
+        // 가루 파티클은 금방 사라지므로 몇 틱마다 다시 내보내 X가 계속 떠 있게 한다
+        long gameTime = mc.level == null ? 0 : mc.level.getGameTime();
+        boolean emit = Fx.particles() && mc.level != null && (fx || gameTime - lastMissingEmit >= 4);
+        if (emit) {
+            lastMissingEmit = gameTime;
+        }
+        net.minecraft.core.particles.DustParticleOptions red =
+                new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(1f, 0.15f, 0.15f), 1.4f);
         for (int i = 0; i < m; i++) {
             RecipeFocus.Row row = missing.get(i);
             Vec3 pos = center.add(up.scale(-0.95)).add(right.scale((i - (m - 1) / 2.0) * spacing));
-            // 재료는 어둡게 흔들리듯, 그 앞에 배리어 아이템
             double shake = Math.sin(time * 0.9 + i) * 0.012;
             drawIcon(ps, camPos, pos.add(right.scale(shake)), icon(row.item()), s, time * 0.8f + i * 40f, buffers, mc);
-            drawIcon(ps, camPos, pos.add(fwd.scale(-0.08)), icon(net.minecraft.world.item.Items.BARRIER), s * 1.05f, 0f, buffers, mc);
-            // 빨간 X (깜빡이며)
-            float pulse = 0.65f + 0.35f * (float) Math.sin(time * 0.35 + i);
-            int alpha = (int) (255 * pulse);
-            double r = 0.22 * s / 0.5;
-            Vec3 c = pos.add(fwd.scale(-0.12)).subtract(camPos);
-            for (int d = -1; d <= 1; d += 2) {
-                Vec3 a = c.add(right.scale(-r)).add(up.scale(-r * d));
-                Vec3 bb = c.add(right.scale(r)).add(up.scale(r * d));
-                Vec3 dir = bb.subtract(a).normalize();
-                lines.addVertex(pose, (float) a.x, (float) a.y, (float) a.z).setColor(255, 60, 60, alpha)
-                        .setNormal(pose, (float) dir.x, (float) dir.y, (float) dir.z);
-                lines.addVertex(pose, (float) bb.x, (float) bb.y, (float) bb.z).setColor(255, 60, 60, alpha)
-                        .setNormal(pose, (float) dir.x, (float) dir.y, (float) dir.z);
+            // 아이템 위에 큰 X (아이콘보다 조금 크게)
+            double r = 0.5 * s + 0.08;
+            Vec3 front = pos.add(fwd.scale(-0.12));
+            if (emit) {
+                for (int d = -1; d <= 1; d += 2) {
+                    for (int k = -8; k <= 8; k++) {
+                        double t = k / 8.0;
+                        Vec3 pp = front.add(right.scale(t * r)).add(up.scale(t * r * d));
+                        mc.level.addParticle(red, pp.x, pp.y, pp.z, 0, 0, 0);
+                    }
+                }
+                if (fx) {
+                    for (int k = 0; k < 6; k++) {
+                        mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, front.x, front.y, front.z,
+                                (RANDOM.nextDouble() - 0.5) * 0.35, (RANDOM.nextDouble() - 0.5) * 0.35, (RANDOM.nextDouble() - 0.5) * 0.35);
+                    }
+                }
+            }
+            if (!Fx.particles()) {
+                // 파티클을 끈 경우에는 선으로 X를 그린다
+                int alpha = (int) (255 * (0.65f + 0.35f * (float) Math.sin(time * 0.35 + i)));
+                Vec3 c = front.subtract(camPos);
+                for (int d = -1; d <= 1; d += 2) {
+                    Vec3 a = c.add(right.scale(-r)).add(up.scale(-r * d));
+                    Vec3 bb = c.add(right.scale(r)).add(up.scale(r * d));
+                    Vec3 dir = bb.subtract(a).normalize();
+                    lines.addVertex(pose, (float) a.x, (float) a.y, (float) a.z).setColor(255, 60, 60, alpha)
+                            .setNormal(pose, (float) dir.x, (float) dir.y, (float) dir.z);
+                    lines.addVertex(pose, (float) bb.x, (float) bb.y, (float) bb.z).setColor(255, 60, 60, alpha)
+                            .setNormal(pose, (float) dir.x, (float) dir.y, (float) dir.z);
+                }
             }
             drawText(ps, camera, camPos, pos.add(up.scale(-0.2 - 0.25 * s)),
                     Component.translatable("insight_addons.recipe.lack", icon(row.item()).getHoverName()),
                     0.011f, 0xFFFF6B6B, true, buffers, mc.font);
-            if (fx && Fx.particles() && mc.level != null) {
-                // 빨간 X 모양으로 번지는 가루 + 튀는 불꽃
-                net.minecraft.core.particles.DustParticleOptions red =
-                        new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(1f, 0.2f, 0.2f), 1.1f);
-                double pr = 0.2;
-                for (int d = -1; d <= 1; d += 2) {
-                    for (int k = -4; k <= 4; k++) {
-                        double t = k / 4.0;
-                        Vec3 pp = pos.add(right.scale(t * pr)).add(up.scale(t * pr * d));
-                        mc.level.addParticle(red, pp.x, pp.y, pp.z, 0, 0, 0);
-                    }
-                }
-                for (int k = 0; k < 5; k++) {
-                    mc.level.addParticle(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, pos.x, pos.y, pos.z,
-                            (RANDOM.nextDouble() - 0.5) * 0.3, (RANDOM.nextDouble() - 0.5) * 0.3, (RANDOM.nextDouble() - 0.5) * 0.3);
-                }
-            }
         }
         buffers.endBatch(ModRenderTypes.LINES_NO_DEPTH);
     }
+
+    private static long lastMissingEmit;
 
     /** 재료를 다 챙겼을 때: 재료 아이콘이 커지며 떠오르고 초록 체크와 반짝이는 파티클, 효과음이 나온다. */
     private static void renderFinish(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc,
