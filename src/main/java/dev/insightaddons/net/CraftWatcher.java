@@ -79,8 +79,10 @@ public final class CraftWatcher {
         AbstractContainerMenu menu = player.containerMenu;
         if (!supported(menu)) {
             SNAPS.remove(player.getUUID());
+            watchInventory(player, menu);
             return;
         }
+        INV.remove(player.getUUID());
         List<Slot> own = new ArrayList<>();
         for (Slot slot : menu.slots) {
             if (!(slot.container instanceof Inventory)) {
@@ -121,10 +123,61 @@ public final class CraftWatcher {
                 result.isEmpty() ? 0 : held(player, menu, result.getItem())));
     }
 
+    private static final Map<UUID, Map<Item, Integer>> INV = new HashMap<>();
+
+    /** 총기 제작대(TaCZ 등)처럼 이벤트 없이 인벤토리에서 재료를 빼 결과물을 주는 제작 메뉴: 인벤토리 변화로 감지 */
+    private static boolean customCrafter(AbstractContainerMenu menu) {
+        if (menu instanceof InventoryMenu || menu instanceof net.minecraft.world.inventory.CraftingMenu) {
+            return false;
+        }
+        String n = menu.getClass().getName().toLowerCase(java.util.Locale.ROOT);
+        if (n.startsWith("net.minecraft.") || n.startsWith("appeng.") || n.contains("sophisticated")) {
+            return false;
+        }
+        return n.contains("tacz") || n.contains("smith") || n.contains("workbench") || n.contains("craft")
+                || n.contains("assembl") || n.contains("fabricat");
+    }
+
+    private static void watchInventory(ServerPlayer player, AbstractContainerMenu menu) {
+        if (!customCrafter(menu)) {
+            INV.remove(player.getUUID());
+            return;
+        }
+        Map<Item, Integer> now = new HashMap<>();
+        Inventory inv = player.getInventory();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack st = inv.getItem(i);
+            if (!st.isEmpty()) {
+                now.merge(st.getItem(), st.getCount(), Integer::sum);
+            }
+        }
+        Map<Item, Integer> prev = INV.put(player.getUUID(), now);
+        if (prev == null) {
+            return;
+        }
+        Set<Item> lost = new LinkedHashSet<>();
+        boolean gained = false;
+        for (Map.Entry<Item, Integer> e : prev.entrySet()) {
+            if (now.getOrDefault(e.getKey(), 0) < e.getValue()) {
+                lost.add(e.getKey());
+            }
+        }
+        for (Map.Entry<Item, Integer> e : now.entrySet()) {
+            if (e.getValue() > prev.getOrDefault(e.getKey(), 0)) {
+                gained = true;
+                lost.remove(e.getKey());
+            }
+        }
+        if (gained && !lost.isEmpty()) {
+            broadcast(player, lost);
+        }
+    }
+
     @SubscribeEvent
     public static void onLogout(PlayerEvent.PlayerLoggedOutEvent event) {
         SNAPS.remove(event.getEntity().getUUID());
         LAST.remove(event.getEntity().getUUID());
+        INV.remove(event.getEntity().getUUID());
     }
 
     private static boolean supported(AbstractContainerMenu menu) {
