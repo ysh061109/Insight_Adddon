@@ -31,4 +31,21 @@ public final class ModRenderTypes extends RenderType {
                     .setCullState(NO_CULL)
                     .setDepthTestState(NO_DEPTH_TEST)
                     .createCompositeState(false));
+
+    /** 깊이 검사를 끈 색 면(굵은 X 표시용) */
+    public static final RenderType QUADS_NO_DEPTH = create(
+            "insight_addons_quads_no_depth",
+            DefaultVertexFormat.POSITION_COLOR,
+            VertexFormat.Mode.QUADS,
+            1536,
+            false,
+            false,
+            CompositeState.builder()
+                    .setShaderState(POSITION_COLOR_SHADER)
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setOutputState(ITEM_ENTITY_TARGET)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .setCullState(NO_CULL)
+                    .setDepthTestState(NO_DEPTH_TEST)
+                    .createCompositeState(false));
 }

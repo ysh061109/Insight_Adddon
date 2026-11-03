@@ -687,18 +687,27 @@ public final class StorageRenderer {
                     }
                 }
             }
-            if (!Fx.particles()) {
-                // 파티클을 끈 경우에는 선으로 X를 그린다
-                int alpha = (int) (255 * (0.65f + 0.35f * (float) Math.sin(time * 0.35 + i)));
+            // 굵은 X: 아이콘 앞에 빨간 면으로 그린다 (어두운 테두리 + 밝은 안쪽)
+            {
+                float pulse = 0.8f + 0.2f * (float) Math.sin(time * 0.35 + i);
                 Vec3 c = front.subtract(camPos);
-                for (int d = -1; d <= 1; d += 2) {
-                    Vec3 a = c.add(right.scale(-r)).add(up.scale(-r * d));
-                    Vec3 bb = c.add(right.scale(r)).add(up.scale(r * d));
-                    Vec3 dir = bb.subtract(a).normalize();
-                    lines.addVertex(pose, (float) a.x, (float) a.y, (float) a.z).setColor(255, 60, 60, alpha)
-                            .setNormal(pose, (float) dir.x, (float) dir.y, (float) dir.z);
-                    lines.addVertex(pose, (float) bb.x, (float) bb.y, (float) bb.z).setColor(255, 60, 60, alpha)
-                            .setNormal(pose, (float) dir.x, (float) dir.y, (float) dir.z);
+                VertexConsumer quads = buffers.getBuffer(ModRenderTypes.QUADS_NO_DEPTH);
+                for (int pass = 0; pass < 2; pass++) {
+                    double half = (pass == 0 ? 0.085 : 0.05) * s;
+                    int cr = pass == 0 ? 120 : 255;
+                    int cg = pass == 0 ? 10 : 50;
+                    int cb = pass == 0 ? 10 : 50;
+                    int ca = (int) (255 * pulse);
+                    for (int d = -1; d <= 1; d += 2) {
+                        Vec3 a = c.add(right.scale(-r)).add(up.scale(-r * d));
+                        Vec3 bb = c.add(right.scale(r)).add(up.scale(r * d));
+                        // 대각선에 수직인 방향으로 폭을 준다
+                        Vec3 n = right.scale(-d).add(up).normalize().scale(half);
+                        Vec3[] v = {a.add(n), a.subtract(n), bb.subtract(n), bb.add(n)};
+                        for (Vec3 p : v) {
+                            quads.addVertex(pose, (float) p.x, (float) p.y, (float) p.z).setColor(cr, cg, cb, ca);
+                        }
+                    }
                 }
             }
             drawText(ps, camera, camPos, pos.add(up.scale(-0.2 - 0.25 * s)),
@@ -706,6 +715,7 @@ public final class StorageRenderer {
                     0.011f, 0xFFFF6B6B, true, buffers, mc.font);
         }
         buffers.endBatch(ModRenderTypes.LINES_NO_DEPTH);
+        buffers.endBatch(ModRenderTypes.QUADS_NO_DEPTH);
     }
 
     private static long lastMissingEmit;
