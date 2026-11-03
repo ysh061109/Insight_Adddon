@@ -712,7 +712,8 @@ public final class StorageRenderer {
                 }
             }
             drawText(ps, camera, camPos, pos.add(up.scale(-0.2 - 0.25 * s)),
-                    Component.translatable("insight_addons.recipe.lack", icon(row.item()).getHoverName()),
+                    Component.translatable("insight_addons.recipe.lack", icon(row.item()).getHoverName())
+                            .withStyle(net.minecraft.ChatFormatting.BOLD),
                     0.011f, 0xFFFF6B6B, true, buffers, mc.font);
         }
         buffers.endBatch(ModRenderTypes.LINES_NO_DEPTH);
