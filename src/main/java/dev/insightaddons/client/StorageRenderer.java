@@ -670,6 +670,8 @@ public final class StorageRenderer {
             Vec3 pos = center.add(up.scale(-0.95)).add(right.scale((i - (m - 1) / 2.0) * spacing));
             double shake = Math.sin(time * 0.9 + i) * 0.012;
             drawIcon(ps, camPos, pos.add(right.scale(shake)), icon(row.item()), s, time * 0.8f + i * 40f, buffers, mc);
+            // 아이콘을 먼저 화면에 내보내야 아래 X가 아이콘 위에 덮어 그려진다
+            buffers.endBatch();
             // 아이템 위에 큰 X (아이콘보다 조금 크게)
             double r = 0.53 * s;
             Vec3 front = pos.add(fwd.scale(-0.12));
