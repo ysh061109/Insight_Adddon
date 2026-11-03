@@ -185,6 +185,7 @@ public final class CraftWatcher {
         SNAPS.remove(event.getEntity().getUUID());
         LAST.remove(event.getEntity().getUUID());
         INV.remove(event.getEntity().getUUID());
+        ServerScan.forget(event.getEntity().getUUID());
     }
 
     private static boolean supported(AbstractContainerMenu menu) {

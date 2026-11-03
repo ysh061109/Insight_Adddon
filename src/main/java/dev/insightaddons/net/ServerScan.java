@@ -31,7 +31,24 @@ public final class ServerScan {
     private static final double NEAR_RANGE = 24.0;
     private static final double WRENCH_RANGE = 64.0;
 
+    // 서버 부하를 줄이기 위한 제한: 플레이어별 최소 간격, 한 요청당 처리 시간 예산, 보관함 요약 캐시
+    private static final int[] MIN_INTERVAL = {4, 12, 4};
+    private static final long BUDGET_NANOS = 3_000_000L;
+    private static final int MAX_SLOTS = 2048;
+    private static final int CACHE_TICKS = 10;
+    private static final int CACHE_MAX = 4096;
+
+    private record Cached(long time, Map<Item, Long> totals) {}
+
+    private static final Map<String, Cached> CACHE = new java.util.HashMap<>();
+    private static final Map<java.util.UUID, int[]> LAST = new java.util.HashMap<>();
+
     private ServerScan() {}
+
+    /** 로그아웃한 플레이어의 요청 기록 정리 */
+    public static void forget(java.util.UUID id) {
+        LAST.remove(id);
+    }
 
     public static void handle(ScanRequest req, IPayloadContext ctx) {
         if (!(ctx.player() instanceof ServerPlayer player)) {
@@ -41,6 +58,12 @@ public final class ServerScan {
     }
 
     static void scan(ServerPlayer player, ScanRequest req) {
+        int m = Math.max(0, Math.min(2, req.mode()));
+        int[] last = LAST.computeIfAbsent(player.getUUID(), k -> new int[]{-1000, -1000, -1000});
+        if (player.tickCount - last[m] < MIN_INTERVAL[m]) {
+            return;  // 너무 자주 온 요청은 무시 (클라이언트는 이전 결과를 계속 쓴다)
+        }
+        last[m] = player.tickCount;
         boolean wrenchMode = req.mode() == 1;
         boolean recipeMode = req.mode() == 2;
         // 렌치 모드는 실제로 렌치를 들고 있을 때만 응답 (임의 좌표 스캔 남용 방지)
@@ -99,7 +122,14 @@ public final class ServerScan {
         }
 
         List<ScanResult.Entry> entries = new ArrayList<>();
+        long startNanos = System.nanoTime();
+        if (CACHE.size() > CACHE_MAX) {
+            CACHE.clear();
+        }
         for (IItemHandler handler : order) {
+            if (System.nanoTime() - startNanos > BUDGET_NANOS) {
+                break;  // 시간 예산 초과: 가까운 보관함부터 처리했으므로 나머지는 다음 요청에서
+            }
             ScanResult.Entry entry = summarize(handler, groups.get(handler), player, ns, wanted);
             if (entry != null) {
                 entries.add(entry);
@@ -110,22 +140,36 @@ public final class ServerScan {
 
     private static ScanResult.Entry summarize(IItemHandler handler, List<BlockPos> members, ServerPlayer player,
                                               String ns, Set<Item> wanted) {
+        BlockPos first = members.get(0);
+        String key = player.serverLevel().dimension().location() + "@" + first.asLong();
+        long now = player.serverLevel().getGameTime();
+        Cached cached = CACHE.get(key);
+        Map<Item, Long> base;
+        if (cached != null && now - cached.time() >= 0 && now - cached.time() < CACHE_TICKS) {
+            base = cached.totals();
+        } else {
+            base = new LinkedHashMap<>();
+            int slots = Math.min(handler.getSlots(), MAX_SLOTS);
+            for (int slot = 0; slot < slots; slot++) {
+                ItemStack stack = handler.getStackInSlot(slot);
+                if (!stack.isEmpty()) {
+                    base.merge(stack.getItem(), (long) stack.getCount(), Long::sum);
+                }
+            }
+            CACHE.put(key, new Cached(now, base));
+        }
         Map<Item, Long> totals = new LinkedHashMap<>();
         long sum = 0;
-        for (int slot = 0; slot < handler.getSlots(); slot++) {
-            ItemStack stack = handler.getStackInSlot(slot);
-            if (stack.isEmpty()) {
-                continue;
-            }
-            Item item = stack.getItem();
+        for (Map.Entry<Item, Long> e : base.entrySet()) {
+            Item item = e.getKey();
             if (wanted != null && !wanted.contains(item)) {
                 continue;
             }
             if (!ns.isEmpty() && !BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(ns)) {
                 continue;
             }
-            totals.merge(item, (long) stack.getCount(), Long::sum);
-            sum += stack.getCount();
+            totals.put(item, e.getValue());
+            sum += e.getValue();
         }
         if (totals.isEmpty()) {
             return null;
