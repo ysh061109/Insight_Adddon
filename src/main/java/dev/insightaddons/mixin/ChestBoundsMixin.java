@@ -29,6 +29,21 @@ public abstract class ChestBoundsMixin {
     private static boolean failed;
     private static boolean logged;
 
+    /** 블록 모델의 파티클 아이콘(블록을 대표하는 질감)을 textures/...png 경로로 바꾼다 */
+    private static ResourceLocation particleTexture(BlockState state) {
+        try {
+            net.minecraft.client.renderer.texture.TextureAtlasSprite sprite = net.minecraft.client.Minecraft.getInstance()
+                    .getBlockRenderer().getBlockModelShaper().getParticleIcon(state);
+            ResourceLocation name = sprite.contents().name();
+            if (name.getPath().contains("missingno")) {
+                return null;
+            }
+            return ResourceLocation.fromNamespaceAndPath(name.getNamespace(), "textures/" + name.getPath() + ".png");
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     private static String tierOf(String path) {
         for (String t : new String[]{"netherite", "diamond", "gold", "iron", "copper"}) {
             if (path.contains(t)) {
@@ -59,6 +74,7 @@ public abstract class ChestBoundsMixin {
         String ns = id.getNamespace();
         String path = id.getPath();
 
+        boolean generic = false;
         float minX, maxX, minY, maxY, minZ, maxZ;
         ResourceLocation cavity;
         if (("minecraft".equals(ns) && path.equals("barrel")) || ("mekanism".equals(ns) && path.equals("personal_barrel"))) {
@@ -107,6 +123,25 @@ public abstract class ChestBoundsMixin {
             minX = 0.2f; maxX = 0.8f; minZ = 0.2f; maxZ = 0.8f;
             minY = 0.06f; maxY = 0.62f;
             cavity = ResourceLocation.withDefaultNamespace("textures/block/brown_terracotta.png");
+        } else if (!"minecraft".equals(ns)) {
+            // 그 밖의 모든 모드 보관함: 블록 모양에서 내부 공간을, 블록 모델의 대표 질감(파티클 아이콘)에서 바닥 질감을 자동으로 정한다
+            ResourceLocation tex = particleTexture(state);
+            net.minecraft.world.phys.AABB b;
+            try {
+                b = state.getShape(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, BlockPos.ZERO).bounds();
+            } catch (Throwable t) {
+                return;
+            }
+            if (tex == null || b.getXsize() < 0.3 || b.getZsize() < 0.3) {
+                return;
+            }
+            generic = true;
+            double h = b.getYsize();
+            minX = (float) (b.minX + b.getXsize() * 0.1); maxX = (float) (b.maxX - b.getXsize() * 0.1);
+            minZ = (float) (b.minZ + b.getZsize() * 0.1); maxZ = (float) (b.maxZ - b.getZsize() * 0.1);
+            minY = (float) (b.minY + 0.06);
+            maxY = (float) (h >= 0.99 ? b.minY + 0.93 : b.minY + h * 0.62);
+            cavity = tex;
         } else {
             return;
         }
@@ -123,6 +158,9 @@ public abstract class ChestBoundsMixin {
                 fCavity = cls.getField("cavityTexture");
                 ctor = cls.getConstructor(float.class, float.class, float.class, float.class, float.class, float.class,
                         boolean.class, Direction.class, fType.getType(), boolean.class, ResourceLocation.class, boolean.class);
+            }
+            if (generic && fIron.getBoolean(old)) {
+                return;  // 철 상자류는 InSight가 이미 맞게 그린다
             }
             Object fixed = ctor.newInstance(minX, maxX, minY, maxY, minZ, maxZ,
                     fDouble.getBoolean(old), fFacing.get(old), fType.get(old),
