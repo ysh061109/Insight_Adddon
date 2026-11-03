@@ -29,13 +29,26 @@ public abstract class ChestBoundsMixin {
     private static boolean failed;
     private static boolean logged;
 
+    private static String tierOf(String path) {
+        for (String t : new String[]{"netherite", "diamond", "gold", "iron", "copper"}) {
+            if (path.contains(t)) {
+                return t;
+            }
+        }
+        return null;
+    }
+
+    private static ResourceLocation metalBlock(String tier) {
+        return ResourceLocation.withDefaultNamespace("textures/block/" + tier + "_block.png");
+    }
+
     @Inject(method = "fromChest", at = @At("RETURN"), cancellable = true, remap = false, require = 0)
     private static void insightaddons$fit(BlockState state, BlockPos pos, CallbackInfoReturnable<Object> cir) {
         if (state != null) {
             ResourceLocation kid = BuiltInRegistries.BLOCK.getKey(state.getBlock());
             String kp = kid.getPath();
             String kind = kp.contains("shulker_box") ? "shulker"
-                    : kp.endsWith("barrel") || kp.startsWith("barrel") ? "barrel"
+                    : kp.contains("barrel") ? "barrel"
                     : kid.getNamespace().equals("sophisticatedbackpacks") ? "backpack" : "other";
             dev.insightaddons.client.ContainerKind.set(kind);
         }
@@ -67,6 +80,28 @@ public abstract class ChestBoundsMixin {
             minY = 0.06f; maxY = 0.52f;
             String color = path.equals("shulker_box") ? "purple" : path.substring(0, path.length() - "_shulker_box".length());
             cavity = ResourceLocation.withDefaultNamespace("textures/block/" + color + "_concrete.png");
+        } else if (ns.equals("sophisticatedstorage") && path.contains("barrel")) {
+            // Sophisticated Storage 통(제한 통 포함): 바닐라 통처럼 위가 뚫린 통. 등급 통은 해당 금속 질감, 나무 통은 참나무 통 바닥
+            minX = 0.14f; maxX = 0.86f; minZ = 0.14f; maxZ = 0.86f;
+            minY = 0.07f; maxY = 0.93f;
+            String tier = tierOf(path);
+            cavity = tier != null
+                    ? ResourceLocation.fromNamespaceAndPath("sophisticatedstorage", "textures/block/" + tier + "_barrel_bottom.png")
+                    : ResourceLocation.fromNamespaceAndPath("sophisticatedstorage", "textures/block/oak_barrel_bottom.png");
+        } else if (ns.equals("sophisticatedstorage") && path.contains("shulker_box")) {
+            // Sophisticated Storage 셜커 상자: 바닐라 셜커와 같은 몸통 안쪽
+            minX = 0.1f; maxX = 0.9f; minZ = 0.1f; maxZ = 0.9f;
+            minY = 0.06f; maxY = 0.52f;
+            String tier = tierOf(path);
+            cavity = tier != null ? metalBlock(tier)
+                    : ResourceLocation.withDefaultNamespace("textures/block/light_gray_concrete.png");
+        } else if (ns.equals("sophisticatedstorage") && path.contains("chest")) {
+            // Sophisticated Storage 상자: 상자 모양 안쪽. 등급 상자는 해당 금속, 나무 상자는 어두운 나무 바닥
+            minX = 0.08f; maxX = 0.92f; minZ = 0.08f; maxZ = 0.92f;
+            minY = 0.06f; maxY = 0.56f;
+            String tier = tierOf(path);
+            cavity = tier != null ? metalBlock(tier)
+                    : ResourceLocation.withDefaultNamespace("textures/block/dark_oak_planks.png");
         } else if (ns.equals("sophisticatedbackpacks")) {
             // 배낭: 배낭 모델 안쪽 크기에 맞춰 좁고 통통하게. 내부는 InSight Chests 기본 방식으로 그린다.
             minX = 0.2f; maxX = 0.8f; minZ = 0.2f; maxZ = 0.8f;
