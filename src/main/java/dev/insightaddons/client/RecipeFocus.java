@@ -407,6 +407,11 @@ public final class RecipeFocus {
         }
         if (!shown.isEmpty()) {
             hadShown = true;
+        } else if (hadShown && net.minecraft.client.Minecraft.getInstance().screen != null) {
+            // 터미널·보관함 화면이 열려 있는 동안에는 3D 연출이 GUI에 가려지므로, 화면을 닫을 때까지 기다린다
+            if (expireTick >= 0) {
+                expireTick = Math.max(expireTick, now + 200);
+            }
         } else if (hadShown) {
             // 보관함에서 다 꺼냈거나 인벤토리에 충분히 생겼다 -> 완료 연출을 잠깐 보여 준 뒤(tick에서) 표시 모드를 끈다
             List<Item> items = new ArrayList<>();
