@@ -658,7 +658,8 @@ public final class StorageRenderer {
         PoseStack.Pose pose = ps.last();
         // 가루 파티클은 금방 사라지므로 몇 틱마다 다시 내보내 X가 계속 떠 있게 한다
         long gameTime = mc.level == null ? 0 : mc.level.getGameTime();
-        boolean emit = Fx.particles() && mc.level != null && (fx || gameTime - lastMissingEmit >= 4);
+        // 없는 재료의 X는 파티클 없이 굵은 면으로만 그린다 (기본 파티클 제거)
+        boolean emit = false;
         if (emit) {
             lastMissingEmit = gameTime;
         }
