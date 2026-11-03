@@ -272,6 +272,32 @@ public final class CraftTable {
         return in.isEmpty() ? null : new Layout(in, res, in.size(), 1);
     }
 
+    private static Layout moddedLayout(AbstractContainerMenu menu) {
+        Slot result = null;
+        List<Slot> grid = new ArrayList<>();
+        for (int i = 0; i < menu.slots.size(); i++) {
+            Slot slot = menu.slots.get(i);
+            String n = slot.getClass().getSimpleName();
+            if (slot.getClass().getName().startsWith("appeng.")) {
+                if (n.equals("CraftingTermSlot")) {
+                    result = slot;
+                } else if (n.equals("CraftingMatrixSlot")) {
+                    grid.add(slot);
+                }
+            } else if (slot instanceof ResultSlot && menu.getClass().getName().toLowerCase(java.util.Locale.ROOT).contains("sophisticated")) {
+                result = slot;
+                grid.clear();
+                for (int k = Math.max(0, i - 9); k < i; k++) {
+                    grid.add(menu.slots.get(k));
+                }
+            }
+        }
+        if (result == null || grid.isEmpty() || grid.size() > 9) {
+            return null;
+        }
+        return new Layout(grid, result, 3, Math.max(1, (grid.size() + 2) / 3));
+    }
+
     private static Layout layout(AbstractContainerMenu menu) {
         // 조합 칸 + 결과 칸이 있는 화면 (작업대, 인벤토리 2x2 조합 등)
         Slot result = null;
@@ -286,6 +312,11 @@ public final class CraftTable {
         if (result != null && !grid.isEmpty()) {
             CraftingContainer cc = (CraftingContainer) grid.get(0).container;
             return new Layout(grid, result, Math.max(1, cc.getWidth()), Math.max(1, cc.getHeight()));
+        }
+        // 다른 모드의 조합 칸: 서바이벌 배낭(결과 칸 앞의 9칸), AE2 조합 터미널(CraftingTermSlot / CraftingMatrixSlot)
+        Layout modded = moddedLayout(menu);
+        if (modded != null) {
+            return modded;
         }
         if (menu instanceof net.minecraft.world.inventory.SmithingMenu) {
             return byIndex(menu, 3, 0, 1, 2);
