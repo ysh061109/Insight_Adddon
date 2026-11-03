@@ -131,6 +131,15 @@ public final class CraftFx {
         if (!InsightConfig.CRAFT_FX.get() || mc.level == null) {
             return;
         }
+        if (ScreenFx.wanted(mc)) {
+            // 휴대용 배낭 메뉴: 3D 연출은 GUI에 가려지므로 화면 위에 그린다
+            List<Item> items = new ArrayList<>();
+            for (dev.insightaddons.net.CraftFxPacket.Fly f : packet.flies()) {
+                items.add(f.item());
+            }
+            ScreenFx.spawn(mc, items);
+            return;
+        }
         long now = mc.level.getGameTime();
         Vec3 to = Vec3.atCenterOf(packet.station()).add(0, 0.6, 0);
         int i = 0;
