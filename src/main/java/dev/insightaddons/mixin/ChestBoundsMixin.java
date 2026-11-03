@@ -123,6 +123,16 @@ public abstract class ChestBoundsMixin {
             minX = 0.2f; maxX = 0.8f; minZ = 0.2f; maxZ = 0.8f;
             minY = 0.06f; maxY = 0.62f;
             cavity = ResourceLocation.withDefaultNamespace("textures/block/brown_terracotta.png");
+        } else if ("create".equals(ns) && path.equals("item_vault")) {
+            // Create 아이템 금고: 속이 꽉 찬 금속 상자. 금고 모델의 안쪽(어두운 금속에 세로 막대) 질감을 쓴다
+            minX = 0.12f; maxX = 0.88f; minZ = 0.12f; maxZ = 0.88f;
+            minY = 0.06f; maxY = 0.93f;
+            cavity = ResourceLocation.fromNamespaceAndPath("create", "textures/block/vault/vault_bottom_small.png");
+        } else if ("create".equals(ns) && path.endsWith("_toolbox")) {
+            // Create 공구 상자: 나무 상자 안쪽
+            minX = 0.14f; maxX = 0.86f; minZ = 0.2f; maxZ = 0.8f;
+            minY = 0.06f; maxY = 0.5f;
+            cavity = ResourceLocation.withDefaultNamespace("textures/block/spruce_planks.png");
         } else if (!"minecraft".equals(ns)) {
             // 그 밖의 모든 모드 보관함: 블록 모양에서 내부 공간을, 블록 모델의 대표 질감(파티클 아이콘)에서 바닥 질감을 자동으로 정한다
             ResourceLocation tex = particleTexture(state);
