@@ -117,12 +117,12 @@ public abstract class ChestBoundsMixin {
             minY = 0.06f; maxY = 0.56f;
             String tier = tierOf(path);
             cavity = tier != null ? metalBlock(tier)
-                    : ResourceLocation.withDefaultNamespace("textures/block/dark_oak_planks.png");
+                    : ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/sophisticated_chest_inner.png");
         } else if (ns.equals("sophisticatedbackpacks")) {
             // 배낭: 배낭 모델 안쪽 크기에 맞춰 좁고 통통하게. 내부는 InSight Chests 기본 방식으로 그린다.
             minX = 0.2f; maxX = 0.8f; minZ = 0.2f; maxZ = 0.8f;
             minY = 0.06f; maxY = 0.62f;
-            cavity = ResourceLocation.withDefaultNamespace("textures/block/brown_terracotta.png");
+            cavity = ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/backpack_inner.png");
         } else if ("create".equals(ns) && path.equals("item_vault")) {
             // Create 아이템 금고: 속이 꽉 찬 금속 상자. 금고 모델의 안쪽(어두운 금속에 세로 막대) 질감을 쓴다
             minX = 0.12f; maxX = 0.88f; minZ = 0.12f; maxZ = 0.88f;
