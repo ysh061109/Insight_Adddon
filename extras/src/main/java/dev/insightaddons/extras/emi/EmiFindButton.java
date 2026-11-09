@@ -21,6 +21,8 @@ import java.util.List;
 /** EMI 레시피 화면의 "이 아이템 찾기" 버튼(12x12). 마우스를 올려 둔 아이템, 없으면 결과 아이템을 찾는다. */
 public final class EmiFindButton extends Widget {
     private static final int SIZE = 12;
+    private static final net.minecraft.resources.ResourceLocation TEX =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("insight_addons_extras", "textures/gui/button_find.png");
 
     private final int x;
     private final int y;
@@ -74,19 +76,8 @@ public final class EmiFindButton extends Widget {
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
         boolean hover = getBounds().contains(mouseX, mouseY);
         boolean on = RecipeFocus.isActive();
-        int border = hover ? 0xFFFFFFFF : 0xFF8B8B8B;
-        int fill = on ? 0xFF3B6EA8 : (hover ? 0xFF5A5A66 : 0xFF3A3A44);
-        g.fill(x, y, x + SIZE, y + SIZE, border);
-        g.fill(x + 1, y + 1, x + SIZE - 1, y + SIZE - 1, fill);
-        int ix = x + 2;
-        int iy = y + 2;
-        int c = 0xFFE8E8F0;
-        g.fill(ix + 1, iy, ix + 5, iy + 1, c);
-        g.fill(ix + 1, iy + 5, ix + 5, iy + 6, c);
-        g.fill(ix, iy + 1, ix + 1, iy + 5, c);
-        g.fill(ix + 5, iy + 1, ix + 6, iy + 5, c);
-        g.fill(ix + 5, iy + 5, ix + 7, iy + 7, 0xFFFFD84A);
-        g.fill(ix + 7, iy + 7, ix + 8, iy + 8, 0xFFFFD84A);
+        BevelButton.draw(g, x, y, SIZE, hover, on);
+        g.blit(TEX, x + 1, y + 1, 0, 0, 9, 9, 9, 9);
     }
 
     @Override

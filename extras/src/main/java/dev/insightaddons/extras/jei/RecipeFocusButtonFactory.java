@@ -26,6 +26,8 @@ import java.util.Set;
 /** 레시피마다 "+" 버튼 아래 줄에 붙는 "조합 재료 표시" 버튼을 만듭니다. */
 public final class RecipeFocusButtonFactory implements IRecipeButtonControllerFactory {
     private static final int MAX_OPTIONS_PER_SLOT = 48;
+    private static final net.minecraft.resources.ResourceLocation TEX =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("insight_addons_extras", "textures/gui/button_focus.png");
 
     /** 버튼 아이콘: 재료가 떠 있는 작은 상자 (9x9) */
     private static final IDrawable ICON = new IDrawable() {
@@ -41,15 +43,7 @@ public final class RecipeFocusButtonFactory implements IRecipeButtonControllerFa
 
         @Override
         public void draw(GuiGraphics g, int x, int y) {
-            // 떠 있는 재료 세 개
-            g.fill(x + 1, y, x + 3, y + 2, 0xFF55E0F0);
-            g.fill(x + 4, y, x + 6, y + 2, 0xFFFFD84A);
-            g.fill(x + 7, y, x + 9, y + 2, 0xFFFF6B6B);
-            // 상자 몸통과 뚜껑
-            g.fill(x, y + 4, x + 9, y + 9, 0xFF6B4423);
-            g.fill(x, y + 3, x + 9, y + 5, 0xFFB8803D);
-            // 자물쇠
-            g.fill(x + 4, y + 4, x + 5, y + 6, 0xFFE8E8F0);
+            g.blit(TEX, x, y, 0, 0, 9, 9, 9, 9);
         }
     };
 

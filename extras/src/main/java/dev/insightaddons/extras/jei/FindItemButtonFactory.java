@@ -25,6 +25,8 @@ import java.util.Optional;
  * 주변 보관함에서 찾아 3D로 띄우고 들어 있는 보관함을 표시합니다.
  */
 public final class FindItemButtonFactory implements IRecipeButtonControllerFactory {
+    private static final net.minecraft.resources.ResourceLocation TEX =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("insight_addons_extras", "textures/gui/button_find.png");
     /** 돋보기 모양 아이콘 (9x9) */
     private static final IDrawable ICON = new IDrawable() {
         @Override
@@ -39,14 +41,7 @@ public final class FindItemButtonFactory implements IRecipeButtonControllerFacto
 
         @Override
         public void draw(GuiGraphics g, int x, int y) {
-            int c = 0xFFE8E8F0;
-            g.fill(x + 1, y, x + 5, y + 1, c);
-            g.fill(x + 1, y + 5, x + 5, y + 6, c);
-            g.fill(x, y + 1, x + 1, y + 5, c);
-            g.fill(x + 5, y + 1, x + 6, y + 5, c);
-            g.fill(x + 5, y + 5, x + 6, y + 6, 0xFFFFD84A);
-            g.fill(x + 6, y + 6, x + 7, y + 7, 0xFFFFD84A);
-            g.fill(x + 7, y + 7, x + 9, y + 9, 0xFFFFD84A);
+            g.blit(TEX, x, y, 0, 0, 9, 9, 9, 9);
         }
     };
 

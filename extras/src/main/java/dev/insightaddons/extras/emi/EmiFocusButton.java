@@ -23,6 +23,8 @@ import java.util.Set;
 /** EMI 레시피 화면의 "+" 옆에 붙는 12x12 "주변 보관함에서 재료 찾기" 버튼. */
 public final class EmiFocusButton extends Widget {
     private static final int SIZE = 12;
+    private static final net.minecraft.resources.ResourceLocation TEX =
+            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("insight_addons_extras", "textures/gui/button_focus.png");
     private static final int MAX_OPTIONS_PER_SLOT = 48;
 
     private final int x;
@@ -44,19 +46,8 @@ public final class EmiFocusButton extends Widget {
     public void render(GuiGraphics g, int mouseX, int mouseY, float delta) {
         boolean hover = getBounds().contains(mouseX, mouseY);
         boolean on = RecipeFocus.isActive();
-        int border = hover ? 0xFFFFFFFF : 0xFF8B8B8B;
-        int fill = on ? 0xFF3B6EA8 : (hover ? 0xFF5A5A66 : 0xFF3A3A44);
-        g.fill(x, y, x + SIZE, y + SIZE, border);
-        g.fill(x + 1, y + 1, x + SIZE - 1, y + SIZE - 1, fill);
-        // 아이콘: 재료가 떠 있는 작은 상자 (9x9)
-        int ix = x + 1;
-        int iy = y + 1;
-        g.fill(ix + 1, iy, ix + 3, iy + 2, 0xFF55E0F0);
-        g.fill(ix + 4, iy, ix + 6, iy + 2, 0xFFFFD84A);
-        g.fill(ix + 7, iy, ix + 9, iy + 2, 0xFFFF6B6B);
-        g.fill(ix, iy + 4, ix + 9, iy + 9, 0xFF6B4423);
-        g.fill(ix, iy + 3, ix + 9, iy + 5, 0xFFB8803D);
-        g.fill(ix + 4, iy + 4, ix + 5, iy + 6, 0xFFE8E8F0);
+        BevelButton.draw(g, x, y, SIZE, hover, on);
+        g.blit(TEX, x + 1, y + 1, 0, 0, 9, 9, 9, 9);
     }
 
     @Override
