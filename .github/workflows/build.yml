@@ -22,9 +22,9 @@ jobs:
           done
       - uses: actions/upload-artifact@v4
         with:
-          name: insight_addons_core-jar
+          name: insight_chest_plus-jar
           path: core/build/libs/*.jar
       - uses: actions/upload-artifact@v4
         with:
-          name: insight_addons_extras-jar
+          name: insight_chest_plus_extras-jar
           path: extras/build/libs/*.jar

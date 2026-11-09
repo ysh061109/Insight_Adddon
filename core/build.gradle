@@ -13,7 +13,7 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 base {
-    archivesName = 'insight_addons_core'
+    archivesName = 'insight_chest_plus'
 }
 
 neoForge {

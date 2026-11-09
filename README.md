@@ -1,11 +1,11 @@
-# Insight Addons 1.21.0 (NeoForge 1.21.1)
+# Insight Chest Plus 1.21.0 (NeoForge 1.21.1)
 
 InSight Chests(`insightchests` 1.21.1 NeoForge 1.0.4) 애드온입니다. 1.21.0부터 **두 개의 jar로 나뉘며, 각각 따로 설치할 수 있습니다.**
 
-| 파일 | 모드 ID | 내용 | InSight Chests |
+| 파일 (모드 이름) | 모드 ID | 내용 | InSight Chests |
 |---|---|---|---|
-| `insight_addons_core-1.21.0.jar` | `insight_addons` | InSight 상자 연출 확장: 상자/통/셜커/배낭/Sophisticated/Mekanism 내부 모양과 질감, 아이템 개수 비율·크기, 빛(후광), 유리 화면 스킨, 원래 화면 유지. 클라이언트 전용 | **필수** |
-| `insight_addons_extras-1.21.0.jar` | `insight_addons_extras` | 보관함 바라볼 때 3D 표시, 렌치 스캔, JEI/EMI 재료 찾기·아이템 찾기 버튼, AE2 연동, 조합 연출, 서버 스캔/꺼내기 | 불필요 |
+| `insight_chest_plus-1.21.0.jar` | `insight_addons` | InSight 상자 연출 확장: 상자/통/셜커/배낭/Sophisticated/Mekanism 내부 모양과 질감, 아이템 개수 비율·크기, 빛(후광), 유리 화면 스킨, 원래 화면 유지. 클라이언트 전용 | **필수** |
+| `insight_chest_plus_extras-1.21.0.jar` | `insight_addons_extras` | 보관함 바라볼 때 3D 표시, 렌치 스캔, JEI/EMI 재료 찾기·아이템 찾기 버튼, AE2 연동, 조합 연출, 서버 스캔/꺼내기 | 불필요 |
 
 - 설정 파일도 둘로 나뉩니다: `config/insight_addons-client.toml`(Core), `config/insight_addons_extras-client.toml`(Extras). 이전 1.20.x의 설정은 자동으로 옮겨지지 않습니다.
 - 서버에는 **Extras만** 넣으면 됩니다(서버 스캔, 3D 아이템 꺼내기, 다른 사람의 조합 연출). Core는 클라이언트 전용입니다.
