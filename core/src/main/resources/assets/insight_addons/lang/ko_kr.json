@@ -65,7 +65,7 @@
   "insight_addons.configuration.wrenchScan.selectCosine": "선택 정확도",
   "insight_addons.configuration.wrenchScan.sourceLabels": "보관함 라벨 표시",
   "insight_addons.configuration.wrenchScan.maxLabeledContainers": "최대 라벨 수",
-  "insight_addons.configuration.title": "Insight Chest Plus 설정",
+  "insight_addons.configuration.title": "Insight Chests Plus 설정",
   "insight_addons.take.hint": "클릭: 한 스택 꺼내기 · Shift+클릭: 전부 (%s)",
   "insight_addons.recipe.done": "재료를 챙겼습니다. 표시를 껐습니다.",
   "insight_addons.recipe.none.all": "주변 보관함에 필요한 재료가 없습니다.",

@@ -7,8 +7,8 @@ config = "insight_addons_extras.mixins.json"
 
 [[mods]]
 modId = "insight_addons_extras"
-version = "1.21.1"
-displayName = "Insight Chest Plus Extras"
+version = "1.21.2"
+displayName = "Insight Chests Plus Extras"
 logoFile = "icon.png"
 description = '''
 보관함 편의 기능 모음. 보관함을 바라보면 내용물 3D 표시, 렌치 스캔, JEI/EMI 조합 재료 찾기와 아이템 찾기 버튼, AE2 연동, 조합 연출을 추가합니다. InSight Chests 없이도 동작합니다.

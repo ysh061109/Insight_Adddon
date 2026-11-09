@@ -22,9 +22,9 @@ jobs:
           done
       - uses: actions/upload-artifact@v4
         with:
-          name: insight_chest_plus-jar
+          name: insight_chests_plus-jar
           path: core/build/libs/*.jar
       - uses: actions/upload-artifact@v4
         with:
-          name: insight_chest_plus_extras-jar
+          name: insight_chests_plus_extras-jar
           path: extras/build/libs/*.jar
