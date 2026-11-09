@@ -1,0 +1,13 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "dev.insightaddons.extras.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+    "EmiRecipeDisplayMixin",
+    "AeBackgroundMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}

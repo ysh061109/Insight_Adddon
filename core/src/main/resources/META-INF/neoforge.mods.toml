@@ -1,0 +1,71 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mixins]]
+config = "insight_addons.mixins.json"
+
+[[mods]]
+modId = "insight_addons"
+version = "1.21.0"
+displayName = "Insight Addons Core"
+logoFile = "icon.png"
+description = '''
+InSight Chests 전용 확장. 상자 내부 모양(통, 셜커, 배낭, Sophisticated, Mekanism 등), 아이템 개수 비율과 크기, 빛(후광), 유리 화면 스킨을 추가합니다. 클라이언트 전용입니다.
+'''
+
+[[dependencies.insight_addons]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.insight_addons]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.insight_addons]]
+modId = "insightchests"
+type = "required"
+versionRange = "[1.0.4,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.insight_addons]]
+modId = "sophisticatedbackpacks"
+type = "optional"
+versionRange = "[3.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons]]
+modId = "sophisticatedstorage"
+type = "optional"
+versionRange = "[1.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons]]
+modId = "mekanism"
+type = "optional"
+versionRange = "[10.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons]]
+modId = "create"
+type = "optional"
+versionRange = "[6.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons]]
+modId = "emi"
+type = "optional"
+versionRange = "[1.0,)"
+ordering = "AFTER"
+side = "CLIENT"

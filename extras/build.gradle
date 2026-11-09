@@ -1,0 +1,48 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.78'
+}
+
+version = mod_version
+group = mod_group_id
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+base {
+    archivesName = 'insight_addons_extras'
+}
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+        }
+        server {
+            server()
+            programArgument '--nogui'
+        }
+    }
+
+    mods {
+        "insight_addons_extras" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+// JEI API (MIT, mezz). libs/ 안의 jar는 JEI 19.44.0.401에서 mezz/jei/api 클래스만 뽑은 것으로,
+// JEI의 "+" 줄 버튼을 컴파일하기 위한 용도입니다. 실행 때는 설치된 JEI를 사용합니다.
+dependencies {
+    compileOnly files('../libs/jei-api-19.44.0.401.jar')
+}
+
+// 컴파일용 가짜(stub) 선언(EMI)은 jar에 넣지 않습니다. 실제 클래스는 EMI 안에 있습니다.
+jar {
+    exclude 'dev/emi/**'
+}

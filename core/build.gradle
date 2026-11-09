@@ -1,0 +1,41 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.78'
+}
+
+version = mod_version
+group = mod_group_id
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+base {
+    archivesName = 'insight_addons_core'
+}
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+        }
+    }
+
+    mods {
+        "insight_addons" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+// InSight Chests, Sophisticated, Mekanism에는 컴파일 의존성이 없습니다. (리플렉션과 문자열 대상 믹스인만 사용)
+// 컴파일용 가짜(stub) 선언(InSight Chests, Sophisticated Core)은 jar에 넣지 않습니다.
+// 같은 이름의 클래스가 이 모드 jar에 들어가면 그 모드를 망가뜨릴 수 있으므로 반드시 제외합니다.
+jar {
+    exclude 'com/mrsun/**'
+    exclude 'net/p3pp3rf1y/**'
+}

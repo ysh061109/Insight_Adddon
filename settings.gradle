@@ -6,3 +6,4 @@ pluginManagement {
 }
 
 rootProject.name = 'insight-addons'
+include 'core', 'extras'

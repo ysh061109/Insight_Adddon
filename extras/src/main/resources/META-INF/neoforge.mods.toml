@@ -1,0 +1,78 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+license = "MIT"
+
+[[mixins]]
+config = "insight_addons_extras.mixins.json"
+
+[[mods]]
+modId = "insight_addons_extras"
+version = "1.21.0"
+displayName = "Insight Addons Extras"
+logoFile = "icon.png"
+description = '''
+보관함 편의 기능 모음. 보관함을 바라보면 내용물 3D 표시, 렌치 스캔, JEI/EMI 조합 재료 찾기와 아이템 찾기 버튼, AE2 연동, 조합 연출을 추가합니다. InSight Chests 없이도 동작합니다.
+'''
+
+[[dependencies.insight_addons_extras]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.insight_addons_extras]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.insight_addons_extras]]
+modId = "create"
+type = "optional"
+versionRange = "[6.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons_extras]]
+modId = "sophisticatedbackpacks"
+type = "optional"
+versionRange = "[3.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons_extras]]
+modId = "sophisticatedstorage"
+type = "optional"
+versionRange = "[1.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons_extras]]
+modId = "ae2"
+type = "optional"
+versionRange = "[19.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons_extras]]
+modId = "mekanism"
+type = "optional"
+versionRange = "[10.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.insight_addons_extras]]
+modId = "jei"
+type = "optional"
+versionRange = "[19,)"
+ordering = "AFTER"
+side = "CLIENT"
+
+[[dependencies.insight_addons_extras]]
+modId = "emi"
+type = "optional"
+versionRange = "[1.0,)"
+ordering = "AFTER"
+side = "CLIENT"

@@ -1,8 +1,5 @@
-name: Build
-on:
-  push:
-  pull_request:
-  workflow_dispatch:
+name: build
+on: [push, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,9 +11,20 @@ jobs:
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 8.14.3
-      - run: gradle build --stacktrace
+          gradle-version: 8.10.2
+      - run: gradle build
+      - name: stub 클래스가 jar에 섞이지 않았는지 확인
+        run: |
+          for j in core/build/libs/*.jar extras/build/libs/*.jar; do
+            if unzip -l "$j" | grep -E "com/mrsun/|dev/emi/|net/p3pp3rf1y/"; then
+              echo "컴파일용 stub 클래스가 $j 에 들어갔습니다"; exit 1
+            fi
+          done
       - uses: actions/upload-artifact@v4
         with:
-          name: recipevision-jar
-          path: build/libs/*.jar
+          name: insight_addons_core-jar
+          path: core/build/libs/*.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: insight_addons_extras-jar
+          path: extras/build/libs/*.jar
