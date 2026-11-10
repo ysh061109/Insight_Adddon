@@ -44,6 +44,44 @@ public abstract class ChestBoundsMixin {
         }
     }
 
+    /** Sophisticated Storage 셜커의 주 색(RGB)을 읽어 가장 가까운 바닐라 염료 색 이름을 돌려준다. 못 읽으면 default */
+    private static String sophisticatedShulkerColor(BlockPos pos) {
+        try {
+            net.minecraft.client.multiplayer.ClientLevel level = net.minecraft.client.Minecraft.getInstance().level;
+            if (level == null || pos == null) {
+                return "default";
+            }
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be == null) {
+                return "default";
+            }
+            Object wrapper = be.getClass().getMethod("getStorageWrapper").invoke(be);
+            int rgb = (Integer) wrapper.getClass().getMethod("getMainColor").invoke(wrapper);
+            if (rgb == -1) {
+                return "default";
+            }
+            int r = (rgb >> 16) & 0xFF;
+            int g = (rgb >> 8) & 0xFF;
+            int b = rgb & 0xFF;
+            String best = "default";
+            long bestDist = Long.MAX_VALUE;
+            for (net.minecraft.world.item.DyeColor dye : net.minecraft.world.item.DyeColor.values()) {
+                int c = dye.getTextureDiffuseColor();
+                long dr = r - ((c >> 16) & 0xFF);
+                long dg = g - ((c >> 8) & 0xFF);
+                long db = b - (c & 0xFF);
+                long d = dr * dr + dg * dg + db * db;
+                if (d < bestDist) {
+                    bestDist = d;
+                    best = dye.getName();
+                }
+            }
+            return best;
+        } catch (Throwable t) {
+            return "default";
+        }
+    }
+
     private static String tierOf(String path) {
         for (String t : new String[]{"netherite", "diamond", "gold", "iron", "copper"}) {
             if (path.contains(t)) {
@@ -111,7 +149,7 @@ public abstract class ChestBoundsMixin {
             minY = 0.06f; maxY = 0.52f;
             String tier = tierOf(path);
             cavity = tier != null ? metalBlock(tier)
-                    : ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/shulker_inner/default.png");
+                    : ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/shulker_inner/" + sophisticatedShulkerColor(pos) + ".png");
         } else if (ns.equals("sophisticatedstorage") && path.contains("chest")) {
             // Sophisticated Storage 상자: 상자 모양 안쪽. 등급 상자는 해당 금속, 나무 상자는 어두운 나무 바닥
             minX = 0.08f; maxX = 0.92f; minZ = 0.08f; maxZ = 0.92f;
