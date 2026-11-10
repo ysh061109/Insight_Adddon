@@ -3,6 +3,7 @@ package dev.insightaddons.core.client;
 import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -134,6 +135,12 @@ public final class YaclScreen {
                         Object option = buildOption(optC, optB, descC, sKey, leafKey, cv);
                         if (option != null) {
                             built.add(option);
+                            if (cv.get() instanceof List<?>) {
+                                Object btn = buildEditorButton(null, cv, leafKey);
+                                if (btn != null) {
+                                    built.add(btn);
+                                }
+                            }
                         }
                     }
                     if (built.isEmpty()) {
@@ -166,6 +173,37 @@ public final class YaclScreen {
             return (Screen) libC.getMethod("generateScreen", Screen.class).invoke(built, parent);
         } catch (Throwable t) {
             dev.insightaddons.core.InsightAddons.LOGGER.warn("YACL 설정 화면을 만들지 못해 기본 설정 화면으로 대신합니다: {}", t.toString());
+            return null;
+        }
+    }
+
+
+    /** 목록 설정 아래에 "목록 편집기 열기" 버튼을 만든다 (아이콘 목록, 검색, 바라보는 블록 추가). 실패하면 null. */
+    private static Object buildEditorButton(Object unused, ModConfigSpec.ConfigValue<?> cv, String leafKey) {
+        try {
+            Class<?> bc = Class.forName(P + "ButtonOption");
+            Object b = bc.getMethod("createBuilder").invoke(null);
+            b = bc.getMethod("name", Component.class).invoke(b, Component.translatable("insight_addons.configuration.listEditor.open"));
+            
+            ListEditorScreen.Kind kind = leafKey.toUpperCase(java.util.Locale.ROOT).contains("MOD")
+                    ? ListEditorScreen.Kind.MODID
+                    : leafKey.toUpperCase(java.util.Locale.ROOT).contains("TOOL") ? ListEditorScreen.Kind.ITEM : ListEditorScreen.Kind.BLOCK;
+            java.util.function.BiConsumer<Object, Object> action = (scr, opt) -> {
+                try {
+                    Minecraft mc = Minecraft.getInstance();
+                    mc.setScreen(new ListEditorScreen((Screen) scr, cv, kind,
+                            Component.translatable("insight_addons.configuration.listEditor.title")));
+                } catch (Throwable t) {
+                    dev.insightaddons.core.InsightAddons.LOGGER.warn("목록 편집기를 열지 못했습니다: {}", t.toString());
+                }
+            };
+            b = bc.getMethod("action", java.util.function.BiConsumer.class).invoke(b, action);
+            try {
+                b = bc.getMethod("text", Component.class).invoke(b, Component.translatable("insight_addons.configuration.listEditor.openText"));
+            } catch (Throwable ignored) {
+            }
+            return bc.getMethod("build").invoke(b);
+        } catch (Throwable t) {
             return null;
         }
     }
