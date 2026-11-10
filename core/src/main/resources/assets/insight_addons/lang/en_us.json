@@ -136,7 +136,7 @@
   "insight_addons.recipe.finish": "All ingredients gathered!",
   "insight_addons.recipe.lack": "No %s",
   "insight_addons.configuration.listEditor.open": "Open list editor (icons & search)",
-  "insight_addons.configuration.listEditor.openText": "Open",
+  "insight_addons.configuration.listEditor.openText": "Edit (%s) ▶",
   "insight_addons.configuration.listEditor.title": "List Editor",
   "insight_addons.configuration.listEditor.search": "Search name or ID…",
   "insight_addons.configuration.listEditor.addLooking": "Add looked-at block",

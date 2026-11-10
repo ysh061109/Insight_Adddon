@@ -136,7 +136,7 @@
   "insight_addons.recipe.finish": "재료를 모두 챙겼습니다!",
   "insight_addons.recipe.lack": "%s 없음",
   "insight_addons.configuration.listEditor.open": "목록 편집기 열기 (아이콘·검색)",
-  "insight_addons.configuration.listEditor.openText": "열기",
+  "insight_addons.configuration.listEditor.openText": "편집 (%s개) ▶",
   "insight_addons.configuration.listEditor.title": "목록 편집기",
   "insight_addons.configuration.listEditor.search": "이름 또는 ID 검색…",
   "insight_addons.configuration.listEditor.addLooking": "바라보는 블록 추가",

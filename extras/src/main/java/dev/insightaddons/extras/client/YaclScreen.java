@@ -134,15 +134,16 @@ public final class YaclScreen {
                     List<Object> built = new ArrayList<>();
                     for (ModConfigSpec.ConfigValue<?> cv : ge.getValue()) {
                         String leafKey = leafKeys.get(String.valueOf(System.identityHashCode(cv)));
+                        if (cv.get() instanceof List<?>) {
+                            Object btn = buildEditorButton(sKey, cv, leafKey, descC);
+                            if (btn != null) {
+                                built.add(btn);
+                                continue;
+                            }
+                        }
                         Object option = buildOption(optC, optB, descC, sKey, leafKey, cv);
                         if (option != null) {
                             built.add(option);
-                            if (cv.get() instanceof List<?>) {
-                                Object btn = buildEditorButton(null, cv, leafKey);
-                                if (btn != null) {
-                                    built.add(btn);
-                                }
-                            }
                         }
                     }
                     if (built.isEmpty()) {
@@ -181,11 +182,24 @@ public final class YaclScreen {
 
 
     /** 목록 설정 아래에 "목록 편집기 열기" 버튼을 만든다 (아이콘 목록, 검색, 바라보는 블록 추가). 실패하면 null. */
-    private static Object buildEditorButton(Object unused, ModConfigSpec.ConfigValue<?> cv, String leafKey) {
+    private static Object buildEditorButton(String section, ModConfigSpec.ConfigValue<?> cv, String leafKey, Class<?> descC) {
         try {
             Class<?> bc = Class.forName(P + "ButtonOption");
             Object b = bc.getMethod("createBuilder").invoke(null);
-            b = bc.getMethod("name", Component.class).invoke(b, Component.translatable("insight_addons.configuration.listEditor.open"));
+            b = bc.getMethod("name", Component.class).invoke(b, Component.translatable("insight_addons.configuration." + section + "." + leafKey));
+            Object spec = InsightConfig.SPEC.getSpec().get(cv.getPath());
+            if (spec instanceof ModConfigSpec.ValueSpec vs && vs.getComment() != null) {
+                List<Component> lines = new ArrayList<>();
+                for (String line : vs.getComment().split("\n")) {
+                    if (!line.isBlank()) {
+                        lines.add(Component.literal(line.trim()));
+                    }
+                }
+                lines.add(Component.empty());
+                lines.add(Component.translatable("insight_addons.configuration.listEditor.open"));
+                Object desc = descC.getMethod("of", Component[].class).invoke(null, (Object) lines.toArray(new Component[0]));
+                b = bc.getMethod("description", descC).invoke(b, desc);
+            }
             
             ListEditorScreen.Kind kind = leafKey.toUpperCase(java.util.Locale.ROOT).contains("MOD")
                     ? ListEditorScreen.Kind.MODID
@@ -201,7 +215,7 @@ public final class YaclScreen {
             };
             b = bc.getMethod("action", java.util.function.BiConsumer.class).invoke(b, action);
             try {
-                b = bc.getMethod("text", Component.class).invoke(b, Component.translatable("insight_addons.configuration.listEditor.openText"));
+                b = bc.getMethod("text", Component.class).invoke(b, Component.translatable("insight_addons.configuration.listEditor.openText", ((List<?>) cv.get()).size()));
             } catch (Throwable ignored) {
             }
             return bc.getMethod("build").invoke(b);
