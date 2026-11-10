@@ -94,8 +94,9 @@ public abstract class ChestBoundsMixin {
             // 셜커 상자: 몸통(아래 절반) 안쪽만 쓴다. 뚜껑이 위로 열린다.
             minX = 0.1f; maxX = 0.9f; minZ = 0.1f; maxZ = 0.9f;
             minY = 0.06f; maxY = 0.52f;
-            String color = path.equals("shulker_box") ? "purple" : path.substring(0, path.length() - "_shulker_box".length());
-            cavity = ResourceLocation.withDefaultNamespace("textures/block/" + color + "_concrete.png");
+            // 바닐라 셜커 모델의 안쪽 바닥 질감(색마다 다름)을 그대로 잘라 쓴다
+            String color = path.equals("shulker_box") ? "default" : path.substring(0, path.length() - "_shulker_box".length());
+            cavity = ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/shulker_inner/" + color + ".png");
         } else if (ns.equals("sophisticatedstorage") && path.contains("barrel")) {
             // Sophisticated Storage 통(제한 통 포함): 바닐라 통처럼 위가 뚫린 통. 등급 통은 해당 금속 질감, 나무 통은 참나무 통 바닥
             minX = 0.14f; maxX = 0.86f; minZ = 0.14f; maxZ = 0.86f;
@@ -110,7 +111,7 @@ public abstract class ChestBoundsMixin {
             minY = 0.06f; maxY = 0.52f;
             String tier = tierOf(path);
             cavity = tier != null ? metalBlock(tier)
-                    : ResourceLocation.withDefaultNamespace("textures/block/light_gray_concrete.png");
+                    : ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/shulker_inner/default.png");
         } else if (ns.equals("sophisticatedstorage") && path.contains("chest")) {
             // Sophisticated Storage 상자: 상자 모양 안쪽. 등급 상자는 해당 금속, 나무 상자는 어두운 나무 바닥
             minX = 0.08f; maxX = 0.92f; minZ = 0.08f; maxZ = 0.92f;

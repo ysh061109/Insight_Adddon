@@ -7,7 +7,7 @@ config = "insight_addons.mixins.json"
 
 [[mods]]
 modId = "insight_addons"
-version = "1.21.2"
+version = "1.21.3"
 displayName = "Insight Chests Plus"
 logoFile = "icon.png"
 description = '''
