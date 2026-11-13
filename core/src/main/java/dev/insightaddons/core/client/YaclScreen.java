@@ -148,6 +148,12 @@ public final class YaclScreen {
                         continue;
                     }
                     anyCat = true;
+                    if (ge.getKey().equals("glass")) {
+                        Object pb = buildPreviewButton();
+                        if (pb != null) {
+                            built.add(pb);
+                        }
+                    }
                     if (ge.getKey().isEmpty()) {
                         for (Object o : built) {
                             cat = catB.getMethod("option", optC).invoke(cat, o);
@@ -216,6 +222,28 @@ public final class YaclScreen {
                 b = bc.getMethod("text", Component.class).invoke(b, Component.translatable("insight_addons.configuration.listEditor.openText", ((List<?>) cv.get()).size()));
             } catch (Throwable ignored) {
             }
+            return bc.getMethod("build").invoke(b);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+
+    /** 유리 화면과 아이템 크기 견본을 보여 주는 "미리보기" 버튼. 실패하면 null. */
+    private static Object buildPreviewButton() {
+        try {
+            Class<?> bc = Class.forName(P + "ButtonOption");
+            Object b = bc.getMethod("createBuilder").invoke(null);
+            b = bc.getMethod("name", Component.class).invoke(b, Component.translatable("insight_addons.configuration.preview.open"));
+            java.util.function.BiConsumer<Object, Object> action = (scr, opt) -> {
+                try {
+                    Minecraft.getInstance().setScreen(new PreviewScreen((Screen) scr));
+                } catch (Throwable t) {
+                    dev.insightaddons.core.InsightAddons.LOGGER.warn("미리보기를 열지 못했습니다: {}", t.toString());
+                }
+            };
+            b = bc.getMethod("action", java.util.function.BiConsumer.class).invoke(b, action);
+            b = bc.getMethod("text", Component.class).invoke(b, Component.translatable("insight_addons.configuration.preview.openText"));
             return bc.getMethod("build").invoke(b);
         } catch (Throwable t) {
             return null;

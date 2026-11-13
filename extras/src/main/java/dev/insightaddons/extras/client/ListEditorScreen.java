@@ -111,8 +111,18 @@ public final class ListEditorScreen extends Screen {
 
     private void refilter(String text) {
         String q = text.toLowerCase(Locale.ROOT).trim();
+        String mod = null;
+        // "@모드ID 검색어" 형식이면 그 모드만 걸러낸다
+        if (q.startsWith("@")) {
+            int sp = q.indexOf(' ');
+            mod = sp < 0 ? q.substring(1) : q.substring(1, sp);
+            q = sp < 0 ? "" : q.substring(sp + 1).trim();
+        }
         List<ResourceLocation> out = new ArrayList<>();
         for (ResourceLocation rl : catalog) {
+            if (mod != null && !rl.getNamespace().contains(mod)) {
+                continue;
+            }
             if (q.isEmpty() || matches(rl, q)) {
                 out.add(rl);
                 if (out.size() >= 600) {
