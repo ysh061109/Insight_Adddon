@@ -16,10 +16,12 @@ public class InsightAddons {
 
     public InsightAddons(IEventBus modBus, ModContainer container) {
         modBus.addListener(Net::register);
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent e) -> MixinDiag.summary("로딩 완료"));
         // 클라이언트 전용 설정. 전용 서버에서는 로드되지 않으며 서버 코드는 이 값을 읽지 않습니다.
         container.registerConfig(ModConfig.Type.CLIENT, InsightConfig.SPEC);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             dev.insightaddons.extras.client.ClientInit.register(container);
+            DiagHooks.register();
         }
     }
 }

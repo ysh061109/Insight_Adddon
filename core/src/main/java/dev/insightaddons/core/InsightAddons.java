@@ -13,11 +13,13 @@ public class InsightAddons {
     public static final String MOD_ID = "insight_addons";
     public static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
-    public InsightAddons(ModContainer container) {
+    public InsightAddons(net.neoforged.bus.api.IEventBus modBus, ModContainer container) {
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLLoadCompleteEvent e) -> MixinDiag.summary("로딩 완료"));
         // 클라이언트 전용 설정. 전용 서버에서는 로드되지 않습니다.
         container.registerConfig(ModConfig.Type.CLIENT, InsightConfig.SPEC);
         if (FMLEnvironment.dist == Dist.CLIENT) {
             dev.insightaddons.core.client.ClientInit.register(container);
+            DiagHooks.register();
         }
     }
 }
