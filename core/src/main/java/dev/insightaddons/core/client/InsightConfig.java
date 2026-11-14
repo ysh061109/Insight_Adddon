@@ -71,7 +71,7 @@ public final class InsightConfig {
         KEEP_ORIGINAL_SCREEN = b.comment("true면 Sophisticated 계열은 원래 화면(업그레이드 탭 등)을 그대로 두고 3D 연출만 적용합니다.",
                         "false면 InSight Chests의 유리 화면으로 바꿉니다. 이 경우 업그레이드 탭이 보이지 않을 수 있습니다.")
                 .translation("insight_addons.configuration.insightChestsIntegration.keepOriginalScreen").define("keepOriginalScreen", true);
-        WINDOW_DRAG = b.comment("true면 보관함/상자 창의 윗부분(제목 줄)을 끌어서 창을 옮길 수 있습니다. 위치는 게임을 켜 둔 동안 기억하고, 제목 줄을 더블클릭하면 원래 자리로 돌아옵니다.")
+        WINDOW_DRAG = b.comment("true면 보관함/상자 창의 빈 곳(슬롯과 버튼이 없는 곳, 제목 줄 포함)을 끌어서 창을 옮길 수 있습니다. 위치는 게임을 켜 둔 동안 기억하고, 빈 곳을 더블클릭하면 원래 자리로 돌아옵니다.")
                 .translation("insight_addons.configuration.insightChestsIntegration.windowDrag").define("windowDrag", true);
         b.pop();
 

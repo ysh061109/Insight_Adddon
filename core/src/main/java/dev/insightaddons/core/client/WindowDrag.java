@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 보관함 창 끌어서 옮기기. 창 윗부분(제목 줄)을 끌면 화면 전체가 같이 움직입니다.
+ * 보관함 창 끌어서 옮기기. 창의 빈 곳(슬롯/버튼 없는 곳, 제목 줄 포함)을 끌면 화면 전체가 같이 움직입니다.
  * 화면을 직접 그리며(이동 후 좌표로) 마우스 입력도 이동한 만큼 되돌려서 화면에 전달하므로,
  * 슬롯, 업그레이드 탭, 슬라이더 등 어떤 화면에도 같은 방식으로 작동합니다.
  * 창 위치는 화면 종류별로 게임을 켜 둔 동안 기억합니다. 제목 줄을 더블클릭하면 원래 자리로 돌아옵니다.
@@ -53,6 +53,22 @@ public final class WindowDrag {
         return mx >= x && mx < x + s.getXSize() && my >= y && my < y + TITLE_H;
     }
 
+    /** 창 안(제목 줄 포함)에서 슬롯, 버튼, 들고 있는 아이템이 없는 빈 곳인지 */
+    private static boolean canStartDrag(AbstractContainerScreen<?> s, int[] o, double mx, double my, double ax, double ay) {
+        int x = s.getGuiLeft() + o[0];
+        int y = s.getGuiTop() + o[1];
+        boolean inside = mx >= x && mx < x + s.getXSize() && my >= y && my < y + s.getYSize();
+        if (!inside || !s.getMenu().getCarried().isEmpty() || s.getSlotUnderMouse() != null) {
+            return false;
+        }
+        for (var child : s.children()) {
+            if (child.isMouseOver(ax, ay)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     @SubscribeEvent
     public static void onRender(ScreenEvent.Render.Pre e) {
         Screen s = e.getScreen();
@@ -82,12 +98,8 @@ public final class WindowDrag {
         int[] o = off(s);
         double ax = e.getMouseX() - o[0];
         double ay = e.getMouseY() - o[1];
-        if (e.getButton() == 0 && inTitle((AbstractContainerScreen<?>) s, o, e.getMouseX(), e.getMouseY())) {
-            // 제목 줄 위: 먼저 화면의 버튼 등이 처리하게 하고, 아무것도 없으면 끌기 시작
-            if (s.mouseClicked(ax, ay, 0)) {
-                e.setCanceled(true);
-                return;
-            }
+        if (e.getButton() == 0 && canStartDrag((AbstractContainerScreen<?>) s, o, e.getMouseX(), e.getMouseY(), ax, ay)) {
+            // 슬롯이나 버튼이 없는 빈 곳을 눌렀을 때만 끌기를 시작한다
             long now = System.currentTimeMillis();
             if (now - lastTitleClick < 350) {
                 o[0] = 0;
