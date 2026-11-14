@@ -65,17 +65,18 @@ public final class ScreenEvents {
                 && StorageRenderer.hoveredItem() != null && StorageRenderer.hoveredPos() != null;
     }
 
-    /** 3D 아이템을 바라본 채 왼쪽 클릭하면 그 보관함에서 해당 아이템을 인벤토리로 가져온다. (Shift: 전부) */
+    /** 3D 아이템을 바라본 채 클릭하면 그 보관함에서 꺼낸다. 좌클릭: 1개, 우클릭: 한 스택, Shift+우클릭: 전부. */
     @SubscribeEvent
     public static void onAttack(InputEvent.InteractionKeyMappingTriggered event) {
-        if (!event.isAttack() || !canTake()) {
+        if (!(event.isAttack() || event.isUseItem()) || !canTake()) {
             return;
         }
         Item item = StorageRenderer.hoveredItem();
         BlockPos pos = StorageRenderer.hoveredPos();
         event.setCanceled(true);
         event.setSwingHand(false);
-        PacketDistributor.sendToServer(new TakeRequest(pos, BuiltInRegistries.ITEM.getKey(item), Screen.hasShiftDown()));
+        int mode = event.isAttack() ? 0 : Screen.hasShiftDown() ? 2 : 1;
+        PacketDistributor.sendToServer(new TakeRequest(pos, BuiltInRegistries.ITEM.getKey(item), mode));
     }
 
     /** 아이템을 바라보는 동안 클릭이 보관함 부수기로 이어지지 않게 한다. (크리에이티브 포함) */

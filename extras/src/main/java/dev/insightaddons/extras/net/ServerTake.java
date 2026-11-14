@@ -56,6 +56,10 @@ public final class ServerTake {
             return;
         }
 
+        // 플레이어가 열 수 없는 금고는 서버에서도 거절한다
+        if (BuiltInRegistries.BLOCK.getKey(level.getBlockState(pos).getBlock()).toString().equals("create:item_vault")) {
+            return;
+        }
         Item item = BuiltInRegistries.ITEM.getOptional(req.item()).orElse(null);
         IItemHandler handler = StorageAccess.find(level, pos);
         if (item == null || handler == null) {
@@ -63,7 +67,7 @@ public final class ServerTake {
         }
 
         IItemHandler inventory = new PlayerMainInvWrapper(player.getInventory());
-        int remaining = req.all() ? Integer.MAX_VALUE : item.getDefaultMaxStackSize();
+        int remaining = req.mode() >= 2 ? Integer.MAX_VALUE : req.mode() == 1 ? item.getDefaultMaxStackSize() : 1;
         int moved = 0;
         for (int slot = 0; slot < handler.getSlots() && remaining > 0; slot++) {
             ItemStack stack = handler.getStackInSlot(slot);

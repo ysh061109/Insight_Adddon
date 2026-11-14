@@ -65,7 +65,7 @@
   "insight_addons.configuration.wrenchScan.selectCosine": "Selection accuracy",
   "insight_addons.configuration.wrenchScan.sourceLabels": "Container labels",
   "insight_addons.configuration.wrenchScan.maxLabeledContainers": "Max labels",
-  "insight_addons.take.hint": "Click: take a stack · Shift+click: take all (%s)",
+  "insight_addons.take.hint": "Left: 1 · Right: stack · Shift+Right: all (%s)",
   "insight_addons.recipe.done": "Ingredients collected. Display turned off.",
   "insight_addons.recipe.none.all": "No needed ingredients in nearby containers.",
   "insight_addons.recipe.inv.all": "You already have the ingredients in your inventory.",
@@ -75,7 +75,7 @@
   "insight_addons.configuration.mekanism.enabled": "Show Mekanism personal chest/bins",
   "insight_addons.configuration.wrenchScan.tools": "Wrench tools (toolId=modId)",
   "insight_addons.take.target": "%s ×%s",
-  "insight_addons.take.hint2": "Click: one stack · Shift+click: all",
+  "insight_addons.take.hint2": "Left: 1 · Right: stack · Shift+Right: all",
   "insight_addons.ae.header": "ME network · %s types · %s items",
   "key.categories.insight_addons": "Insight Addons",
   "key.insight_addons.search": "Search containers",
@@ -155,5 +155,6 @@
   "insight_addons.configuration.listEditor.noHeld": "Nothing in hand",
   "insight_addons.configuration.listEditor.notBlock": "Not a block item",
   "insight_addons.configuration.listEditor.notInstalled": "Not installed: %s",
-  "insight_addons.configuration.listEditor.wildcard": "All of %s"
+  "insight_addons.configuration.listEditor.wildcard": "All of %s",
+  "insight_addons.configuration.nearDisplay.noTakeBlocks": "No-take containers (vaults etc.)"
 }

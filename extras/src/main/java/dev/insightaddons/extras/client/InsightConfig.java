@@ -24,6 +24,7 @@ public final class InsightConfig {
     public static final ModConfigSpec.BooleanValue STICKY_DISPLAY;
     public static final ModConfigSpec.IntValue STICKY_DISTANCE;
     public static final ModConfigSpec.BooleanValue CLICK_TAKE;
+    public static final ModConfigSpec.ConfigValue<List<? extends String>> NO_TAKE_BLOCKS;
 
 
     // ── JEI 조합 재료 표시 ──
@@ -92,9 +93,13 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.nearDisplay.stickyDisplay").define("stickyDisplay", true);
         STICKY_DISTANCE = b.comment("유지 표시가 이 거리(블록)보다 멀어지면 꺼집니다.")
                 .translation("insight_addons.configuration.nearDisplay.stickyDistance").defineInRange("stickyDistance", 24, 4, 96);
-        CLICK_TAKE = b.comment("표시된 3D 아이템을 바라보고 왼쪽 클릭하면 그 아이템을 보관함에서 인벤토리로 가져옵니다. (Shift+클릭: 전부)",
+        CLICK_TAKE = b.comment("표시된 3D 아이템을 바라보고 클릭하면 그 아이템을 보관함에서 인벤토리로 가져옵니다.",
+                        "왼쪽 클릭: 1개 · 오른쪽 클릭: 한 스택 · Shift+오른쪽 클릭: 전부",
                         "서버에도 이 모드가 있어야 합니다.")
                 .translation("insight_addons.configuration.nearDisplay.clickToTake").define("clickToTake", true);
+        NO_TAKE_BLOCKS = b.comment("플레이어가 직접 열 수 없는 보관함(금고, 서랍 등)의 블록 ID. 여기에 있는 보관함은 바라봐도 아이템을 골라 꺼내는 기능이 꺼집니다. (*는 와일드카드)")
+                .translation("insight_addons.configuration.nearDisplay.noTakeBlocks")
+                .defineListAllowEmpty("noTakeBlocks", List.of("create:item_vault", "storagedrawers:*"), () -> "", o -> o instanceof String);
         NEAR_FRAME = b.comment("보관함 종류에 맞는 색의 테두리를 표시합니다.").translation("insight_addons.configuration.nearDisplay.frame").define("frame", true);
         NEAR_UPGRADES = b.comment("배낭의 업그레이드를 작은 아이콘으로 표시합니다. (배낭을 열어 본 뒤부터)").translation("insight_addons.configuration.nearDisplay.showUpgrades").define("showUpgrades", true);
         b.pop();

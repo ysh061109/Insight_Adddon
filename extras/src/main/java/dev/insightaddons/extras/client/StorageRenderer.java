@@ -106,6 +106,18 @@ public final class StorageRenderer {
         return hoverItem;
     }
 
+    private static final GlobList NO_TAKE = new GlobList();
+
+    /** 플레이어가 열 수 없는 보관함(금고 등)인지: 설정 목록 기준 */
+    private static boolean noTake(BlockPos pos) {
+        var mc = Minecraft.getInstance();
+        if (mc.level == null) {
+            return false;
+        }
+        var id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(mc.level.getBlockState(pos).getBlock());
+        return NO_TAKE.matches(InsightConfig.NO_TAKE_BLOCKS.get(), id);
+    }
+
     public static BlockPos hoveredPos() {
         return hoverPos;
     }
@@ -182,7 +194,7 @@ public final class StorageRenderer {
         }
         Vec3 eye = mc.player.getEyePosition(partialTick);
         Vec3 look = mc.player.getViewVector(partialTick);
-        boolean clickable = InsightConfig.CLICK_TAKE.get() && ClientEvents.serverHasMod();
+        boolean clickable = InsightConfig.CLICK_TAKE.get() && ClientEvents.serverHasMod() && !noTake(view.pos());
         Component hovered = null;
         int hoveredCount = 0;
         int maxStacks = InsightConfig.NEAR_MAX_ICONS.get();
