@@ -166,5 +166,6 @@
   "insight_addons.configuration.preview.kind.basic": "기본",
   "insight_addons.configuration.preview.kind.backpack": "배낭",
   "insight_addons.configuration.preview.kind.shulker": "셜커",
-  "insight_addons.configuration.preview.kind.barrel": "통"
+  "insight_addons.configuration.preview.kind.barrel": "통",
+  "insight_addons.configuration.insightChestsIntegration.windowDrag": "보관함 창 끌어서 옮기기"
 }

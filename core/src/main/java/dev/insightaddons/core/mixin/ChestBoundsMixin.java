@@ -172,6 +172,16 @@ public abstract class ChestBoundsMixin {
             minX = 0.14f; maxX = 0.86f; minZ = 0.2f; maxZ = 0.8f;
             minY = 0.06f; maxY = 0.5f;
             cavity = ResourceLocation.withDefaultNamespace("textures/block/spruce_planks.png");
+        } else if ("ironchest".equals(ns) && path.endsWith("chest")) {
+            // Iron Chests: 실제 상자 모델 텍스처의 안쪽 바닥(나무 바닥 + 등급별 금속 테두리)을 그대로 쓴다
+            minX = 0.08f; maxX = 0.92f; minZ = 0.08f; maxZ = 0.92f;
+            minY = 0.06f; maxY = 0.58f;
+            String t = path.startsWith("trapped_") ? path.substring(8) : path;
+            t = t.substring(0, t.length() - "_chest".length());
+            if (!java.util.List.of("copper", "iron", "gold", "diamond", "crystal", "obsidian", "dirt", "netherite").contains(t)) {
+                t = "iron";
+            }
+            cavity = ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/iron_inner/" + t + ".png");
         } else if (!"minecraft".equals(ns)) {
             // 그 밖의 모든 모드 보관함: 블록 모양에서 내부 공간을, 블록 모델의 대표 질감(파티클 아이콘)에서 바닥 질감을 자동으로 정한다
             ResourceLocation tex = particleTexture(state);

@@ -38,7 +38,7 @@ public final class YaclScreen {
         SECTION_COLORS.put("insightChestsIntegration", 0xC792EA);
 
         Map<String, List<String>> ins = new LinkedHashMap<>();
-        ins.put("basic", List.of("enabled", "blocks", "keepOriginalScreen"));
+        ins.put("basic", List.of("enabled", "blocks", "keepOriginalScreen", "windowDrag"));
         ins.put("glass", List.of("glassSkin", "glassAlpha", "glassSlotAlpha", "followInsightPosition"));
         ins.put("items", List.of("itemScale", "itemScaleBackpack", "itemScaleShulker", "itemScaleBarrel", "dropRatio", "dropMaxTotal", "itemSizeScaling", "itemGlow", "fancyModIds"));
         LAYOUT.put("insightChestsIntegration", ins);

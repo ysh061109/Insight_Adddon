@@ -50,11 +50,21 @@ public final class ScreenEvents {
                 && mc.level.getBlockEntity(hit.getBlockPos()) != null;
     }
 
+    private static boolean isGlassChest(Object screen) {
+        return screen != null && screen.getClass().getName().equals("com.mrsun.insightchests.client.gui.GlassChestScreen");
+    }
+
     /** 화면이 열리기 직전: 어떤 방식으로 열렸는지 판단해서 유리 스킨 적용 여부와 EMI 숨김을 정한다. */
     @SubscribeEvent
     public static void onOpening(ScreenEvent.Opening event) {
         Minecraft mc = Minecraft.getInstance();
         Screen next = event.getNewScreen();
+        if (insightPresent() && isGlassChest(next)) {
+            // InSight 유리 보관함 화면(바닐라 상자, Iron Chests 등)에서도 EMI 검색창 등을 숨긴다
+            GlassSkin.setPlaced(false);
+            EmiBridge.hide();
+            return;
+        }
         if (!insightPresent() || next == null || !GlassSkin.isStorageScreenClass(next)) {
             GlassSkin.setPlaced(false);
             EmiBridge.restore();
@@ -74,7 +84,7 @@ public final class ScreenEvents {
 
     @SubscribeEvent
     public static void onClosing(ScreenEvent.Closing event) {
-        if (GlassSkin.isStorageScreenClass(event.getScreen())) {
+        if (GlassSkin.isStorageScreenClass(event.getScreen()) || isGlassChest(event.getScreen())) {
             // 다음 화면이 곧바로 이어질 수 있어서 상태는 Opening/틱에서 정리한다
             pendingReset = true;
         }
@@ -86,7 +96,7 @@ public final class ScreenEvents {
     @SubscribeEvent
     public static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.screen == null || !GlassSkin.isStorageScreenClass(mc.screen)) {
+        if (mc.screen == null || !(GlassSkin.isStorageScreenClass(mc.screen) || isGlassChest(mc.screen))) {
             if (GlassSkin.placed() || EmiBridge.hidden() || pendingReset) {
                 GlassSkin.setPlaced(false);
                 EmiBridge.restore();
