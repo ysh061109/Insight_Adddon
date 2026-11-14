@@ -151,6 +151,21 @@ public final class CraftFx {
         }
     }
 
+    /** 보관함에서 아이템을 꺼낼 때: 보관함에서 플레이어 쪽으로 아이콘이 날아온다. mode 0=1개, 1=한 스택, 2=전부 */
+    public static void addTake(Minecraft mc, Item item, BlockPos box, int mode) {
+        if (!InsightConfig.CRAFT_FX.get() || mc.level == null || mc.player == null) {
+            return;
+        }
+        long now = mc.level.getGameTime();
+        Vec3 from = Vec3.atCenterOf(box);
+        Vec3 look = mc.player.getLookAngle();
+        Vec3 to = mc.player.getEyePosition().add(look.x * 0.7, -0.45, look.z * 0.7);
+        int n = mode >= 2 ? 6 : mode == 1 ? 3 : 1;
+        for (int i = 0; i < n; i++) {
+            FLIES.add(new Fly(new ItemStack(item), from, to, i == 0 ? box : null, now + i * 2L, 14));
+        }
+    }
+
     public static void tick(ClientLevel level) {
         if (FLIES.isEmpty()) {
             return;

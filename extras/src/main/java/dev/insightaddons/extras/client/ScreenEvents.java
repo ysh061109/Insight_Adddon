@@ -76,6 +76,7 @@ public final class ScreenEvents {
         event.setCanceled(true);
         event.setSwingHand(false);
         int mode = event.isAttack() ? 0 : Screen.hasShiftDown() ? 2 : 1;
+        CraftFx.addTake(Minecraft.getInstance(), item, pos, mode);
         PacketDistributor.sendToServer(new TakeRequest(pos, BuiltInRegistries.ITEM.getKey(item), mode));
     }
 
