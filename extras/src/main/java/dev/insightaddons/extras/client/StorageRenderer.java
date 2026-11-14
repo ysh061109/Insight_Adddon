@@ -101,6 +101,7 @@ public final class StorageRenderer {
     private static BlockPos hoverPos;
     private static double hoverBestT;
     private static Item prevHoverItem;
+    private static Vec3 hoverWorld;
 
     public static Item hoveredItem() {
         return hoverItem;
@@ -116,6 +117,11 @@ public final class StorageRenderer {
         }
         var id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(mc.level.getBlockState(pos).getBlock());
         return NO_TAKE.matches(InsightConfig.NO_TAKE_BLOCKS.get(), id);
+    }
+
+    /** 지금 바라보는 3D 아이콘의 월드 좌표 */
+    public static Vec3 hoveredWorld() {
+        return hoverWorld;
     }
 
     public static BlockPos hoveredPos() {
@@ -139,6 +145,7 @@ public final class StorageRenderer {
             hoverBestT = t;
             hoverItem = item;
             hoverPos = pos;
+            hoverWorld = center;
         }
         return item == prevHoverItem;
     }

@@ -14,6 +14,8 @@ public final class Net {
         registrar.playToServer(TakeRequest.TYPE, TakeRequest.CODEC, ServerTake::handle);
         registrar.playToClient(CraftFxPacket.TYPE, CraftFxPacket.CODEC,
                 (payload, ctx) -> ctx.enqueueWork(() -> dev.insightaddons.extras.client.CraftFx.addRemote(payload)));
+        registrar.playToClient(TakeResult.TYPE, TakeResult.CODEC,
+                (payload, ctx) -> ctx.enqueueWork(() -> dev.insightaddons.extras.client.CraftFx.addTake(payload)));
         // 람다 안에서만 ClientCache를 참조하므로 전용 서버에서는 클래스가 로드되지 않습니다.
         registrar.playToClient(ScanResult.TYPE, ScanResult.CODEC,
                 (payload, ctx) -> ctx.enqueueWork(() -> ClientCache.accept(payload)));

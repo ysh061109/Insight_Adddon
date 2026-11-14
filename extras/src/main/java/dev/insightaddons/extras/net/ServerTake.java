@@ -104,8 +104,10 @@ public final class ServerTake {
 
         if (moved > 0) {
             level.playSound(null, player.blockPosition(), SoundEvents.ITEM_PICKUP, SoundSource.PLAYERS, 0.25f, 1.3f);
-            // 바뀐 내용을 바로 다시 보내서 화면의 개수가 곧바로 갱신되게 한다
-            ServerScan.scan(player, new ScanRequest(0, "", List.of(pos), List.of()));
+            // 바뀐 내용을 캐시/간격 제한 없이 바로 다시 보내서 화면의 개수가 곧바로 갱신되게 한다
+            ServerScan.scanNow(player, new ScanRequest(0, "", List.of(pos), List.of()));
+            // 실제로 꺼낸 개수를 알려서 그만큼만 날아오는 연출을 보여준다
+            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, new TakeResult(pos, item, moved));
         }
     }
 }

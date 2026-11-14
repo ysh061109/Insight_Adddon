@@ -35,7 +35,7 @@ public final class ServerScan {
     private static final int[] MIN_INTERVAL = {4, 12, 4};
     private static final long BUDGET_NANOS = 3_000_000L;
     private static final int MAX_SLOTS = 2048;
-    private static final int CACHE_TICKS = 10;
+    private static final int CACHE_TICKS = 3;
     private static final int CACHE_MAX = 4096;
 
     private record Cached(long time, Map<Item, Long> totals) {}
@@ -57,10 +57,20 @@ public final class ServerScan {
         ctx.enqueueWork(() -> scan(player, req));
     }
 
+    /** 보관함 내용이 바뀐 직후(꺼내기 등): 캐시를 비우고 제한 없이 바로 다시 읽어 보낸다 */
+    static void scanNow(ServerPlayer player, ScanRequest req) {
+        CACHE.clear();
+        scan(player, req, true);
+    }
+
     static void scan(ServerPlayer player, ScanRequest req) {
+        scan(player, req, false);
+    }
+
+    private static void scan(ServerPlayer player, ScanRequest req, boolean force) {
         int m = Math.max(0, Math.min(2, req.mode()));
         int[] last = LAST.computeIfAbsent(player.getUUID(), k -> new int[]{-1000, -1000, -1000});
-        if (player.tickCount - last[m] < MIN_INTERVAL[m]) {
+        if (!force && player.tickCount - last[m] < MIN_INTERVAL[m]) {
             return;  // 너무 자주 온 요청은 무시 (클라이언트는 이전 결과를 계속 쓴다)
         }
         last[m] = player.tickCount;

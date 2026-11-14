@@ -151,18 +151,32 @@ public final class CraftFx {
         }
     }
 
-    /** 보관함에서 아이템을 꺼낼 때: 보관함에서 플레이어 쪽으로 아이콘이 날아온다. mode 0=1개, 1=한 스택, 2=전부 */
-    public static void addTake(Minecraft mc, Item item, BlockPos box, int mode) {
-        if (!InsightConfig.CRAFT_FX.get() || mc.level == null || mc.player == null) {
+    private static Vec3 pendingFrom;
+    private static BlockPos pendingPos;
+    private static Item pendingItem;
+
+    /** 꺼내기를 요청한 순간 바라보던 아이콘의 위치를 기억해 둔다 (결과가 오면 거기서 출발) */
+    public static void noteTake(BlockPos pos, Item item, Vec3 iconPos) {
+        pendingPos = pos;
+        pendingItem = item;
+        pendingFrom = iconPos;
+    }
+
+    /** 서버가 알려 준 실제 꺼낸 개수만큼, 아이콘 자리에서 플레이어 쪽으로 날아온다 */
+    public static void addTake(dev.insightaddons.extras.net.TakeResult r) {
+        Minecraft mc = Minecraft.getInstance();
+        if (!InsightConfig.CRAFT_FX.get() || mc.level == null || mc.player == null || r.moved() <= 0) {
             return;
         }
         long now = mc.level.getGameTime();
-        Vec3 from = Vec3.atCenterOf(box);
+        Vec3 from = pendingFrom != null && r.pos().equals(pendingPos) && r.item() == pendingItem
+                ? pendingFrom : Vec3.atCenterOf(r.pos());
         Vec3 look = mc.player.getLookAngle();
         Vec3 to = mc.player.getEyePosition().add(look.x * 0.7, -0.45, look.z * 0.7);
-        int n = mode >= 2 ? 6 : mode == 1 ? 3 : 1;
+        // 꺼낸 개수만큼 날린다 (많으면 최대 24개까지만 그리고, 그 이상은 한 번에 여러 개를 대표하게 한다)
+        int n = Math.min(r.moved(), 24);
         for (int i = 0; i < n; i++) {
-            FLIES.add(new Fly(new ItemStack(item), from, to, i == 0 ? box : null, now + i * 2L, 14));
+            FLIES.add(new Fly(new ItemStack(r.item()), from, to, i == 0 ? r.pos() : null, now + i, 14));
         }
     }
 

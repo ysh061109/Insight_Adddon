@@ -118,7 +118,7 @@ public final class ClientEvents {
         if (InsightConfig.NEAR_ENABLED.get()) {
             updateTarget(mc, level);
             BlockPos target = ClientCache.target();
-            if (target != null && ticks % 10 == 0 && serverHasMod()) {
+            if (target != null && ticks % 4 == 0 && serverHasMod()) {
                 PacketDistributor.sendToServer(new ScanRequest(0, "", List.of(target), List.of()));
             }
         } else {
