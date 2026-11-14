@@ -13,7 +13,7 @@ InSight Chests(`insightchests` 1.21.1 NeoForge 1.0.4) 애드온입니다. 1.21.0
 
 ## 1.22.0 (릴리스 점검)
 - mods.toml 버전을 gradle.properties 한 곳에서 채우도록 수정(이전엔 1.21.5로 고정돼 있었음), CI에서 확인.
-- LICENSE(MIT) 추가. 일부 텍스처의 원작 라이선스 안내 포함.
+- LICENSE(MIT)와 NOTICE.md(제3자 자료/라이선스 정리) 추가. 라이선스 때문에 Iron Chests/Sophisticated 이미지를 잘라 쓰던 내부 텍스처(Iron Chests 8종, Sophisticated 상자, 배낭)를 모두 직접 새로 그린 이미지로 교체.
 - (Extras) 보관함을 열어 둔 동안 기억 갱신 주기를 5틱 -> 2틱으로 단축.
 
 ## 1.21.13 변경 사항
@@ -158,8 +158,8 @@ GitHub에 올리면 `.github/workflows/build.yml`이 자동으로 빌드해 Acti
 
 ## 1.20.40 변경 사항
 
-- Sophisticated Storage 나무 상자 내부: 모드의 상자 전개도 텍스처에서 안쪽 바닥(어두운 나무) 부분을 잘라 만든 질감을 씁니다.
-- Sophisticated Backpacks 내부: 배낭 천 텍스처의 꿰맨 무늬를 가죽 갈색으로 물들인 질감을 씁니다.
+- Sophisticated Storage 나무 상자 내부: 어두운 나무 바닥을 직접 그린 질감을 씁니다.
+- Sophisticated Backpacks 내부: 가죽 갈색에 꿰맨 테두리를 직접 그린 질감을 씁니다.
 
 ## 1.20.39 변경 사항
 
