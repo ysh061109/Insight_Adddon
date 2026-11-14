@@ -46,3 +46,11 @@ dependencies {
 jar {
     exclude 'dev/emi/**'
 }
+
+// neoforge.mods.toml의 ${mod_version}을 gradle.properties의 mod_version으로 채웁니다. (버전이 한 곳에서만 관리되도록)
+processResources {
+    inputs.property 'mod_version', project.mod_version
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand(mod_version: project.mod_version)
+    }
+}

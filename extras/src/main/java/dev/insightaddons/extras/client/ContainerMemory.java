@@ -127,7 +127,7 @@ public final class ContainerMemory {
                 }
                 lastRecord = 0;
             }
-            if (openPos != null && now - lastRecord >= 5) {
+            if (openPos != null && now - lastRecord >= 2) {
                 lastRecord = now;
                 record(level, player, menu, openPos);
             }

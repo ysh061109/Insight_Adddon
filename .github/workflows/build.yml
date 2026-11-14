@@ -20,6 +20,11 @@ jobs:
               echo "컴파일용 stub 클래스가 $j 에 들어갔습니다"; exit 1
             fi
           done
+      - name: jar 안의 mods.toml 버전이 채워졌는지 확인
+        run: |
+          for j in core/build/libs/*.jar extras/build/libs/*.jar; do
+            unzip -p "$j" META-INF/neoforge.mods.toml | grep -E '^version' | tee /dev/stderr | grep -q '\${' && { echo "버전이 채워지지 않았습니다: $j"; exit 1; } || true
+          done
       - uses: actions/upload-artifact@v4
         with:
           name: insight_chests_plus-jar
