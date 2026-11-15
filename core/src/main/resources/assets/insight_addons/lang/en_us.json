@@ -70,7 +70,7 @@
   "insight_addons.recipe.done": "Ingredients collected. Display turned off.",
   "insight_addons.recipe.none.all": "No needed ingredients in nearby containers.",
   "insight_addons.recipe.inv.all": "You already have the ingredients in your inventory.",
-  "insight_addons.configuration.ae2": "AE2 integration",
+  "insight_addons.configuration.ae2": "AE2 server room",
   "insight_addons.configuration.ae2.enabled": "Show AE2 ME chest/drive/interface",
   "insight_addons.configuration.mekanism": "Mekanism integration",
   "insight_addons.configuration.mekanism.enabled": "Show Mekanism personal chest/bins",
@@ -117,7 +117,7 @@
   "insight_addons.configuration.nearDisplay.desc": "Style the 3D items and counts shown while looking at a container.",
   "insight_addons.configuration.insightChestsIntegration.desc": "Extend InSight Chests visuals to backpacks, barrels, shulkers and restyle screens.",
   "insight_addons.configuration.recipeFocus.desc": "Settings for the 3D ingredient display shown from JEI/EMI.",
-  "insight_addons.configuration.ae2.desc": "AE2 ME storage and terminal 3D display, plus the physics pile effect.",
+  "insight_addons.configuration.ae2.desc": "Server-room item pile and glass window shown when an AE2 terminal is open.",
   "insight_addons.configuration.mekanism.desc": "Mekanism personal chest and bin support.",
   "insight_addons.configuration.effects.desc": "Adjust sounds and particles in one place.",
   "insight_addons.configuration.craftEffect.desc": "Ingredients fly to the overhead crafting grid when you craft.",
@@ -168,5 +168,12 @@
   "insight_addons.configuration.preview.kind.shulker": "Shulker",
   "insight_addons.configuration.preview.kind.barrel": "Barrel",
   "insight_addons.configuration.insightChestsIntegration.windowDrag": "Drag chest windows",
-  "insight_addons.chaos": "Chaos"
+  "insight_addons.chaos": "Chaos",
+  "insight_addons.configuration.ae2.pileRatio": "Server room item ratio (%)",
+  "insight_addons.configuration.ae2.guiAlpha": "AE2 terminal window opacity (%)",
+  "insight_addons.configuration.ae2.glass": "AE2 terminal glass window",
+  "insight_addons.configuration.ae2.glassAlpha": "Glass window opacity (0-255)",
+  "insight_addons.configuration.ae2.glassSlotAlpha": "Glass window slot brightness (0-255)",
+  "insight_addons.configuration.ae2.overlayAlpha": "JEI/EMI overlay opacity (%)",
+  "insight_addons.configuration.ae2.hideEmi": "Hide EMI while terminal is open"
 }

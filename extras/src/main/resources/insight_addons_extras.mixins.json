@@ -5,12 +5,7 @@
   "package": "dev.insightaddons.extras.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "ScissorOffsetMixin",
-    "AeGuiAlphaMixin",
-    "AeGlassMixin",
-    "AeGlassTextMixin",
-    "EmiRecipeDisplayMixin",
-    "AeBackgroundMixin"
+    "EmiRecipeDisplayMixin"
   ],
   "injectors": {
     "defaultRequire": 0

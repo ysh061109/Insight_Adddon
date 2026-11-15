@@ -70,7 +70,7 @@
   "insight_addons.recipe.done": "재료를 챙겼습니다. 표시를 껐습니다.",
   "insight_addons.recipe.none.all": "주변 보관함에 필요한 재료가 없습니다.",
   "insight_addons.recipe.inv.all": "필요한 재료가 이미 인벤토리에 있습니다.",
-  "insight_addons.configuration.ae2": "AE2 연동",
+  "insight_addons.configuration.ae2": "AE2 서버룸 연출",
   "insight_addons.configuration.ae2.enabled": "AE2 ME 상자/드라이브/인터페이스 표시 사용",
   "insight_addons.configuration.mekanism": "Mekanism 연동",
   "insight_addons.configuration.mekanism.enabled": "Mekanism 개인 상자/저장통 표시 사용",
@@ -117,7 +117,7 @@
   "insight_addons.configuration.nearDisplay.desc": "보관함을 바라볼 때 옆에 뜨는 3D 아이템과 개수 표시를 꾸밉니다.",
   "insight_addons.configuration.insightChestsIntegration.desc": "InSight Chests 연출을 배낭, 통, 셜커 등에 확장하고 화면 스타일을 바꿉니다.",
   "insight_addons.configuration.recipeFocus.desc": "JEI/EMI에서 재료 찾기를 눌렀을 때 보이는 3D 재료 표시 설정입니다.",
-  "insight_addons.configuration.ae2.desc": "AE2 ME 저장소와 단말기 3D 표시, 물리 쌓기 연출 설정입니다.",
+  "insight_addons.configuration.ae2.desc": "AE2 단말기를 열었을 때 아이템이 서버룸에 쌓이는 연출과 유리 창 설정입니다.",
   "insight_addons.configuration.mekanism.desc": "Mekanism 개인 상자와 저장통 연동입니다.",
   "insight_addons.configuration.effects.desc": "소리와 파티클을 한꺼번에 조절합니다.",
   "insight_addons.configuration.craftEffect.desc": "제작할 때 재료가 날아가고 머리 위 작업대에 나타나는 연출입니다.",
@@ -168,5 +168,12 @@
   "insight_addons.configuration.preview.kind.shulker": "셜커",
   "insight_addons.configuration.preview.kind.barrel": "통",
   "insight_addons.configuration.insightChestsIntegration.windowDrag": "보관함 창 끌어서 옮기기",
-  "insight_addons.chaos": "난장판"
+  "insight_addons.chaos": "난장판",
+  "insight_addons.configuration.ae2.pileRatio": "서버룸 아이템 비율 (%)",
+  "insight_addons.configuration.ae2.guiAlpha": "AE2 단말기 창 불투명도 (%)",
+  "insight_addons.configuration.ae2.glass": "AE2 단말기 유리 창 (배낭처럼 투명)",
+  "insight_addons.configuration.ae2.glassAlpha": "유리 창 진하기 (0~255)",
+  "insight_addons.configuration.ae2.glassSlotAlpha": "유리 창 슬롯 밝기 (0~255)",
+  "insight_addons.configuration.ae2.overlayAlpha": "JEI/EMI 요소 불투명도 (%)",
+  "insight_addons.configuration.ae2.hideEmi": "단말기 열 때 EMI 끄기"
 }

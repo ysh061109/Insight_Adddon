@@ -1,7 +1,7 @@
-package dev.insightaddons.extras.mixin;
+package dev.insightaddons.core.mixin;
 
-import dev.insightaddons.extras.client.AeGlass;
-import dev.insightaddons.extras.client.AeTerminal;
+import dev.insightaddons.core.client.AeGlass;
+import dev.insightaddons.core.client.AeTerminal;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import org.spongepowered.asm.mixin.Mixin;

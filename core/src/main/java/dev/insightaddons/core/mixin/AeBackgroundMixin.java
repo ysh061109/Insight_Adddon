@@ -1,6 +1,6 @@
-package dev.insightaddons.extras.mixin;
+package dev.insightaddons.core.mixin;
 
-import dev.insightaddons.extras.client.AeTerminal;
+import dev.insightaddons.core.client.AeTerminal;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import org.spongepowered.asm.mixin.Mixin;

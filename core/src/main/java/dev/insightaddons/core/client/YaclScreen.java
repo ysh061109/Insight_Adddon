@@ -36,6 +36,7 @@ public final class YaclScreen {
 
     static {
         SECTION_COLORS.put("insightChestsIntegration", 0xC792EA);
+        SECTION_COLORS.put("ae2", 0x5CE1E6);
 
         Map<String, List<String>> ins = new LinkedHashMap<>();
         ins.put("basic", List.of("enabled", "blocks", "keepOriginalScreen", "windowDrag"));

@@ -1,4 +1,4 @@
-package dev.insightaddons.extras.client;
+package dev.insightaddons.core.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -73,7 +73,7 @@ public final class AeScene {
     }
 
     private static void sound(net.minecraft.sounds.SoundEvent e, float pitch, float vol) {
-        Fx.sound(e, pitch, vol);
+        AeFx.sound(e, pitch, vol);
     }
 
     public static void tick(Minecraft mc) {
@@ -81,7 +81,7 @@ public final class AeScene {
             return;
         }
         long now = mc.level.getGameTime();
-        open = InsightConfig.AE2_ENABLED.get() && AeTerminal.isTerminalScreen(mc.screen);
+        open = AeTerminal.isTerminalScreen(mc.screen);
         prevAnim = anim;
         anim += ((open ? 1f : 0f) - anim) * 0.25f;
         if (!open && anim < 0.02f) {
@@ -221,7 +221,7 @@ public final class AeScene {
         // 단말기 창 왼쪽의 빈 공간 한가운데에 오도록 화면 좌표에서 거꾸로 위치를 계산한다 (창이 넓어도 가려지지 않게)
         if (mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> acs
                 && acs.getGuiLeft() > 40 && mc.screen.width > 0) {
-            org.joml.Matrix4f pm = StorageRenderer.projection();
+            org.joml.Matrix4f pm = AeDraw.projection();
             float m00 = pm.m00();
             float m11 = pm.m11();
             if (m00 > 0.01f && m11 > 0.01f) {
@@ -262,9 +262,9 @@ public final class AeScene {
         for (int i = 0; i < shown.size(); i++) {
             Entry e = shown.get(i);
             Vec3 pos = slotPos(origin, right, up, i, rows);
-            ItemStack stack = StorageRenderer.icon(e.item());
-            StorageRenderer.drawIcon(ps, camPos, pos, stack, 0.15f * a, time * 2f + i * 17f, buffers, mc);
-            StorageRenderer.drawLabel(ps, camera, camPos, pos.add(up.scale(-0.16)), Component.literal(compact(e.count())),
+            ItemStack stack = AeDraw.icon(e.item());
+            AeDraw.drawIcon(ps, camPos, pos, stack, 0.15f * a, time * 2f + i * 17f, buffers, mc);
+            AeDraw.drawLabel(ps, camera, camPos, pos.add(up.scale(-0.16)), Component.literal(compact(e.count())),
                     0.011f, 0xFFFFFFFF, PITCH * 0.95, 1);
         }
         // 꺼낸/넣은 아이템: 진열대와 플레이어 사이를 날아간다
@@ -276,9 +276,9 @@ public final class AeScene {
             Vec3 to = f.out() ? chest : slot;
             Vec3 pos = from.add(to.subtract(from).scale(ease)).add(0, Math.sin(t * Math.PI) * 0.25, 0);
             float s = (float) (0.2 * (f.out() ? 1.0 - 0.5 * t : 0.5 + 0.5 * t));
-            StorageRenderer.drawIcon(ps, camPos, pos, StorageRenderer.icon(f.item()), s, time * 8f, buffers, mc);
+            AeDraw.drawIcon(ps, camPos, pos, AeDraw.icon(f.item()), s, time * 8f, buffers, mc);
         }
-        StorageRenderer.drawLabel(ps, camera, camPos, origin.add(up.scale(halfH + 0.12)),
+        AeDraw.drawLabel(ps, camera, camPos, origin.add(up.scale(halfH + 0.12)),
                 Component.translatable("insight_addons.ae.header", kinds, compact(total)), 0.014f, 0xFF59C4F5, 0.0, 4);
         buffers.endBatch();
     }

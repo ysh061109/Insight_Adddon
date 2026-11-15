@@ -1,7 +1,7 @@
-package dev.insightaddons.extras.client;
+package dev.insightaddons.core.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.insightaddons.extras.InsightAddons;
+import dev.insightaddons.core.InsightAddons;
 import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;

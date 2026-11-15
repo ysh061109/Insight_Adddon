@@ -48,7 +48,6 @@ public final class ClientEvents {
         RecipeFocus.clear();
         CraftFx.clear();
         CraftTable.clear();
-        AeScene.clear();
         HoverTracker.clear();
         lastDimension = null;
     }
@@ -90,7 +89,6 @@ public final class ClientEvents {
         ContainerMemory.tick(mc, level, player);
         CraftFx.tick(level);
         CraftTable.tick(mc);
-        AeScene.tick(mc);
 
         // JEI "조합 재료 표시" 중에는 다른 표시를 모두 끄고 재료만 보여준다
         if (RecipeFocus.isActive()) {
@@ -213,10 +211,6 @@ public final class ClientEvents {
         }
         float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         StorageRenderer.render(event.getPoseStack(), event.getCamera(), mc, partialTick);
-        if (AeScene.visible()) {
-            AeScene.render(event.getPoseStack(), event.getCamera(), event.getCamera().getPosition(), mc, partialTick,
-                    mc.renderBuffers().bufferSource());
-        }
         if (CraftTable.visible()) {
             CraftTable.render(event.getPoseStack(), event.getCamera(), event.getCamera().getPosition(), mc, partialTick,
                     mc.renderBuffers().bufferSource());

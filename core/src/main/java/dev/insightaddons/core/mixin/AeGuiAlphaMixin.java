@@ -1,8 +1,8 @@
-package dev.insightaddons.extras.mixin;
+package dev.insightaddons.core.mixin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.insightaddons.extras.client.AeTerminal;
-import dev.insightaddons.extras.client.InsightConfig;
+import dev.insightaddons.core.client.AeTerminal;
+import dev.insightaddons.core.client.InsightConfig;
 import net.minecraft.client.gui.GuiGraphics;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -19,7 +19,7 @@ public abstract class AeGuiAlphaMixin {
     @Inject(method = "renderBg(Lnet/minecraft/client/gui/GuiGraphics;FII)V", at = @At("HEAD"), remap = false, require = 0)
     private void insightaddons$alphaOn(GuiGraphics g, float partial, int mx, int my, CallbackInfo ci) {
         int pct = InsightConfig.AE2_GUI_ALPHA.get();
-        if (pct < 100 && !dev.insightaddons.extras.client.AeGlass.on() && InsightConfig.AE2_PHYSICS.get() && AeTerminal.isTerminalScreen(this)) {
+        if (pct < 100 && !dev.insightaddons.core.client.AeGlass.on() && InsightConfig.AE2_PHYSICS.get() && AeTerminal.isTerminalScreen(this)) {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
             RenderSystem.setShaderColor(1f, 1f, 1f, pct / 100f);

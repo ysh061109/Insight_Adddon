@@ -1,4 +1,4 @@
-package dev.insightaddons.extras.client;
+package dev.insightaddons.core.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -158,7 +158,7 @@ final class AePile {
                 b.asleep = false;
                 b.still = 0;
             }
-            Fx.sound(SoundEvents.ITEM_PICKUP, 1.2f, 0.35f);
+            AeFx.sound(SoundEvents.ITEM_PICKUP, 1.2f, 0.35f);
         }
     }
 
@@ -182,7 +182,7 @@ final class AePile {
             b.spinYaw = (RNG.nextFloat() - 0.5f) * 50f;
             b.spinTilt = (RNG.nextFloat() - 0.5f) * 40f;
         }
-        Fx.sound(SoundEvents.AMETHYST_BLOCK_RESONATE, 0.6f, 0.6f);
+        AeFx.sound(SoundEvents.AMETHYST_BLOCK_RESONATE, 0.6f, 0.6f);
     }
 
     /** 난장판 동안의 움직임: 중력 없이 방 안(방 좌표 기준 경계)을 튕겨 다닌다 */
@@ -461,7 +461,7 @@ final class AePile {
             ps.mulPose(Axis.XP.rotationDegrees(b.tilt));
             ps.mulPose(Axis.ZP.rotationDegrees(b.roll));
             ps.scale(scale, scale, scale);
-            mc.getItemRenderer().renderStatic(StorageRenderer.icon(b.item), ItemDisplayContext.FIXED,
+            mc.getItemRenderer().renderStatic(AeDraw.icon(b.item), ItemDisplayContext.FIXED,
                     LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, ps, buffers, mc.level, 0);
             ps.popPose();
         }
@@ -473,7 +473,7 @@ final class AePile {
             Item item = LABEL_ORDER.get(i);
             Component line = new ItemStack(item).getHoverName().copy()
                     .append(Component.literal(" ×" + LABEL_COUNT.getOrDefault(item, 0)));
-            StorageRenderer.drawLabel(ps, camera, camPos, floor.add(up.scale((HEIGHT + 0.12 + (shown - 1 - i) * 0.14) * k)),
+            AeDraw.drawLabel(ps, camera, camPos, floor.add(up.scale((HEIGHT + 0.12 + (shown - 1 - i) * 0.14) * k)),
                     line, (float) (0.011f * k), 0xFFFFFFFF, 0.0, i == 0 ? 4 : 3);
         }
     }

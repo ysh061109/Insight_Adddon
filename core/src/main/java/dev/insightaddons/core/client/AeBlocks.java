@@ -1,4 +1,4 @@
-package dev.insightaddons.extras.client;
+package dev.insightaddons.core.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -84,7 +84,7 @@ final class AeBlocks {
             driveData = cells();
         } catch (Throwable t) {
             failed = true;
-            dev.insightaddons.extras.InsightAddons.LOGGER.warn("AE2 가상 상자 준비 실패: {}", t.toString());
+            dev.insightaddons.core.InsightAddons.LOGGER.warn("AE2 가상 상자 준비 실패: {}", t.toString());
         }
     }
 
@@ -102,7 +102,7 @@ final class AeBlocks {
             Object data = cls.getMethod("create", Item[].class).invoke(null, (Object) items);
             return data instanceof ModelData md ? md : ModelData.EMPTY;
         } catch (Throwable t) {
-            dev.insightaddons.extras.InsightAddons.LOGGER.info("AE2 드라이브 셀 모델 데이터를 만들지 못해 빈 드라이브로 그립니다: {}", t.toString());
+            dev.insightaddons.core.InsightAddons.LOGGER.info("AE2 드라이브 셀 모델 데이터를 만들지 못해 빈 드라이브로 그립니다: {}", t.toString());
             return ModelData.EMPTY;
         }
     }
@@ -205,7 +205,7 @@ final class AeBlocks {
             return true;
         } catch (Throwable t) {
             failed = true;
-            dev.insightaddons.extras.InsightAddons.LOGGER.warn("AE2 서버룸 블록 그리기 실패, 색 면 장식으로 대체합니다: {}", t.toString());
+            dev.insightaddons.core.InsightAddons.LOGGER.warn("AE2 서버룸 블록 그리기 실패, 색 면 장식으로 대체합니다: {}", t.toString());
             return false;
         } finally {
             ps.popPose();
