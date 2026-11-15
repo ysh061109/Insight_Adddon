@@ -3,6 +3,7 @@ package dev.insightaddons.extras.client;
 import dev.insightaddons.extras.InsightAddons;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -29,7 +30,19 @@ public final class AeWindow {
     private static int sliderX;
     private static int sliderY;
 
+    private static int scissorDx;
+    private static int scissorDy;
+    private static Button chaos;
+
     private AeWindow() {}
+
+    public static int scissorDx() {
+        return scissorDx;
+    }
+
+    public static int scissorDy() {
+        return scissorDy;
+    }
 
     private static final class Slider extends AbstractSliderButton {
         Slider(int x, int y, int w) {
@@ -90,6 +103,8 @@ public final class AeWindow {
         }
         if (slider == null || sliderScreen != s || sliderX != x || sliderY != y) {
             slider = new Slider(x, y, w);
+            chaos = Button.builder(Component.translatable("insight_addons.ae.chaos"), b -> AeScene.chaos())
+                    .bounds(x + w + 4, y, 70, 18).build();
             sliderScreen = s;
             sliderX = x;
             sliderY = y;
@@ -113,8 +128,16 @@ public final class AeWindow {
         g.pose().translate(o[0], o[1], 0);
         int mx = e.getMouseX() - o[0];
         int my = e.getMouseY() - o[1];
-        s.renderWithTooltip(g, mx, my, e.getPartialTick());
+        scissorDx = o[0];
+        scissorDy = o[1];
+        try {
+            s.renderWithTooltip(g, mx, my, e.getPartialTick());
+        } finally {
+            scissorDx = 0;
+            scissorDy = 0;
+        }
         sl.render(g, mx, my, e.getPartialTick());
+        chaos.render(g, mx, my, e.getPartialTick());
         g.pose().popPose();
     }
 
@@ -144,6 +167,18 @@ public final class AeWindow {
         double ax = e.getMouseX() - o[0];
         double ay = e.getMouseY() - o[1];
         Slider sl = sliderFor(acs);
+        if (e.getButton() == 2) {
+            o[0] = 0;
+            o[1] = 0;
+            dragging = false;
+            e.setCanceled(true);
+            return;
+        }
+        if (e.getButton() == 0 && chaos.isMouseOver(ax, ay)) {
+            chaos.mouseClicked(ax, ay, 0);
+            e.setCanceled(true);
+            return;
+        }
         if (e.getButton() == 0 && sl.isMouseOver(ax, ay)) {
             sl.mouseClicked(ax, ay, 0);
             e.setCanceled(true);
@@ -241,6 +276,7 @@ public final class AeWindow {
     public static void onClosing(ScreenEvent.Closing e) {
         dragging = false;
         slider = null;
+        chaos = null;
         sliderScreen = null;
     }
 }

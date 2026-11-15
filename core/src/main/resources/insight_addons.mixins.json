@@ -5,6 +5,7 @@
   "package": "dev.insightaddons.core.mixin",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "ScissorOffsetMixin",
     "IronChestsCompatMixin",
     "KeepOriginalScreenMixin",
     "StorageScreenSkinMixin",

@@ -63,6 +63,11 @@ public final class AeScene {
         }
     }
 
+    /** 난장판 버튼: 쌓인 아이템들이 방 안을 정신없이 날아다닌다 */
+    public static void chaos() {
+        AePile.chaos();
+    }
+
     public static boolean visible() {
         return anim > 0.01f;
     }

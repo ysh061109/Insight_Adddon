@@ -159,5 +159,7 @@
   "insight_addons.configuration.nearDisplay.noTakeBlocks": "No-take containers (vaults etc.)",
   "insight_addons.configuration.ae2.pileRatio": "Server room item ratio (%)",
   "insight_addons.configuration.ae2.windowDrag": "Drag AE2 terminal window",
-  "insight_addons.ae.ratio": "Item ratio: %s%%"
+  "insight_addons.ae.ratio": "Item ratio: %s%%",
+  "insight_addons.configuration.ae2.guiAlpha": "AE2 terminal window opacity (%)",
+  "insight_addons.ae.chaos": "Chaos!"
 }

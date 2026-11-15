@@ -27,7 +27,18 @@ public final class WindowDrag {
     private static boolean dragging;
     private static long lastTitleClick;
 
+    private static int scissorDx;
+    private static int scissorDy;
+
     private WindowDrag() {}
+
+    public static int scissorDx() {
+        return scissorDx;
+    }
+
+    public static int scissorDy() {
+        return scissorDy;
+    }
 
     private static boolean eligible(Screen s) {
         return s instanceof AbstractContainerScreen<?>
@@ -85,7 +96,14 @@ public final class WindowDrag {
         var pose = e.getGuiGraphics().pose();
         pose.pushPose();
         pose.translate(o[0], o[1], 0);
-        s.renderWithTooltip(e.getGuiGraphics(), e.getMouseX() - o[0], e.getMouseY() - o[1], e.getPartialTick());
+        scissorDx = o[0];
+        scissorDy = o[1];
+        try {
+            s.renderWithTooltip(e.getGuiGraphics(), e.getMouseX() - o[0], e.getMouseY() - o[1], e.getPartialTick());
+        } finally {
+            scissorDx = 0;
+            scissorDy = 0;
+        }
         pose.popPose();
     }
 
@@ -98,6 +116,14 @@ public final class WindowDrag {
         int[] o = off(s);
         double ax = e.getMouseX() - o[0];
         double ay = e.getMouseY() - o[1];
+        if (e.getButton() == 2) {
+            // 마우스 가운데 버튼: 어디서든 창을 원래 자리로
+            o[0] = 0;
+            o[1] = 0;
+            dragging = false;
+            e.setCanceled(true);
+            return;
+        }
         if (e.getButton() == 0 && canStartDrag((AbstractContainerScreen<?>) s, o, e.getMouseX(), e.getMouseY(), ax, ay)) {
             // 슬롯이나 버튼이 없는 빈 곳을 눌렀을 때만 끌기를 시작한다
             long now = System.currentTimeMillis();

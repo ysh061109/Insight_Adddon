@@ -41,6 +41,7 @@ public final class InsightConfig {
     public static final ModConfigSpec.IntValue AE2_PHYSICS_MAX;
     public static final ModConfigSpec.IntValue AE2_PHYSICS_RATIO;
     public static final ModConfigSpec.BooleanValue AE2_WINDOW_DRAG;
+    public static final ModConfigSpec.IntValue AE2_GUI_ALPHA;
     public static final ModConfigSpec.IntValue AE2_MAX_SHOWN;
     public static final ModConfigSpec.DoubleValue COUNT_SCALE;
     public static final ModConfigSpec.DoubleValue SOUND_VOLUME;
@@ -133,6 +134,8 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.ae2.maxShown").defineInRange("maxShown", 40, 8, 80);
         AE2_PHYSICS_RATIO = b.comment("서버룸에 쌓이는 아이템 조각 수의 비율(%). 단말기 창 아래 슬라이더로도 바꿀 수 있습니다. 100이 기본입니다.")
                 .translation("insight_addons.configuration.ae2.pileRatio").defineInRange("pileRatio", 100, 10, 300);
+        AE2_GUI_ALPHA = b.comment("서버룸 연출이 켜져 있을 때 AE2 단말기 창 배경의 불투명도(%). 낮출수록 뒤의 서버룸이 비쳐 보입니다. 100이면 원래대로입니다.")
+                .translation("insight_addons.configuration.ae2.guiAlpha").defineInRange("guiAlpha", 60, 20, 100);
         AE2_WINDOW_DRAG = b.comment("AE2 단말기 창의 빈 곳(슬롯과 버튼이 없는 곳)을 끌어서 옮길 수 있습니다. 빈 곳을 더블클릭하면 원래 자리로 돌아옵니다.")
                 .translation("insight_addons.configuration.ae2.windowDrag").define("windowDrag", true);
         AE2_PHYSICS_MAX = b.comment("물리 연출에서 동시에 그리는 아이템 조각의 최대 개수. 낮추면 가벼워집니다.")

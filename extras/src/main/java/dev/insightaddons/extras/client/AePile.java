@@ -38,6 +38,9 @@ final class AePile {
     private static final int MAX_PER_KIND = 24;
     private static final int MAX_KINDS = 64;
     private static final RandomSource RNG = RandomSource.create();
+    /** 난장판 남은 틱, 끝난 뒤 제자리로 돌아오는 틱 */
+    private static int chaosTicks;
+    private static int returnTicks;
 
     private static final class Body {
         final Item item;
@@ -73,6 +76,8 @@ final class AePile {
     private AePile() {}
 
     static void clear() {
+        chaosTicks = 0;
+        returnTicks = 0;
         BODIES.clear();
         PENDING.clear();
         LABEL_COUNT.clear();
@@ -157,8 +162,111 @@ final class AePile {
         }
     }
 
+    /** 난장판: 약 8초 동안 모든 조각이 방 전체를 빠르게 날아다닌다 */
+    static void chaos() {
+        if (BODIES.isEmpty()) {
+            return;
+        }
+        chaosTicks = 160;
+        returnTicks = 0;
+        for (Body b : BODIES) {
+            b.leaving = false;
+            b.asleep = false;
+            b.still = 0;
+            double ang = RNG.nextDouble() * Math.PI * 2;
+            double el = (RNG.nextDouble() - 0.5) * 1.2;
+            double sp = 0.12 + RNG.nextDouble() * 0.12;
+            b.vx = Math.cos(ang) * Math.cos(el) * sp;
+            b.vz = Math.sin(ang) * Math.cos(el) * sp;
+            b.vy = Math.sin(el) * sp + 0.05;
+            b.spinYaw = (RNG.nextFloat() - 0.5f) * 50f;
+            b.spinTilt = (RNG.nextFloat() - 0.5f) * 40f;
+        }
+        Fx.sound(SoundEvents.AMETHYST_BLOCK_RESONATE, 0.6f, 0.6f);
+    }
+
+    /** 난장판 동안의 움직임: 중력 없이 방 안(방 좌표 기준 경계)을 튕겨 다닌다 */
+    private static void chaosStep() {
+        double k = AeRoom.PILE_K;
+        double minX = (-3.4 - AeRoom.PILE_X) / k;
+        double maxX = (3.4 - AeRoom.PILE_X) / k;
+        double minY = 0.1;
+        double maxY = (AeRoom.Y1 - AeRoom.Y0 - 0.4) / k;
+        double minZ = (0.5 - AeRoom.PILE_Z) / k;
+        double maxZ = (4.6 - AeRoom.PILE_Z) / k;
+        for (Body b : BODIES) {
+            if (b.leaving) {
+                b.leaveTick++;
+                continue;
+            }
+            b.px = b.x;
+            b.py = b.y;
+            b.pz = b.z;
+            b.x += b.vx;
+            b.y += b.vy;
+            b.z += b.vz;
+            if (b.x < minX) {
+                b.x = minX;
+                b.vx = Math.abs(b.vx);
+            } else if (b.x > maxX) {
+                b.x = maxX;
+                b.vx = -Math.abs(b.vx);
+            }
+            if (b.y < minY) {
+                b.y = minY;
+                b.vy = Math.abs(b.vy);
+            } else if (b.y > maxY) {
+                b.y = maxY;
+                b.vy = -Math.abs(b.vy);
+            }
+            if (b.z < minZ) {
+                b.z = minZ;
+                b.vz = Math.abs(b.vz);
+            } else if (b.z > maxZ) {
+                b.z = maxZ;
+                b.vz = -Math.abs(b.vz);
+            }
+            // 가끔 방향을 틀어서 더 정신없게
+            if (RNG.nextInt(25) == 0) {
+                b.vx += (RNG.nextDouble() - 0.5) * 0.12;
+                b.vy += (RNG.nextDouble() - 0.5) * 0.12;
+                b.vz += (RNG.nextDouble() - 0.5) * 0.12;
+            }
+            b.yaw += b.spinYaw;
+            b.tilt += b.spinTilt;
+        }
+    }
+
     /** 매 틱: 쏟아 붓기 + 단순 물리 */
     static void step(Minecraft mc) {
+        if (chaosTicks > 0) {
+            chaosTicks--;
+            chaosStep();
+            if (chaosTicks == 0) {
+                returnTicks = 14;
+                for (Body b : BODIES) {
+                    b.spinYaw *= 0.1f;
+                    b.spinTilt *= 0.1f;
+                }
+            }
+            return;
+        }
+        if (returnTicks > 0) {
+            // 난장판이 끝나면 쌓이는 구역 위로 부드럽게 모여 떨어진다
+            returnTicks--;
+            for (Body b : BODIES) {
+                if (b.leaving) {
+                    continue;
+                }
+                b.asleep = false;
+                b.still = 0;
+                b.vx += (0 - b.x) * 0.02;
+                b.vz += (0 - b.z) * 0.02;
+                b.vx *= 0.85;
+                b.vz *= 0.85;
+                b.vy *= 0.85;
+            }
+        }
         // 한 틱에 최대 3개씩 위에서 떨어뜨린다
         for (int i = 0; i < 8 && !PENDING.isEmpty(); i++) {
             Item item = PENDING.remove(PENDING.size() - 1);
@@ -190,34 +298,34 @@ final class AePile {
                     b.pz = b.z;
                 }
                 b.vy -= 0.022;
-                b.vx *= 0.995;
-                b.vz *= 0.995;
+                b.vx *= 0.985;
+                b.vz *= 0.985;
                 b.x += b.vx;
                 b.y += b.vy;
                 b.z += b.vz;
                 // 바닥과 벽
                 if (b.y < R) {
                     b.y = R;
-                    b.vy = -b.vy * 0.28;
-                    b.vx *= 0.8;
-                    b.vz *= 0.8;
+                    b.vy = -b.vy * 0.06;
+                    b.vx *= 0.55;
+                    b.vz *= 0.55;
                     b.yaw += b.spinYaw * 0.3f;
-                    b.spinYaw *= 0.7f;
-                    b.spinTilt *= 0.5f;
+                    b.spinYaw *= 0.4f;
+                    b.spinTilt *= 0.3f;
                 }
                 if (b.x < -HALF_W + R) {
                     b.x = -HALF_W + R;
-                    b.vx = Math.abs(b.vx) * 0.4;
+                    b.vx = Math.abs(b.vx) * 0.2;
                 } else if (b.x > HALF_W - R) {
                     b.x = HALF_W - R;
-                    b.vx = -Math.abs(b.vx) * 0.4;
+                    b.vx = -Math.abs(b.vx) * 0.2;
                 }
                 if (b.z < -HALF_D + R) {
                     b.z = -HALF_D + R;
-                    b.vz = Math.abs(b.vz) * 0.4;
+                    b.vz = Math.abs(b.vz) * 0.2;
                 } else if (b.z > HALF_D - R) {
                     b.z = HALF_D - R;
-                    b.vz = -Math.abs(b.vz) * 0.4;
+                    b.vz = -Math.abs(b.vz) * 0.2;
                 }
             }
             // 서로 겹치면 밀어낸다 (구 충돌, O(n^2) 이지만 조각 수가 적다)
@@ -236,31 +344,48 @@ final class AePile {
                     double dz = c.z - a.z;
                     double d2 = dx * dx + dy * dy + dz * dz;
                     double min = R * 1.9;
-                    if (d2 < min * min && d2 > 1.0e-8) {
+                    // 살짝 겹친 정도(쉬고 있는 접촉)는 무시해서 끝없이 꿈틀대지 않게 한다
+                    double lim = min * 0.94;
+                    if (d2 < lim * lim && d2 > 1.0e-8) {
+                        double sa = a.vx * a.vx + a.vy * a.vy + a.vz * a.vz;
+                        double sc = c.vx * c.vx + c.vy * c.vy + c.vz * c.vz;
+                        // 잠든 조각은 상대가 충분히 빠를 때만 깨운다
+                        if (a.asleep && sc < 4.0e-4) {
+                            continue;
+                        }
+                        if (c.asleep && sa < 4.0e-4) {
+                            continue;
+                        }
                         double d = Math.sqrt(d2);
-                        double push = (min - d) * 0.5;
+                        double push = (min - d);
+                        double wa = a.asleep ? 0.0 : (c.asleep ? 1.0 : 0.5);
+                        double wc = c.asleep ? 0.0 : (a.asleep ? 1.0 : 0.5);
                         double nx = dx / d;
                         double ny = dy / d;
                         double nz = dz / d;
-                        a.x -= nx * push;
-                        a.y -= ny * push;
-                        a.z -= nz * push;
-                        c.x += nx * push;
-                        c.y += ny * push;
-                        c.z += nz * push;
-                        a.asleep = false;
-                        c.asleep = false;
-                        a.still = 0;
-                        c.still = 0;
+                        a.x -= nx * push * wa;
+                        a.y -= ny * push * wa;
+                        a.z -= nz * push * wa;
+                        c.x += nx * push * wc;
+                        c.y += ny * push * wc;
+                        c.z += nz * push * wc;
+                        if (wa > 0) {
+                            a.asleep = false;
+                            a.still = 0;
+                        }
+                        if (wc > 0) {
+                            c.asleep = false;
+                            c.still = 0;
+                        }
                         double rel = (c.vx - a.vx) * nx + (c.vy - a.vy) * ny + (c.vz - a.vz) * nz;
                         if (rel < 0) {
-                            double imp = rel * 0.5 * 0.7;
-                            a.vx += nx * imp;
-                            a.vy += ny * imp;
-                            a.vz += nz * imp;
-                            c.vx -= nx * imp;
-                            c.vy -= ny * imp;
-                            c.vz -= nz * imp;
+                            double imp = rel * 0.5 * 0.3;
+                            a.vx += nx * imp * wa * 2;
+                            a.vy += ny * imp * wa * 2;
+                            a.vz += nz * imp * wa * 2;
+                            c.vx -= nx * imp * wc * 2;
+                            c.vy -= ny * imp * wc * 2;
+                            c.vz -= nz * imp * wc * 2;
                         }
                     }
                 }
@@ -269,8 +394,10 @@ final class AePile {
         for (Body b : BODIES) {
             if (!b.leaving && !b.asleep) {
                 double sp = b.vx * b.vx + b.vy * b.vy + b.vz * b.vz;
-                if (sp < 1.0e-4 && Math.abs(b.spinYaw) < 0.3f) {
-                    if (++b.still > 20) {
+                if (sp < 3.0e-4 && Math.abs(b.spinYaw) < 0.8f) {
+                    if (++b.still > 6) {
+                        b.spinYaw = 0;
+                        b.spinTilt = 0;
                         b.asleep = true;
                         b.px = b.x;
                         b.py = b.y;
@@ -284,8 +411,8 @@ final class AePile {
                 }
                 b.yaw += b.spinYaw;
                 b.tilt += b.spinTilt;
-                b.spinYaw *= 0.97f;
-                b.spinTilt *= 0.97f;
+                b.spinYaw *= 0.9f;
+                b.spinTilt *= 0.9f;
             } else {
                 b.leaveTick++;
             }
