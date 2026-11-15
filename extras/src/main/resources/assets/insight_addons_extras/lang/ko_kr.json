@@ -161,5 +161,7 @@
   "insight_addons.configuration.ae2.windowDrag": "AE2 단말기 창 끌어서 옮기기",
   "insight_addons.ae.ratio": "아이템 비율: %s%%",
   "insight_addons.configuration.ae2.guiAlpha": "AE2 단말기 창 불투명도 (%)",
-  "insight_addons.ae.chaos": "난장판"
+  "insight_addons.ae.chaos": "난장판",
+  "insight_addons.configuration.ae2.overlayAlpha": "JEI/EMI 요소 불투명도 (%)",
+  "insight_addons.configuration.ae2.hideEmi": "단말기 열 때 EMI 끄기"
 }

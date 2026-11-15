@@ -24,6 +24,9 @@ import java.util.Map;
 public final class WindowDrag {
     private static final int TITLE_H = 18;
     private static final Map<String, int[]> OFFSETS = new HashMap<>();
+    private static long lastPressMs;
+    private static double lastPressX;
+    private static double lastPressY;
     private static boolean dragging;
     private static long lastTitleClick;
 
@@ -123,6 +126,30 @@ public final class WindowDrag {
             dragging = false;
             e.setCanceled(true);
             return;
+        }
+        // 더블클릭: 슬롯이 아닌 곳을 연달아 두 번 누르면(그 아래에 보이지 않는 위젯이 있어도) 창을 원위치로
+        {
+            long nowMs = System.currentTimeMillis();
+            AbstractContainerScreen<?> w = (AbstractContainerScreen<?>) s;
+            int wx = w.getGuiLeft() + o[0];
+            int wy = w.getGuiTop() + o[1];
+            boolean in = e.getMouseX() >= wx && e.getMouseX() < wx + w.getXSize() && e.getMouseY() >= wy && e.getMouseY() < wy + w.getYSize();
+            boolean dbl = e.getButton() == 0 && in && nowMs - lastPressMs < 400
+                    && Math.abs(e.getMouseX() - lastPressX) < 8 && Math.abs(e.getMouseY() - lastPressY) < 8
+                    && w.getSlotUnderMouse() == null && (o[0] != 0 || o[1] != 0);
+            if (e.getButton() == 0) {
+                lastPressMs = nowMs;
+                lastPressX = e.getMouseX();
+                lastPressY = e.getMouseY();
+            }
+            if (dbl) {
+                o[0] = 0;
+                o[1] = 0;
+                dragging = false;
+                lastPressMs = 0;
+                e.setCanceled(true);
+                return;
+            }
         }
         if (e.getButton() == 0 && canStartDrag((AbstractContainerScreen<?>) s, o, e.getMouseX(), e.getMouseY(), ax, ay)) {
             // 슬롯이나 버튼이 없는 빈 곳을 눌렀을 때만 끌기를 시작한다

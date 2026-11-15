@@ -161,5 +161,7 @@
   "insight_addons.configuration.ae2.windowDrag": "Drag AE2 terminal window",
   "insight_addons.ae.ratio": "Item ratio: %s%%",
   "insight_addons.configuration.ae2.guiAlpha": "AE2 terminal window opacity (%)",
-  "insight_addons.ae.chaos": "Chaos!"
+  "insight_addons.ae.chaos": "Chaos!",
+  "insight_addons.configuration.ae2.overlayAlpha": "JEI/EMI overlay opacity (%)",
+  "insight_addons.configuration.ae2.hideEmi": "Hide EMI while terminal is open"
 }
