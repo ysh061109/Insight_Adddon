@@ -47,31 +47,46 @@ public final class AeWindow {
         return scissorDy;
     }
 
+    /** Plus의 "3D 아이템 표시" 슬라이더와 같은 3단계(실제 개수 / 절반 / 원래 방식). 서버룸 아이템 비율(%)로 바뀝니다. */
+    private static final int[] RATIOS = {100, 50, 20};
+    private static final String[] KEYS = {
+            "insight_addons.ratio.full", "insight_addons.ratio.half", "insight_addons.ratio.original"
+    };
+
+    private static int stepOf(int ratio) {
+        int best = 0;
+        for (int i = 1; i < RATIOS.length; i++) {
+            if (Math.abs(RATIOS[i] - ratio) < Math.abs(RATIOS[best] - ratio)) {
+                best = i;
+            }
+        }
+        return best;
+    }
+
     private static final class Slider extends AbstractSliderButton {
         Slider(int x, int y, int w) {
-            super(x, y, w, 18, Component.empty(), (InsightConfig.AE2_PHYSICS_RATIO.get() - 10) / 290.0);
+            super(x, y, w, 12, Component.empty(), stepOf(InsightConfig.AE2_PHYSICS_RATIO.get()) / 2.0);
             updateMessage();
         }
 
-        private int current() {
-            return 10 + (int) Math.round(value * 290);
+        private int step() {
+            return Math.max(0, Math.min(2, (int) Math.round(value * 2)));
         }
 
         @Override
         protected void updateMessage() {
-            setMessage(Component.translatable("insight_addons.ae.ratio", current()));
+            setMessage(Component.translatable("insight_addons.ratio", Component.translatable(KEYS[step()])));
         }
 
         @Override
         protected void applyValue() {
-            InsightConfig.AE2_PHYSICS_RATIO.set(current());
-        }
-
-        @Override
-        public void onRelease(double mx, double my) {
-            super.onRelease(mx, my);
-            InsightConfig.AE2_PHYSICS_RATIO.save();
-            AeScene.resync();
+            int st = step();
+            value = st / 2.0;
+            if (InsightConfig.AE2_PHYSICS_RATIO.get() != RATIOS[st]) {
+                InsightConfig.AE2_PHYSICS_RATIO.set(RATIOS[st]);
+                InsightConfig.AE2_PHYSICS_RATIO.save();
+                AeScene.resync();
+            }
         }
     }
 
@@ -95,22 +110,22 @@ public final class AeWindow {
 
     /** 슬라이더를 창 아래(자리가 없으면 창 위)에 놓는다. 창이 화면을 꽉 채우면 창 안쪽 아래 */
     private static Slider sliderFor(AbstractContainerScreen<?> s) {
-        int w = 90;
-        // 창 왼쪽 바깥(EMI 검색창이 있는 아래쪽을 피함). 자리가 없으면 창 위, 그것도 없으면 창 안쪽 위
-        int x = s.getGuiLeft() - w - 4;
-        int y = s.getGuiTop() + 4;
-        if (x < 2) {
-            x = s.getGuiLeft();
-            y = s.getGuiTop() - 21;
-            if (y < 2) {
-                x = s.getGuiLeft() + 4;
-                y = s.getGuiTop() + 2;
+        int w = 126;
+        int h = 12;
+        // 창 위쪽(EMI 검색창은 아래 가운데, 단말기 왼쪽 버튼 띠는 창 옆이라 위쪽이 가장 안 겹친다). 자리가 없으면 아래, 그것도 없으면 오른쪽 옆
+        int x = s.getGuiLeft();
+        int y = s.getGuiTop() - h - 3;
+        if (y < 2) {
+            y = s.getGuiTop() + s.getYSize() + 3;
+            if (y + h > s.height - 2) {
+                x = Math.min(s.width - w - 2, s.getGuiLeft() + s.getXSize() + 4);
+                y = Math.max(2, s.getGuiTop());
             }
         }
         if (slider == null || sliderScreen != s || sliderX != x || sliderY != y) {
             slider = new Slider(x, y, w);
             chaos = Button.builder(Component.translatable("insight_addons.ae.chaos"), b -> AeScene.chaos())
-                    .bounds(x, y + 22, w, 18).build();
+                    .bounds(x + w + 4, y - 3, 54, 18).build();
             sliderScreen = s;
             sliderX = x;
             sliderY = y;
@@ -162,10 +177,13 @@ public final class AeWindow {
         return true;
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.HIGHEST, receiveCanceled = true)
     public static void onPress(ScreenEvent.MouseButtonPressed.Pre e) {
         Screen s = e.getScreen();
         if (!eligible(s)) {
+            return;
+        }
+        if (e.isCanceled() && e.getButton() != 2) {
             return;
         }
         AbstractContainerScreen<?> acs = (AbstractContainerScreen<?>) s;

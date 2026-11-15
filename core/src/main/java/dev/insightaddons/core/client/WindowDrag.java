@@ -7,6 +7,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ScreenEvent;
@@ -110,10 +111,14 @@ public final class WindowDrag {
         pose.popPose();
     }
 
-    @SubscribeEvent
+    // 다른 모드(Sophisticated 등)가 먼저 가운데 버튼을 가로채도 리셋이 되도록 가장 먼저, 취소된 이벤트도 받는다
+    @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
     public static void onPress(ScreenEvent.MouseButtonPressed.Pre e) {
         Screen s = e.getScreen();
         if (!eligible(s)) {
+            return;
+        }
+        if (e.isCanceled() && e.getButton() != 2) {
             return;
         }
         int[] o = off(s);

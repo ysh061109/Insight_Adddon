@@ -163,5 +163,8 @@
   "insight_addons.configuration.ae2.guiAlpha": "AE2 단말기 창 불투명도 (%)",
   "insight_addons.ae.chaos": "난장판",
   "insight_addons.configuration.ae2.overlayAlpha": "JEI/EMI 요소 불투명도 (%)",
-  "insight_addons.configuration.ae2.hideEmi": "단말기 열 때 EMI 끄기"
+  "insight_addons.configuration.ae2.hideEmi": "단말기 열 때 EMI 끄기",
+  "insight_addons.configuration.ae2.glass": "AE2 단말기 유리 창 (배낭처럼 투명)",
+  "insight_addons.configuration.ae2.glassAlpha": "유리 창 진하기 (0~255)",
+  "insight_addons.configuration.ae2.glassSlotAlpha": "유리 창 슬롯 밝기 (0~255)"
 }

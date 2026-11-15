@@ -26,12 +26,12 @@ import java.util.Random;
 public final class ChestChaos {
     private static final class P {
         ItemStack stack;
-        float x, y, hx, hy, vx, vy, rot, spin;
+        float x, y, hx, hy, vx, vy, rot, spin, size;
     }
 
     private static final List<P> PARTS = new ArrayList<>();
     private static final Random RNG = new Random();
-    private static final int MAX = 140;
+    private static final int MAX = 240;
     private static final long FLY_MS = 6000;
     private static final long BACK_MS = 800;
     private static long start;
@@ -63,19 +63,25 @@ public final class ChestChaos {
             return;
         }
         AbstractContainerScreen<?> acs = (AbstractContainerScreen<?>) s;
-        int w = 54;
-        int x = acs.getGuiLeft() - w - 4;
-        int y = acs.getGuiTop() + 4;
-        if (x < 2) {
-            x = acs.getGuiLeft() + acs.getXSize() - w;
-            y = acs.getGuiTop() - 21;
-            if (y < 2) {
-                x = acs.getGuiLeft() + 4;
-                y = 2;
+        int w = 48;
+        int h = 18;
+        // 왼쪽은 배낭 업그레이드 탭 자리이고 아래 왼쪽은 3D 표시 슬라이더 자리라서, 오른쪽 끝에 맞춰 위 -> 아래 -> 오른쪽 옆 순서로 둔다
+        int right = acs.getGuiLeft() + acs.getXSize();
+        int x = right - w;
+        int y = acs.getGuiTop() - h - 3;
+        if (y < 2) {
+            y = acs.getGuiTop() + acs.getYSize() + 3;
+            if (y + h > s.height - 2) {
+                x = Math.min(s.width - w - 2, right + 4);
+                y = Math.max(2, acs.getGuiTop());
+                if (x < right) {
+                    x = right - w - 4;
+                    y = Math.max(2, s.height - h - 2);
+                }
             }
         }
         e.addListener(Button.builder(Component.translatable("insight_addons.ae.chaos"), b -> toggle(acs))
-                .bounds(x, y, w, 18).build());
+                .bounds(x, y, w, h).build());
     }
 
     private static void toggle(AbstractContainerScreen<?> acs) {
@@ -86,22 +92,27 @@ public final class ChestChaos {
         PARTS.clear();
         owner = acs;
         var inv = Minecraft.getInstance().player.getInventory();
+        // AE 단말기처럼: 아이템 개수에 비례해서 여러 조각으로 흩어져 날뛴다 (스택당 최대 8조각, 전체 MAX)
         for (Slot slot : acs.getMenu().slots) {
-            if (slot.container == inv || !slot.hasItem() || PARTS.size() >= MAX) {
+            if (slot.container == inv || !slot.hasItem()) {
                 continue;
             }
-            P p = new P();
-            p.stack = slot.getItem().copyWithCount(1);
-            p.hx = acs.getGuiLeft() + slot.x;
-            p.hy = acs.getGuiTop() + slot.y;
-            p.x = p.hx;
-            p.y = p.hy;
-            double ang = RNG.nextDouble() * Math.PI * 2;
-            float sp = 180 + RNG.nextFloat() * 520; // 픽셀/초
-            p.vx = (float) (Math.cos(ang) * sp);
-            p.vy = (float) (Math.sin(ang) * sp);
-            p.spin = (RNG.nextFloat() - 0.5f) * 900f;
-            PARTS.add(p);
+            int pieces = Math.max(1, Math.min(8, (slot.getItem().getCount() + 7) / 8));
+            for (int k = 0; k < pieces && PARTS.size() < MAX; k++) {
+                P p = new P();
+                p.stack = slot.getItem().copyWithCount(1);
+                p.hx = acs.getGuiLeft() + slot.x;
+                p.hy = acs.getGuiTop() + slot.y;
+                p.x = p.hx;
+                p.y = p.hy;
+                double ang = RNG.nextDouble() * Math.PI * 2;
+                float sp = 200 + RNG.nextFloat() * 650; // 픽셀/초
+                p.vx = (float) (Math.cos(ang) * sp);
+                p.vy = (float) (Math.sin(ang) * sp);
+                p.spin = (RNG.nextFloat() - 0.5f) * 1100f;
+                p.size = 0.8f + RNG.nextFloat() * 1.1f;
+                PARTS.add(p);
+            }
         }
         start = System.currentTimeMillis();
         lastMs = start;
@@ -134,21 +145,23 @@ public final class ChestChaos {
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
                 p.rot += p.spin * dt;
-                if (p.x < 0 || p.x > s.width - 16) {
+                if (p.x < 0 || p.x > s.width - 16 * p.size) {
                     p.vx = -p.vx;
-                    p.x = Math.max(0, Math.min(s.width - 16, p.x));
+                    p.x = Math.max(0, Math.min(s.width - 16 * p.size, p.x));
                 }
-                if (p.y < 0 || p.y > s.height - 16) {
+                if (p.y < 0 || p.y > s.height - 16 * p.size) {
                     p.vy = -p.vy;
-                    p.y = Math.max(0, Math.min(s.height - 16, p.y));
+                    p.y = Math.max(0, Math.min(s.height - 16 * p.size, p.y));
                 }
             }
             float dx = back ? p.x + (p.hx - p.x) * be : p.x;
             float dy = back ? p.y + (p.hy - p.y) * be : p.y;
             float rot = back ? p.rot * (1 - be) : p.rot;
             g.pose().pushPose();
+            float sz = back ? p.size + (1f - p.size) * be : p.size;
             g.pose().translate(dx + 8, dy + 8, 400);
             g.pose().mulPose(Axis.ZP.rotationDegrees(rot));
+            g.pose().scale(sz, sz, 1f);
             g.pose().translate(-8, -8, 0);
             g.renderItem(p.stack, 0, 0);
             g.pose().popPose();

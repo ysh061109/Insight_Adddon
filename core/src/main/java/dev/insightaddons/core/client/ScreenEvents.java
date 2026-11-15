@@ -58,6 +58,9 @@ public final class ScreenEvents {
     @SubscribeEvent
     public static void onOpening(ScreenEvent.Opening event) {
         Minecraft mc = Minecraft.getInstance();
+        // 배낭 화면 <-> 배낭 설정 화면처럼 보관함 화면끼리 바로 넘어가는 경우, 이전 화면의 닫힘 처리(카메라 복귀)를 막는다
+        GlassSkin.setSwitching(GlassSkin.isStorageScreenClass(event.getCurrentScreen())
+                && GlassSkin.isStorageScreenClass(event.getNewScreen()));
         Screen next = event.getNewScreen();
         if (insightPresent() && isGlassChest(next)) {
             // InSight 유리 보관함 화면(바닐라 상자, Iron Chests 등)에서도 EMI 검색창 등을 숨긴다
@@ -96,6 +99,7 @@ public final class ScreenEvents {
     @SubscribeEvent
     public static void onClientTick(net.neoforged.neoforge.client.event.ClientTickEvent.Post event) {
         Minecraft mc = Minecraft.getInstance();
+        GlassSkin.setSwitching(false);
         if (mc.screen == null || !(GlassSkin.isStorageScreenClass(mc.screen) || isGlassChest(mc.screen))) {
             if (GlassSkin.placed() || EmiBridge.hidden() || pendingReset) {
                 GlassSkin.setPlaced(false);
@@ -122,17 +126,17 @@ public final class ScreenEvents {
         int x = acs.getGuiLeft();
         int below = acs.getGuiTop() + acs.getYSize() + 3;
         int y;
+        // 왼쪽 옆에는 배낭 업그레이드 탭이 붙으므로 절대 두지 않는다
         if (below + h <= screen.height - 2) {
             y = below;
-        } else if (acs.getGuiLeft() - w - 4 >= 2) {
-            // 아래 공간이 없으면 창 왼쪽 옆 아래쪽에 둔다 (제목/위쪽 탭과 겹치지 않게)
-            x = acs.getGuiLeft() - w - 4;
-            y = Math.min(screen.height - h - 2, acs.getGuiTop() + acs.getYSize() - h - 2);
         } else if (acs.getGuiTop() - h - 3 >= 2) {
             y = acs.getGuiTop() - h - 3;
+        } else if (acs.getGuiLeft() + acs.getXSize() + 4 + w <= screen.width - 2) {
+            x = acs.getGuiLeft() + acs.getXSize() + 4;
+            y = Math.min(screen.height - h - 2, acs.getGuiTop() + acs.getYSize() - h - 2);
         } else {
-            x = 2;
-            y = screen.height - h - 2;
+            x = acs.getGuiLeft() + acs.getXSize() - w - 4;
+            y = Math.max(2, screen.height - h - 2);
         }
         event.addListener(new DropRatioSlider(x, y, w, h));
     }

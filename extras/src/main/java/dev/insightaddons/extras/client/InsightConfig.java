@@ -42,6 +42,9 @@ public final class InsightConfig {
     public static final ModConfigSpec.IntValue AE2_PHYSICS_RATIO;
     public static final ModConfigSpec.BooleanValue AE2_WINDOW_DRAG;
     public static final ModConfigSpec.IntValue AE2_GUI_ALPHA;
+    public static final ModConfigSpec.BooleanValue AE2_GLASS;
+    public static final ModConfigSpec.IntValue AE2_GLASS_ALPHA;
+    public static final ModConfigSpec.IntValue AE2_GLASS_SLOT_ALPHA;
     public static final ModConfigSpec.IntValue AE2_OVERLAY_ALPHA;
     public static final ModConfigSpec.BooleanValue AE2_HIDE_EMI;
     public static final ModConfigSpec.IntValue AE2_MAX_SHOWN;
@@ -138,6 +141,12 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.ae2.pileRatio").defineInRange("pileRatio", 100, 10, 300);
         AE2_GUI_ALPHA = b.comment("서버룸 연출이 켜져 있을 때 AE2 단말기 창 배경의 불투명도(%). 낮출수록 뒤의 서버룸이 비쳐 보입니다. 100이면 원래대로입니다.")
                 .translation("insight_addons.configuration.ae2.guiAlpha").defineInRange("guiAlpha", 60, 20, 100);
+        AE2_GLASS = b.comment("AE2 단말기 창을 Insight Chests Plus의 배낭/통처럼 투명한 유리 창으로 그립니다(서버룸 연출이 켜져 있을 때).")
+                .translation("insight_addons.configuration.ae2.glass").define("glass", true);
+        AE2_GLASS_ALPHA = b.comment("유리 창 패널의 진하기(0~255). Plus의 기본값과 같은 35입니다.")
+                .translation("insight_addons.configuration.ae2.glassAlpha").defineInRange("glassAlpha", 35, 0, 255);
+        AE2_GLASS_SLOT_ALPHA = b.comment("유리 창 슬롯 칸 속 흰색 농도(0~255). Plus의 기본값과 같은 16입니다.")
+                .translation("insight_addons.configuration.ae2.glassSlotAlpha").defineInRange("glassSlotAlpha", 16, 0, 255);
         AE2_OVERLAY_ALPHA = b.comment("서버룸 연출 중 JEI/EMI 화면 요소의 불투명도(%). 100이면 원래대로입니다.")
                 .translation("insight_addons.configuration.ae2.overlayAlpha").defineInRange("overlayAlpha", 70, 20, 100);
         AE2_HIDE_EMI = b.comment("AE2 단말기를 여는 동안 EMI 화면 요소(검색창, 아이템 목록 등)를 끕니다. 기본은 꺼짐(반투명으로 표시되어 레시피 옮기기(+) 버튼도 그대로 씁니다). 반투명이 안 먹는 환경에서만 켜세요.")

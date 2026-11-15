@@ -51,6 +51,17 @@ public final class GlassSkin {
         placed = value;
     }
 
+    private static boolean switching;
+
+    /** 보관함 화면에서 다른 보관함 화면(설정 등)으로 바로 넘어가는 중인지 */
+    public static boolean switching() {
+        return switching;
+    }
+
+    public static void setSwitching(boolean value) {
+        switching = value;
+    }
+
     public static boolean placed() {
         return placed;
     }
