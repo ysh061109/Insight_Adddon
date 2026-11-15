@@ -48,4 +48,20 @@ public final class ModRenderTypes extends RenderType {
                     .setCullState(NO_CULL)
                     .setDepthTestState(NO_DEPTH_TEST)
                     .createCompositeState(false));
+
+    /** 깊이 검사를 하는 색 면 (SF 서버룸 벽/바닥을 그리는 데 사용) */
+    public static final RenderType QUADS_DEPTH = create(
+            "insight_addons_quads_depth",
+            DefaultVertexFormat.POSITION_COLOR,
+            VertexFormat.Mode.QUADS,
+            4096,
+            false,
+            false,
+            CompositeState.builder()
+                    .setShaderState(POSITION_COLOR_SHADER)
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setWriteMaskState(COLOR_DEPTH_WRITE)
+                    .setCullState(NO_CULL)
+                    .setDepthTestState(LEQUAL_DEPTH_TEST)
+                    .createCompositeState(false));
 }

@@ -156,5 +156,8 @@
   "insight_addons.configuration.listEditor.notBlock": "블록 아이템이 아닙니다",
   "insight_addons.configuration.listEditor.notInstalled": "설치되지 않음: %s",
   "insight_addons.configuration.listEditor.wildcard": "%s 모드 전체",
-  "insight_addons.configuration.nearDisplay.noTakeBlocks": "꺼내기 불가 보관함 (금고 등)"
+  "insight_addons.configuration.nearDisplay.noTakeBlocks": "꺼내기 불가 보관함 (금고 등)",
+  "insight_addons.configuration.ae2.pileRatio": "서버룸 아이템 비율 (%)",
+  "insight_addons.configuration.ae2.windowDrag": "AE2 단말기 창 끌어서 옮기기",
+  "insight_addons.ae.ratio": "아이템 비율: %s%%"
 }

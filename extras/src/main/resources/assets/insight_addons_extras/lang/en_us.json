@@ -156,5 +156,8 @@
   "insight_addons.configuration.listEditor.notBlock": "Not a block item",
   "insight_addons.configuration.listEditor.notInstalled": "Not installed: %s",
   "insight_addons.configuration.listEditor.wildcard": "All of %s",
-  "insight_addons.configuration.nearDisplay.noTakeBlocks": "No-take containers (vaults etc.)"
+  "insight_addons.configuration.nearDisplay.noTakeBlocks": "No-take containers (vaults etc.)",
+  "insight_addons.configuration.ae2.pileRatio": "Server room item ratio (%)",
+  "insight_addons.configuration.ae2.windowDrag": "Drag AE2 terminal window",
+  "insight_addons.ae.ratio": "Item ratio: %s%%"
 }

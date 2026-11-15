@@ -56,6 +56,13 @@ public final class AeScene {
         open = false;
     }
 
+    /** 설정/슬라이더에서 비율이 바뀌었을 때 지금 목록으로 조각 수를 다시 맞춘다 */
+    public static void resync() {
+        if (!last.isEmpty() && InsightConfig.AE2_PHYSICS.get()) {
+            AePile.sync(last);
+        }
+    }
+
     public static boolean visible() {
         return anim > 0.01f;
     }
@@ -160,7 +167,8 @@ public final class AeScene {
 
     public static void render(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc, float partial,
                               MultiBufferSource.BufferSource buffers) {
-        if (!visible() || mc.level == null || mc.player == null || shown.isEmpty()) {
+        if (!visible() || mc.level == null || mc.player == null
+                || (shown.isEmpty() && !InsightConfig.AE2_PHYSICS.get())) {
             return;
         }
         // 아이템은 실제 월드 공간에 그려지므로, 단말기 옆 공중이 다른 블록(AE 건물 등) 뒤에 있으면 가려져 숫자만 보인다.
@@ -178,8 +186,28 @@ public final class AeScene {
         Vec3 right = new Vec3(-flat.z, 0, flat.x);
         Vec3 up = new Vec3(0, 1, 0);
         int rows = (shown.size() + COLS - 1) / COLS;
-        // 화면 가운데는 단말기 창이 차지하므로, 창 왼쪽 옆 공중에 띄운다
         Vec3 eye = p.getEyePosition(partial);
+        Vec3 chest = eye.add(0, -0.5, 0).add(flat.scale(0.3));
+
+        if (physics) {
+            // SF 서버룸: 카메라가 방 한가운데에 서 있는 것처럼, 카메라를 기준으로 방을 둘러 그린다.
+            // 열릴 때는 방이 살짝 크게 시작해서 제자리로 줄어들며(카메라가 방 안으로 들어오는 느낌) 서서히 나타난다.
+            float e = a * a * (3 - 2 * a);
+            double s = 1.0 + 0.45 * (1 - e);
+            Vec3 roomUp = up;
+            AeRoom.Frame frame = new AeRoom.Frame(right, roomUp, flat, s);
+            double k = AeRoom.PILE_K * s;
+            ps.pushPose();
+            // 방 좌표의 0은 카메라 위치. ps는 이미 카메라 기준 좌표계다.
+            AeRoom.render(ps, buffers, frame, a, time, AePile.halfW(k) / s, AePile.halfD(k) / s);
+            ps.popPose();
+            Vec3 floorRel = frame.rel(AeRoom.PILE_X, AeRoom.Y0, AeRoom.PILE_Z);
+            Vec3 floorWorld = camPos.add(floorRel);
+            AePile.render(ps, camera, camPos, mc, partial, a, buffers, floorWorld, right, roomUp, flat, chest, k);
+            return;
+        }
+
+        // 화면 가운데는 단말기 창이 차지하므로, 창 왼쪽 옆 공중에 띄운다
         Vec3 origin = eye.add(flat.scale(2.6)).add(right.scale(-1.9)).add(0, 0.1 + Math.sin(time * 0.05) * 0.01, 0);
         // 단말기 창 왼쪽의 빈 공간 한가운데에 오도록 화면 좌표에서 거꾸로 위치를 계산한다 (창이 넓어도 가려지지 않게)
         if (mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> acs
@@ -190,8 +218,8 @@ public final class AeScene {
             if (m00 > 0.01f && m11 > 0.01f) {
                 double freeNdc = acs.getGuiLeft() * 2.0 / mc.screen.width;
                 double nx = acs.getGuiLeft() / (double) mc.screen.width - 1.0;
-                double w = physics ? 2.7 : COLS * PITCH + 0.3;
-                double h = physics ? 1.9 : rows * PITCH + 0.5;
+                double w = COLS * PITCH + 0.3;
+                double h = rows * PITCH + 0.5;
                 double d = Math.max(2.2, Math.max(w * m00 / (freeNdc * 0.9), h * m11 / 1.6));
                 d = Math.min(d, 14.0);
                 org.joml.Vector3f look3 = camera.getLookVector();
@@ -205,16 +233,6 @@ public final class AeScene {
                         .add(0, Math.sin(time * 0.05) * 0.01, 0);
             }
         }
-        Vec3 chest = eye.add(0, -0.5, 0).add(flat.scale(0.3));
-
-        if (physics) {
-            double tr = Math.toRadians(AePile.TILT);
-            Vec3 tiltUp = up.scale(Math.cos(tr)).add(flat.scale(-Math.sin(tr)));
-            Vec3 tiltFlat = up.scale(Math.sin(tr)).add(flat.scale(Math.cos(tr)));
-            AePile.render(ps, camera, camPos, mc, partial, a, buffers, origin.add(0, 0.2, 0), right, tiltUp, tiltFlat, chest);
-            return;
-        }
-
         // 진열대 테두리
         double halfW = COLS * PITCH / 2.0 + 0.12;
         double halfH = rows * PITCH / 2.0 + 0.12;

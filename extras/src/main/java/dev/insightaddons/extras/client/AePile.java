@@ -35,8 +35,6 @@ final class AePile {
     private static final double HALF_D = 0.5;
     private static final double HEIGHT = 1.25;
     private static final double R = 0.085;
-    /** 상자를 플레이어 쪽으로 기울여 바닥 위의 아이템 더미가 위에서 내려다보이게 하는 각도(도) */
-    static final float TILT = 18f;
     private static final int MAX_PER_KIND = 24;
     private static final int MAX_KINDS = 64;
     private static final RandomSource RNG = RandomSource.create();
@@ -87,7 +85,10 @@ final class AePile {
         }
         // 개수가 많을수록 조각이 많아지되, 로그로 완만하게 (몇 개든 보이게 하고 많은 건 수북하게)
         double ratio = Math.log(1.0 + count) / Math.log(1.0 + Math.max(1, max));
-        return Math.max(1, Math.min(MAX_PER_KIND, (int) Math.round(1 + (MAX_PER_KIND - 1) * ratio * ratio)));
+        int base = (int) Math.round(1 + (MAX_PER_KIND - 1) * ratio * ratio);
+        // 설정/슬라이더의 "아이템 비율"(%)로 조각 수를 늘리거나 줄인다
+        int scaled = (int) Math.round(base * InsightConfig.AE2_PHYSICS_RATIO.get() / 100.0);
+        return Math.max(1, Math.min(MAX_PER_KIND * 3, scaled));
     }
 
     /** 단말기 목록이 갱신될 때마다 호출: 종류별 목표 조각 수에 맞춘다. */
@@ -292,60 +293,39 @@ final class AePile {
         BODIES.removeIf(b -> b.leaving && b.leaveTick > 14);
     }
 
+    /** 더미가 쌓이는 구역(방 바닥)의 반쪽 크기. 방에서 구역 테두리를 그릴 때 쓴다. k=확대 배율 */
+    static double halfW(double k) {
+        return HALF_W * k;
+    }
+
+    static double halfD(double k) {
+        return HALF_D * k;
+    }
+
+    /**
+     * @param floor 더미 구역 바닥 중심(월드 좌표), right/up/flat: 방의 오른쪽/위/앞 방향, k: 물리 상자 -> 방 확대 배율
+     */
     static void render(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc, float partial, float a,
-                       MultiBufferSource.BufferSource buffers, Vec3 origin, Vec3 right, Vec3 up, Vec3 flat, Vec3 chest) {
-        // 바닥: ME 제어기, 양쪽 벽: ME 드라이브 모델 (월드 블록이 아니라 모델만 빌려 그린다)
-        Vec3 floorPos = origin.add(up.scale(-HEIGHT / 2));
-        if (AeBox.render(ps, mc, buffers, camPos, floorPos, right, TILT)) {
-            drawBodies(ps, camera, camPos, mc, partial, a, buffers, origin, right, up, flat, chest);
-            return;
-        }
-        // 유리 상자 테두리 (가상 상자를 못 그릴 때의 대체)
-        VertexConsumer lines = buffers.getBuffer(RenderType.lines());
-        PoseStack.Pose pose = ps.last();
-        int alpha = (int) (170 * a);
-        Vec3 base = origin.add(up.scale(-HEIGHT / 2)).subtract(camPos);
-        double[][] corners = new double[8][];
-        int k = 0;
-        for (int yy = 0; yy < 2; yy++) {
-            for (int zz = 0; zz < 2; zz++) {
-                for (int xx = 0; xx < 2; xx++) {
-                    corners[k++] = new double[]{xx == 0 ? -HALF_W : HALF_W, yy == 0 ? 0 : HEIGHT, zz == 0 ? -HALF_D : HALF_D};
-                }
-            }
-        }
-        int[][] edges = {{0, 1}, {2, 3}, {4, 5}, {6, 7}, {0, 2}, {1, 3}, {4, 6}, {5, 7}, {0, 4}, {1, 5}, {2, 6}, {3, 7}};
-        for (int[] e : edges) {
-            Vec3 p0 = base.add(right.scale(corners[e[0]][0])).add(up.scale(corners[e[0]][1])).add(flat.scale(corners[e[0]][2]));
-            Vec3 p1 = base.add(right.scale(corners[e[1]][0])).add(up.scale(corners[e[1]][1])).add(flat.scale(corners[e[1]][2]));
-            Vec3 d = p1.subtract(p0);
-            double len = Math.max(1.0e-4, d.length());
-            lines.addVertex(pose, (float) p0.x, (float) p0.y, (float) p0.z).setColor(89, 196, 245, alpha)
-                    .setNormal(pose, (float) (d.x / len), (float) (d.y / len), (float) (d.z / len));
-            lines.addVertex(pose, (float) p1.x, (float) p1.y, (float) p1.z).setColor(89, 196, 245, alpha)
-                    .setNormal(pose, (float) (d.x / len), (float) (d.y / len), (float) (d.z / len));
-        }
-        buffers.endBatch(RenderType.lines());
-        drawBodies(ps, camera, camPos, mc, partial, a, buffers, origin, right, up, flat, chest);
+                       MultiBufferSource.BufferSource buffers, Vec3 floor, Vec3 right, Vec3 up, Vec3 flat, Vec3 chest, double k) {
+        drawBodies(ps, camera, camPos, mc, partial, a, buffers, floor, right, up, flat, chest, k);
     }
 
     private static void drawBodies(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc, float partial, float a,
-                                   MultiBufferSource.BufferSource buffers, Vec3 origin, Vec3 right, Vec3 up, Vec3 flat, Vec3 chest) {
-        Vec3 floor = origin.add(up.scale(-HEIGHT / 2));
+                                   MultiBufferSource.BufferSource buffers, Vec3 floor, Vec3 right, Vec3 up, Vec3 flat, Vec3 chest, double k) {
         for (Body b : BODIES) {
             double t = partial;
             double lx = b.px + (b.x - b.px) * t;
             double ly = b.py + (b.y - b.py) * t;
             double lz = b.pz + (b.z - b.pz) * t;
-            Vec3 pos = floor.add(right.scale(lx)).add(up.scale(ly)).add(flat.scale(lz));
-            float scale = 0.17f * a;
+            Vec3 pos = floor.add(right.scale(lx * k)).add(up.scale(ly * k)).add(flat.scale(lz * k));
+            float scale = (float) (0.17f * a * k);
             if (b.leaving) {
                 double f = Math.min(1.0, (b.leaveTick + partial) / 14.0);
                 double ease = 1 - Math.pow(1 - f, 3);
                 pos = pos.add(chest.subtract(pos).scale(ease)).add(0, Math.sin(f * Math.PI) * 0.25, 0);
                 scale *= (float) (1.0 - 0.5 * f);
             }
-            if (pos.distanceToSqr(camPos) > 24 * 24) {
+            if (pos.distanceToSqr(camPos) > 40 * 40) {
                 continue;
             }
             ps.pushPose();
@@ -366,8 +346,8 @@ final class AePile {
             Item item = LABEL_ORDER.get(i);
             Component line = new ItemStack(item).getHoverName().copy()
                     .append(Component.literal(" ×" + LABEL_COUNT.getOrDefault(item, 0)));
-            StorageRenderer.drawLabel(ps, camera, camPos, floor.add(up.scale(HEIGHT + 0.12 + (shown - 1 - i) * 0.14)),
-                    line, 0.011f, 0xFFFFFFFF, 0.0, i == 0 ? 4 : 3);
+            StorageRenderer.drawLabel(ps, camera, camPos, floor.add(up.scale((HEIGHT + 0.12 + (shown - 1 - i) * 0.14) * k)),
+                    line, (float) (0.011f * k), 0xFFFFFFFF, 0.0, i == 0 ? 4 : 3);
         }
     }
 }
