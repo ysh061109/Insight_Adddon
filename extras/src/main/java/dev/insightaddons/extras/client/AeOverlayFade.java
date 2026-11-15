@@ -7,6 +7,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.ContainerScreenEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 
 import java.lang.reflect.Field;
@@ -26,6 +27,31 @@ public final class AeOverlayFade {
 
     private static boolean active(Screen s) {
         return InsightConfig.AE2_PHYSICS.get() && AeTerminal.isTerminalScreen(s);
+    }
+
+    /** renderBg(반투명) 직후 EMI 패널 배경까지 그린 다음, 슬롯/아이템은 불투명으로 돌립니다. */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void afterBackground(ContainerScreenEvent.Render.Background e) {
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+    }
+
+    /** EMI는 이 시점(라벨 다음)에 검색창/목록/버튼을 그리므로 여기서 반투명으로 감쌉니다. */
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public static void emiBefore(ContainerScreenEvent.Render.Foreground e) {
+        if (!active(e.getContainerScreen())) {
+            return;
+        }
+        int pct = InsightConfig.AE2_OVERLAY_ALPHA.get();
+        if (pct < 100) {
+            RenderSystem.enableBlend();
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.setShaderColor(1f, 1f, 1f, pct / 100f);
+        }
+    }
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void emiAfter(ContainerScreenEvent.Render.Foreground e) {
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

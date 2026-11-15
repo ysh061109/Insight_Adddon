@@ -11,7 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
  * AE2 단말기 창의 배경 그림을 반투명하게 그려서 뒤의 서버룸이 비쳐 보이게 합니다.
- * 슬롯 속 아이템과 글씨는 renderBg 바깥에서 그려지므로 불투명 그대로입니다.
+ * 색 복구는 AeOverlayFade가 ContainerScreenEvent.Render.Background에서 합니다(EMI 패널 배경이 같은 시점에 이어서 그려지므로 함께 반투명).
  */
 @Mixin(targets = "appeng.client.gui.AEBaseScreen")
 public abstract class AeGuiAlphaMixin {
@@ -24,10 +24,5 @@ public abstract class AeGuiAlphaMixin {
             RenderSystem.defaultBlendFunc();
             RenderSystem.setShaderColor(1f, 1f, 1f, pct / 100f);
         }
-    }
-
-    @Inject(method = "renderBg(Lnet/minecraft/client/gui/GuiGraphics;FII)V", at = @At("RETURN"), remap = false, require = 0)
-    private void insightaddons$alphaOff(GuiGraphics g, float partial, int mx, int my, CallbackInfo ci) {
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
     }
 }
