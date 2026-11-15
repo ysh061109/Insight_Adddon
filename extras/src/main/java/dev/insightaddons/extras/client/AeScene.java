@@ -207,7 +207,7 @@ public final class AeScene {
             boolean useBlocks = AeBlocks.available();
             AeRoom.render(ps, buffers, frame, a, time, AePile.halfW(k) / s, AePile.halfD(k) / s, useBlocks);
             if (useBlocks) {
-                AeBlocks.render(ps, mc, buffers, frame);
+                AeBlocks.render(ps, mc, buffers, frame, e);
             }
             ps.popPose();
             Vec3 floorRel = frame.rel(AeRoom.PILE_X, AeRoom.Y0, AeRoom.PILE_Z);

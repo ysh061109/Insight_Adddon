@@ -96,8 +96,6 @@ final class AeRoom {
 
     private static final int SEAM = 0x4C4C58;
     private static final int PANEL = 0xC4C4CC;
-    private static final int NEON = 0xA85AFF;
-    private static final int NEON_CORE = 0xE0C4FF;
     private static final int CYAN = 0x3CD2F0;
 
     static void render(PoseStack ps, MultiBufferSource.BufferSource buffers, Frame f, float a, float time,
@@ -121,12 +119,6 @@ final class AeRoom {
         }
         // 보라색 네온 십자 (세로줄은 방 중앙, 가로줄은 앞쪽 z=3)
         double zc = 3.0;
-        c.flatY(Y0 + 2 * E, -0.3, 0.3, Z0, Z1, NEON, 70);
-        c.flatY(Y0 + 2 * E, X0, X1, zc - 0.3, zc + 0.3, NEON, 70);
-        c.flatY(Y0 + 3 * E, -0.1, 0.1, Z0, Z1, NEON, 255);
-        c.flatY(Y0 + 3 * E, X0, X1, zc - 0.1, zc + 0.1, NEON, 255);
-        c.flatY(Y0 + 4 * E, -0.03, 0.03, Z0, Z1, NEON_CORE, 255);
-        c.flatY(Y0 + 4 * E, X0, X1, zc - 0.03, zc + 0.03, NEON_CORE, 255);
         // 중앙 발광 패드 (겹친 네모 고리). ME 제어기 블록을 깔 수 있으면 그것이 대신한다
         for (int k = 0; k < (blocks ? 0 : 3); k++) {
             double h = 0.85 - k * 0.3;
@@ -163,12 +155,8 @@ final class AeRoom {
         }
         // 천장 조명 (보라 테두리 + 밝은 면)
         double zc = 3.0;
-        c.flatY(Y1 - 2 * E, -0.8, 0.8, zc - 0.8, zc + 0.8, NEON, 255);
         c.flatY(Y1 - 3 * E, -0.62, 0.62, zc - 0.62, zc + 0.62, 0xF4EEFF, 255);
         // 천장 모서리 네온
-        c.flatY(Y1 - 2 * E, X0 + 0.05, X0 + 0.25, Z0, Z1, NEON, 255);
-        c.flatY(Y1 - 2 * E, X1 - 0.25, X1 - 0.05, Z0, Z1, NEON, 255);
-        c.flatY(Y1 - 2 * E, X0, X1, Z1 - 0.25, Z1 - 0.05, NEON, 255);
     }
 
     private static void frontWall(Ctx c) {
@@ -182,16 +170,12 @@ final class AeRoom {
         }
         // 가운데 세로 네온 기둥 + 노드
         c.wallZ(Z1 - 2 * E, -0.28, 0.28, Y0, Y1, 0x241C3C, 255);
-        c.wallZ(Z1 - 3 * E, -0.1, 0.1, Y0, Y1, NEON, 255);
-        c.wallZ(Z1 - 4 * E, -0.03, 0.03, Y0, Y1, NEON_CORE, 255);
         for (int k = 0; k < 3; k++) {
             double yc = Y0 + (k + 0.5) * rowH;
             c.wallZ(Z1 - 5 * E, -0.2, 0.2, yc - 0.2, yc + 0.2, 0x3A3A52, 255);
             c.wallZ(Z1 - 6 * E, -0.09, 0.09, yc - 0.09, yc + 0.09, 0xB8E4FF, 255);
         }
         // 위/아래 네온 띠
-        c.wallZ(Z1 - 2 * E, X0, X1, Y1 - 0.22, Y1 - 0.12, NEON, 255);
-        c.wallZ(Z1 - 2 * E, X0, X1, Y0 + 0.12, Y0 + 0.22, NEON, 160);
     }
 
     /** dir=1: 왼쪽 벽(안쪽이 +x 방향), dir=-1: 오른쪽 벽 */
@@ -209,8 +193,6 @@ final class AeRoom {
             racks(c, x, dir, time);
         }
         // 위/아래 네온 띠
-        c.wallX(x + dir * 2 * E, Y1 - 0.22, Y1 - 0.12, Z0, Z1, NEON, 255);
-        c.wallX(x + dir * 2 * E, Y0 + 0.12, Y0 + 0.22, Z0, Z1, NEON, 160);
     }
 
     /** ME 드라이브 블록을 못 그릴 때의 대체: 색 면으로 그린 서버 랙 */
