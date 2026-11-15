@@ -95,19 +95,22 @@ public final class AeWindow {
 
     /** 슬라이더를 창 아래(자리가 없으면 창 위)에 놓는다. 창이 화면을 꽉 채우면 창 안쪽 아래 */
     private static Slider sliderFor(AbstractContainerScreen<?> s) {
-        int w = Math.min(150, Math.max(90, s.getXSize() / 2));
-        int x = s.getGuiLeft();
-        int y = s.getGuiTop() + s.getYSize() + 3;
-        if (y + 18 > s.height) {
+        int w = 90;
+        // 창 왼쪽 바깥(EMI 검색창이 있는 아래쪽을 피함). 자리가 없으면 창 위, 그것도 없으면 창 안쪽 위
+        int x = s.getGuiLeft() - w - 4;
+        int y = s.getGuiTop() + 4;
+        if (x < 2) {
+            x = s.getGuiLeft();
             y = s.getGuiTop() - 21;
-        }
-        if (y < 0) {
-            y = s.height - 20;
+            if (y < 2) {
+                x = s.getGuiLeft() + 4;
+                y = s.getGuiTop() + 2;
+            }
         }
         if (slider == null || sliderScreen != s || sliderX != x || sliderY != y) {
             slider = new Slider(x, y, w);
             chaos = Button.builder(Component.translatable("insight_addons.ae.chaos"), b -> AeScene.chaos())
-                    .bounds(x + w + 4, y, 70, 18).build();
+                    .bounds(x, y + 22, w, 18).build();
             sliderScreen = s;
             sliderX = x;
             sliderY = y;

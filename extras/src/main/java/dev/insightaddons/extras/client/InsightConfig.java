@@ -140,8 +140,8 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.ae2.guiAlpha").defineInRange("guiAlpha", 60, 20, 100);
         AE2_OVERLAY_ALPHA = b.comment("서버룸 연출 중 JEI/EMI 화면 요소의 불투명도(%). 100이면 원래대로입니다.")
                 .translation("insight_addons.configuration.ae2.overlayAlpha").defineInRange("overlayAlpha", 70, 20, 100);
-        AE2_HIDE_EMI = b.comment("AE2 단말기를 여는 동안 EMI 화면 요소(검색창 등)를 완전히 끕니다. 검은 막대가 투명해지지 않을 때 쓰세요. 끄면 EMI의 레시피 옮기기(+) 버튼도 같이 사라집니다.")
-                .translation("insight_addons.configuration.ae2.hideEmi").define("hideEmi", false);
+        AE2_HIDE_EMI = b.comment("AE2 단말기를 여는 동안 EMI 화면 요소(검색창, 아이템 목록 등)를 끕니다. EMI는 반투명 처리가 안 되어 검은 막대로 보이기 때문에 기본으로 켜져 있습니다. 끄면 EMI의 레시피 옮기기(+) 버튼을 쓸 수 있지만 검은 부분이 남습니다.")
+                .translation("insight_addons.configuration.ae2.hideEmi").define("hideEmiOverlay", true);
         AE2_WINDOW_DRAG = b.comment("AE2 단말기 창의 빈 곳(슬롯과 버튼이 없는 곳)을 끌어서 옮길 수 있습니다. 빈 곳을 더블클릭하면 원래 자리로 돌아옵니다.")
                 .translation("insight_addons.configuration.ae2.windowDrag").define("windowDrag", true);
         AE2_PHYSICS_MAX = b.comment("물리 연출에서 동시에 그리는 아이템 조각의 최대 개수. 낮추면 가벼워집니다.")
