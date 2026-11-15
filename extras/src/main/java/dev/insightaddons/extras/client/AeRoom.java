@@ -101,17 +101,17 @@ final class AeRoom {
     private static final int CYAN = 0x3CD2F0;
 
     static void render(PoseStack ps, MultiBufferSource.BufferSource buffers, Frame f, float a, float time,
-                       double arenaHalfW, double arenaHalfD) {
+                       double arenaHalfW, double arenaHalfD, boolean blocks) {
         Ctx c = new Ctx(buffers.getBuffer(ModRenderTypes.QUADS_DEPTH), ps.last().pose(), f, a);
-        floor(c, arenaHalfW, arenaHalfD);
+        floor(c, arenaHalfW, arenaHalfD, blocks);
         ceiling(c);
         frontWall(c);
-        sideWall(c, X0, 1, time);
-        sideWall(c, X1, -1, time);
+        sideWall(c, X0, 1, time, blocks);
+        sideWall(c, X1, -1, time, blocks);
         buffers.endBatch(ModRenderTypes.QUADS_DEPTH);
     }
 
-    private static void floor(Ctx c, double arenaHalfW, double arenaHalfD) {
+    private static void floor(Ctx c, double arenaHalfW, double arenaHalfD, boolean blocks) {
         c.flatY(Y0, X0, X1, Z0, Z1, SEAM, 255);
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 10; j++) {
@@ -127,8 +127,8 @@ final class AeRoom {
         c.flatY(Y0 + 3 * E, X0, X1, zc - 0.1, zc + 0.1, NEON, 255);
         c.flatY(Y0 + 4 * E, -0.03, 0.03, Z0, Z1, NEON_CORE, 255);
         c.flatY(Y0 + 4 * E, X0, X1, zc - 0.03, zc + 0.03, NEON_CORE, 255);
-        // 중앙 발광 패드 (겹친 네모 고리)
-        for (int k = 0; k < 3; k++) {
+        // 중앙 발광 패드 (겹친 네모 고리). ME 제어기 블록을 깔 수 있으면 그것이 대신한다
+        for (int k = 0; k < (blocks ? 0 : 3); k++) {
             double h = 0.85 - k * 0.3;
             double w = 0.07;
             double y = Y0 + (5 + k) * E;
@@ -138,7 +138,9 @@ final class AeRoom {
             c.flatY(y, -h, -h + w, zc - h, zc + h, col, 255);
             c.flatY(y, h - w, h, zc - h, zc + h, col, 255);
         }
-        c.flatY(Y0 + 8 * E, -0.22, 0.22, zc - 0.22, zc + 0.22, 0x1C2026, 255);
+        if (!blocks) {
+            c.flatY(Y0 + 8 * E, -0.22, 0.22, zc - 0.22, zc + 0.22, 0x1C2026, 255);
+        }
         // 아이템 더미 구역 표시: 청록 테두리와 옅은 바탕
         double ax = PILE_X;
         double az = PILE_Z;
@@ -193,7 +195,7 @@ final class AeRoom {
     }
 
     /** dir=1: 왼쪽 벽(안쪽이 +x 방향), dir=-1: 오른쪽 벽 */
-    private static void sideWall(Ctx c, double x, int dir, float time) {
+    private static void sideWall(Ctx c, double x, int dir, float time, boolean blocks) {
         c.wallX(x, Y0, Y1, Z0, Z1, SEAM, 255);
         double rowH = (Y1 - Y0) / 3.0;
         double xi = x + dir * E;
@@ -203,7 +205,16 @@ final class AeRoom {
                 c.wallX(xi, Y0 + r * rowH + 0.04, Y0 + (r + 1) * rowH - 0.04, Z0 + j + 0.04, Z0 + j + 0.96, shade(PANEL, d), 255);
             }
         }
-        // 서버 랙 띠: 중간 높이를 가로지르는 어두운 판 + 5개 모듈
+        if (!blocks) {
+            racks(c, x, dir, time);
+        }
+        // 위/아래 네온 띠
+        c.wallX(x + dir * 2 * E, Y1 - 0.22, Y1 - 0.12, Z0, Z1, NEON, 255);
+        c.wallX(x + dir * 2 * E, Y0 + 0.12, Y0 + 0.22, Z0, Z1, NEON, 160);
+    }
+
+    /** ME 드라이브 블록을 못 그릴 때의 대체: 색 면으로 그린 서버 랙 */
+    private static void racks(Ctx c, double x, int dir, float time) {
         double ry0 = -0.55;
         double ry1 = 0.95;
         double xr = x + dir * 3 * E;
@@ -232,8 +243,5 @@ final class AeRoom {
                         shade(led, (int) (-60 * (1 - blink))), 255);
             }
         }
-        // 위/아래 네온 띠
-        c.wallX(x + dir * 2 * E, Y1 - 0.22, Y1 - 0.12, Z0, Z1, NEON, 255);
-        c.wallX(x + dir * 2 * E, Y0 + 0.12, Y0 + 0.22, Z0, Z1, NEON, 160);
     }
 }

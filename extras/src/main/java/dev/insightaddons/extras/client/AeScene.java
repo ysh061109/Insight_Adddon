@@ -199,7 +199,11 @@ public final class AeScene {
             double k = AeRoom.PILE_K * s;
             ps.pushPose();
             // 방 좌표의 0은 카메라 위치. ps는 이미 카메라 기준 좌표계다.
-            AeRoom.render(ps, buffers, frame, a, time, AePile.halfW(k) / s, AePile.halfD(k) / s);
+            boolean useBlocks = AeBlocks.available();
+            AeRoom.render(ps, buffers, frame, a, time, AePile.halfW(k) / s, AePile.halfD(k) / s, useBlocks);
+            if (useBlocks) {
+                AeBlocks.render(ps, mc, buffers, frame);
+            }
             ps.popPose();
             Vec3 floorRel = frame.rel(AeRoom.PILE_X, AeRoom.Y0, AeRoom.PILE_Z);
             Vec3 floorWorld = camPos.add(floorRel);
