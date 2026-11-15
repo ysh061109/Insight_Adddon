@@ -1,4 +1,4 @@
-package dev.insightaddons.extras.client;
+package dev.insightaddons.core.client;
 
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
@@ -22,7 +22,7 @@ import java.util.Random;
  * 모든 보관함 화면의 "난장판" 버튼: 누르면 보관함 안 아이템 아이콘이 화면 곳곳을 튕겨 다니다가 제자리로 돌아옵니다.
  * 화면 위에 그리는 연출일 뿐, 실제 아이템은 건드리지 않습니다. 다시 누르면 바로 멈춥니다.
  */
-@EventBusSubscriber(modid = dev.insightaddons.extras.InsightAddons.MOD_ID, value = Dist.CLIENT)
+@EventBusSubscriber(modid = dev.insightaddons.core.InsightAddons.MOD_ID, value = Dist.CLIENT)
 public final class ChestChaos {
     private static final class P {
         ItemStack stack;
@@ -41,10 +41,10 @@ public final class ChestChaos {
     private ChestChaos() {}
 
     private static boolean eligible(Screen s) {
-        if (!(s instanceof AbstractContainerScreen<?> acs) || AeTerminal.isTerminalScreen(s)) {
+        if (!(s instanceof AbstractContainerScreen<?> acs) || s.getClass().getName().startsWith("appeng.")) {
             return false;
         }
-        if (s.getClass().getName().contains("Creative")) {
+        if (s instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen) {
             return false;
         }
         var inv = Minecraft.getInstance().player == null ? null : Minecraft.getInstance().player.getInventory();
@@ -80,7 +80,7 @@ public final class ChestChaos {
                 }
             }
         }
-        e.addListener(Button.builder(Component.translatable("insight_addons.ae.chaos"), b -> toggle(acs))
+        e.addListener(Button.builder(Component.translatable("insight_addons.chaos"), b -> toggle(acs))
                 .bounds(x, y, w, h).build());
     }
 

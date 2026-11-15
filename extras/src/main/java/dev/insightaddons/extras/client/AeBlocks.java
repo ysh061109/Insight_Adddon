@@ -149,27 +149,15 @@ final class AeBlocks {
         }
         double h = 0.25;
         double zc = 3.0;
-        // 바닥 십자: 방 중앙 세로줄 + 앞쪽(z=3) 가로줄
+        // 전부 바닥에 깐다: 바닥 십자(세로줄은 방 중앙, 가로줄은 앞쪽 z=3, 드라이브 벽 사이만) + 앞쪽 벽 아래 가로줄
         for (int i = 0; i < 10; i++) {
             cable(ps, buffers, mc, 0, AeRoom.Y0 + h, AeRoom.Z0 + i + 0.5, 2);
         }
-        for (int i = 0; i < 8; i++) {
-            cable(ps, buffers, mc, AeRoom.X0 + i + 0.5, AeRoom.Y0 + h, zc, 0);
+        for (int i = 0; i < 6; i++) {
+            cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, zc, 0);
         }
-        // 천장 모서리
-        for (int i = 0; i < 10; i++) {
-            cable(ps, buffers, mc, AeRoom.X0 + h, AeRoom.Y1 - h, AeRoom.Z0 + i + 0.5, 2);
-            cable(ps, buffers, mc, AeRoom.X1 - h, AeRoom.Y1 - h, AeRoom.Z0 + i + 0.5, 2);
-        }
-        for (int i = 0; i < 8; i++) {
-            cable(ps, buffers, mc, AeRoom.X0 + i + 0.5, AeRoom.Y1 - h, AeRoom.Z1 - h, 0);
-            cable(ps, buffers, mc, AeRoom.X0 + i + 0.5, AeRoom.Y0 + h, AeRoom.Z1 - h, 0);
-        }
-        // 앞쪽 벽 가운데 세로줄
-        double len = AeRoom.Y1 - AeRoom.Y0;
-        int n = (int) Math.ceil(len);
-        for (int i = 0; i < n; i++) {
-            cable(ps, buffers, mc, 0, AeRoom.Y0 + (i + 0.5) * len / n, AeRoom.Z1 - h, 1);
+        for (int i = 0; i < 6; i++) {
+            cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, AeRoom.Z1 - h, 0);
         }
     }
 

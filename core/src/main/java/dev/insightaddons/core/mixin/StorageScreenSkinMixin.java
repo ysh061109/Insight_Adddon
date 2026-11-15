@@ -47,7 +47,9 @@ public abstract class StorageScreenSkinMixin {
                 return;
             }
         }
-        access.insightaddons$setTopPos(Math.max(4, (screen.height - h) / 2));
+        // 키가 큰 창(큰 배낭 + 업그레이드 탭이 길게 늘어선 경우)은 가운데에 두면 아래 탭이 화면 밖으로 잘리므로 맨 위에 붙인다
+        int top = h > screen.height * 0.6 ? 4 : Math.max(4, (screen.height - h) / 2);
+        access.insightaddons$setTopPos(top);
     }
 
     /** 메인 패널 + 플레이어 인벤토리 칸 */
