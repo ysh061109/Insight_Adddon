@@ -124,6 +124,10 @@ public final class WindowDrag {
         int[] o = off(s);
         double ax = e.getMouseX() - o[0];
         double ay = e.getMouseY() - o[1];
+        if (e.getButton() == 2 && ModCompat.quarkUsesMiddle()) {
+            // Quark 정렬 단축키가 가운데 버튼이면 Quark에게 양보 (창 초기화는 더블클릭으로)
+            return;
+        }
         if (e.getButton() == 2) {
             // 마우스 가운데 버튼: 어디서든 창을 원래 자리로
             o[0] = 0;
@@ -171,6 +175,11 @@ public final class WindowDrag {
             return;
         }
         if (o[0] != 0 || o[1] != 0) {
+            // Mouse Tweaks는 창이 옮겨진 걸 모르므로 되돌린 좌표로 직접 알려 준다
+            if (ModCompat.mtClicked(s, ax, ay, e.getButton())) {
+                e.setCanceled(true);
+                return;
+            }
             e.setCanceled(s.mouseClicked(ax, ay, e.getButton()) || true);
         }
     }
@@ -190,6 +199,10 @@ public final class WindowDrag {
             return;
         }
         if (o[0] != 0 || o[1] != 0) {
+            if (ModCompat.mtDragged(s, e.getMouseX() - o[0], e.getMouseY() - o[1], e.getMouseButton())) {
+                e.setCanceled(true);
+                return;
+            }
             s.mouseDragged(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getMouseButton(), e.getDragX(), e.getDragY());
             e.setCanceled(true);
         }
@@ -209,6 +222,10 @@ public final class WindowDrag {
         }
         int[] o = off(s);
         if (o[0] != 0 || o[1] != 0) {
+            if (ModCompat.mtReleased(s, e.getMouseX() - o[0], e.getMouseY() - o[1], e.getButton())) {
+                e.setCanceled(true);
+                return;
+            }
             s.mouseReleased(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getButton());
             e.setCanceled(true);
         }
@@ -222,7 +239,11 @@ public final class WindowDrag {
         }
         int[] o = off(s);
         if (o[0] != 0 || o[1] != 0) {
-            s.mouseScrolled(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getScrollDeltaX(), e.getScrollDeltaY());
+            double ax = e.getMouseX() - o[0];
+            double ay = e.getMouseY() - o[1];
+            if (!s.mouseScrolled(ax, ay, e.getScrollDeltaX(), e.getScrollDeltaY())) {
+                ModCompat.mtScrolled(s, ax, ay, e.getScrollDeltaY());
+            }
             e.setCanceled(true);
         }
     }
