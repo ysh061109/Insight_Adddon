@@ -243,10 +243,16 @@ final class AePile {
             chaosTicks--;
             chaosStep();
             if (chaosTicks == 0) {
-                returnTicks = 14;
+                // 끝나면 제자리로 돌아가지 않고, 있던 자리에서 중력으로 그대로 떨어진다 (랜덤 유지)
+                returnTicks = 0;
                 for (Body b : BODIES) {
-                    b.spinYaw *= 0.1f;
-                    b.spinTilt *= 0.1f;
+                    b.asleep = false;
+                    b.still = 0;
+                    b.vx *= 0.5;
+                    b.vy *= 0.5;
+                    b.vz *= 0.5;
+                    b.spinYaw *= 0.4f;
+                    b.spinTilt *= 0.4f;
                 }
             }
             return;

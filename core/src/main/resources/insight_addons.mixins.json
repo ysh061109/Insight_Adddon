@@ -26,6 +26,7 @@
     "GuiGraphicsTextMixin",
     "DropCountMixin",
     "DropSizeMixin",
+    "ChaosSimMixin",
     "FancyGlowMixin"
   ],
   "injectors": {

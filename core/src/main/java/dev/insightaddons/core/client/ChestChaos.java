@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * 모든 보관함 화면의 "난장판" 버튼: 누르면 보관함 안 아이템 아이콘이 화면 곳곳을 튕겨 다니다가 제자리로 돌아옵니다.
+ * 모든 보관함 화면의 "난장판" 버튼: InSight가 쌓은 3D 물리 아이템이 있으면 그것들이 상자 안을 날아다니다 그 자리에서 떨어지고, 없으면 아이콘이 화면에서 튕기다 떨어집니다.
  * 화면 위에 그리는 연출일 뿐, 실제 아이템은 건드리지 않습니다. 다시 누르면 바로 멈춥니다.
  */
 @EventBusSubscriber(modid = dev.insightaddons.core.InsightAddons.MOD_ID, value = Dist.CLIENT)
@@ -33,7 +33,8 @@ public final class ChestChaos {
     private static final Random RNG = new Random();
     private static final int MAX = 240;
     private static final long FLY_MS = 6000;
-    private static final long BACK_MS = 800;
+    /** 날아다닌 뒤 떨어져서 바닥에 놓여 있는 시간 */
+    private static final long FALL_MS = 3500;
     private static long start;
     private static long lastMs;
     private static Screen owner;
@@ -85,8 +86,16 @@ public final class ChestChaos {
     }
 
     private static void toggle(AbstractContainerScreen<?> acs) {
+        if (InsightChaos.running()) {
+            InsightChaos.stop();
+            return;
+        }
         if (!PARTS.isEmpty() && owner == acs) {
             PARTS.clear();
+            return;
+        }
+        // InSight가 쌓아 둔 실제 3D 물리 아이템이 있으면 그걸 날린다 (AE 서버룸과 같은 연출)
+        if (InsightChaos.start()) {
             return;
         }
         PARTS.clear();
@@ -132,16 +141,14 @@ public final class ChestChaos {
         float dt = Math.min(0.05f, (now - lastMs) / 1000f);
         lastMs = now;
         long el = now - start;
-        if (el > FLY_MS + BACK_MS) {
+        if (el > FLY_MS + FALL_MS) {
             PARTS.clear();
             return;
         }
         GuiGraphics g = e.getGuiGraphics();
-        boolean back = el > FLY_MS;
-        float bt = back ? (el - FLY_MS) / (float) BACK_MS : 0f;
-        float be = bt * bt * (3 - 2 * bt);
+        boolean fall = el > FLY_MS;
         for (P p : PARTS) {
-            if (!back) {
+            if (!fall) {
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
                 p.rot += p.spin * dt;
@@ -153,12 +160,33 @@ public final class ChestChaos {
                     p.vy = -p.vy;
                     p.y = Math.max(0, Math.min(s.height - 16 * p.size, p.y));
                 }
+            } else {
+                // 제자리로 돌아가지 않고, 있던 자리에서 중력으로 떨어져 바닥에 쌓인다
+                p.vy += 1800f * dt;
+                p.vx *= 1f - 1.5f * dt;
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.rot += p.spin * dt;
+                p.spin *= 1f - 2f * dt;
+                float floor = s.height - 16 * p.size;
+                if (p.y > floor) {
+                    p.y = floor;
+                    p.vy = -p.vy * 0.35f;
+                    p.vx *= 0.6f;
+                    if (Math.abs(p.vy) < 40f) {
+                        p.vy = 0f;
+                    }
+                }
+                if (p.x < 0 || p.x > s.width - 16 * p.size) {
+                    p.vx = -p.vx * 0.5f;
+                    p.x = Math.max(0, Math.min(s.width - 16 * p.size, p.x));
+                }
             }
-            float dx = back ? p.x + (p.hx - p.x) * be : p.x;
-            float dy = back ? p.y + (p.hy - p.y) * be : p.y;
-            float rot = back ? p.rot * (1 - be) : p.rot;
+            float dx = p.x;
+            float dy = p.y;
+            float rot = p.rot;
             g.pose().pushPose();
-            float sz = back ? p.size + (1f - p.size) * be : p.size;
+            float sz = p.size;
             g.pose().translate(dx + 8, dy + 8, 400);
             g.pose().mulPose(Axis.ZP.rotationDegrees(rot));
             g.pose().scale(sz, sz, 1f);
