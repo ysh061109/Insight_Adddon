@@ -103,7 +103,7 @@ final class AeRoom {
         Ctx c = new Ctx(buffers.getBuffer(ModRenderTypes.QUADS_DEPTH), ps.last().pose(), f, a);
         floor(c, arenaHalfW, arenaHalfD, blocks);
         ceiling(c);
-        frontWall(c);
+        frontWall(c, blocks);
         sideWall(c, X0, 1, time, blocks);
         sideWall(c, X1, -1, time, blocks);
         buffers.endBatch(ModRenderTypes.QUADS_DEPTH);
@@ -159,7 +159,7 @@ final class AeRoom {
         // 천장 모서리 네온
     }
 
-    private static void frontWall(Ctx c) {
+    private static void frontWall(Ctx c, boolean blocks) {
         c.wallZ(Z1, X0, X1, Y0, Y1, SEAM, 255);
         double rowH = (Y1 - Y0) / 3.0;
         for (int i = 0; i < 8; i++) {
@@ -168,12 +168,9 @@ final class AeRoom {
                 c.wallZ(Z1 - E, X0 + i + 0.04, X0 + i + 0.96, Y0 + r * rowH + 0.04, Y0 + (r + 1) * rowH - 0.04, shade(PANEL, d), 255);
             }
         }
-        // 가운데 세로 네온 기둥 + 노드
-        c.wallZ(Z1 - 2 * E, -0.28, 0.28, Y0, Y1, 0x241C3C, 255);
-        for (int k = 0; k < 3; k++) {
-            double yc = Y0 + (k + 0.5) * rowH;
-            c.wallZ(Z1 - 5 * E, -0.2, 0.2, yc - 0.2, yc + 0.2, 0x3A3A52, 255);
-            c.wallZ(Z1 - 6 * E, -0.09, 0.09, yc - 0.09, yc + 0.09, 0xB8E4FF, 255);
+        // 가운데 세로선은 어두운 면 대신 AE2 케이블(AeBlocks)로 그린다. 블록을 못 그릴 때만 어두운 기둥으로 대체
+        if (!blocks) {
+            c.wallZ(Z1 - 2 * E, -0.28, 0.28, Y0, Y1, 0x241C3C, 255);
         }
         // 위/아래 네온 띠
     }

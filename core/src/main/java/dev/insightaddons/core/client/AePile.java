@@ -36,7 +36,7 @@ final class AePile {
     private static final double HEIGHT = 1.25;
     private static final double R = 0.085;
     private static final int MAX_PER_KIND = 24;
-    private static final int MAX_KINDS = 64;
+    private static final int MAX_KINDS = 256;
     private static final RandomSource RNG = RandomSource.create();
     /** 난장판 남은 틱, 끝난 뒤 제자리로 돌아오는 틱 */
     private static int chaosTicks;

@@ -158,6 +158,10 @@ final class AeBlocks {
         for (int i = 0; i < 6; i++) {
             cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, zc, 0);
         }
+        // 앞쪽 벽 가운데 세로선: 벽에 붙여 세로로 케이블을 세운다 (예전의 어두운 기둥 자리)
+        for (int k = 0; k < 3; k++) {
+            cable(ps, buffers, mc, 0, AeRoom.Y0 + 0.5 + k, AeRoom.Z1 - 0.2, 1);
+        }
         // 예전에 ME 제어기가 있던 자리(바닥 중앙)에는 케이블을 촘촘히 깐다
         for (int k = 0; k < 3; k++) {
             cable(ps, buffers, mc, -1.0, AeRoom.Y0 + h, 2.0 + k, 2);
