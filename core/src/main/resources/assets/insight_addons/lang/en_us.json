@@ -178,5 +178,10 @@
   "insight_addons.configuration.ae2.hideEmi": "Hide EMI while terminal is open",
   "insight_addons.chaos.speed": "Chaos speed: %s%%",
   "insight_addons.window.alpha": "Window opacity: %s%%",
-  "insight_addons.configuration.chaosSpeed": "Chaos speed (%)"
+  "insight_addons.configuration.chaosSpeed": "Chaos speed (%)",
+  "insight_addons.chaos.random": "Speed random: %s%%",
+  "insight_addons.hud.hide": "Hide HUD",
+  "insight_addons.hud.show": "Show HUD",
+  "insight_addons.configuration.chaosRandom": "Chaos speed randomness (%)",
+  "insight_addons.configuration.hudHidden": "Hide HUD in containers"
 }

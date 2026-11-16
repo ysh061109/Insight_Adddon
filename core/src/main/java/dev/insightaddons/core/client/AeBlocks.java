@@ -158,6 +158,11 @@ final class AeBlocks {
         for (int i = 0; i < 6; i++) {
             cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, zc, 0);
         }
+        // 예전에 ME 제어기가 있던 자리(바닥 중앙)에는 케이블을 촘촘히 깐다
+        for (int k = 0; k < 3; k++) {
+            cable(ps, buffers, mc, -1.0, AeRoom.Y0 + h, 2.0 + k, 2);
+            cable(ps, buffers, mc, 1.0, AeRoom.Y0 + h, 2.0 + k, 2);
+        }
         for (int i = 0; i < 6; i++) {
             cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, AeRoom.Z1 - 0.4, 0);
         }
@@ -187,12 +192,6 @@ final class AeBlocks {
             double theta = Math.atan2(-f.right().z, f.right().x);
             ps.mulPose(Axis.YP.rotation((float) theta));
             ps.scale((float) f.s(), (float) f.s(), (float) f.s());
-            // 바닥 중앙: 3x3 ME 제어기를 납작하게 깔아 발광 패드처럼 보이게 한다 (방 좌표 x -1.5..1.5, z 1.5..4.5)
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    one(ps, buffers, mc, controller, ModelData.EMPTY, -1.5 + i, AeRoom.Y0, -(2.5 + j), 0.12f);
-                }
-            }
             // 양쪽 벽: 3단 x 8열 ME 드라이브 (앞면이 방 안쪽을 향함)
             for (int r = 0; r < 3; r++) {
                 for (int c = -4; c < 4; c++) {

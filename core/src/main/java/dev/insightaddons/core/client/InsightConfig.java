@@ -14,6 +14,8 @@ public final class InsightConfig {
     public static final ModConfigSpec.BooleanValue WINDOW_DRAG;
     public static final ModConfigSpec.IntValue GLASS_ALPHA;
     public static final ModConfigSpec.IntValue CHAOS_SPEED;
+    public static final ModConfigSpec.IntValue CHAOS_RANDOM;
+    public static final ModConfigSpec.BooleanValue HUD_HIDDEN;
     public static final ModConfigSpec.BooleanValue FOLLOW_INSIGHT_POSITION;
     public static final ModConfigSpec.IntValue DROP_RATIO;
     public static final ModConfigSpec.IntValue DROP_MAX_TOTAL;
@@ -55,6 +57,10 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.insightChestsIntegration.glassAlpha").defineInRange("glassAlpha", -1, -1, 255);
         CHAOS_SPEED = b.comment("난장판 속도(%). 화면의 속도 슬라이더로도 바꿀 수 있고, 아이템마다 이 값 근처에서 제각각 랜덤 속도가 됩니다.")
                 .translation("insight_addons.configuration.chaosSpeed").defineInRange("chaosSpeed", 100, 20, 300);
+        CHAOS_RANDOM = b.comment("난장판에서 아이템마다 속도를 다르게 하는 정도(%). 0이면 모두 설정한 속도로 같이 움직이고, 높을수록 제각각 빠르고 느려집니다.")
+                .translation("insight_addons.configuration.chaosRandom").defineInRange("chaosRandom", 0, 0, 100);
+        HUD_HIDDEN = b.comment("보관함을 열었을 때 체력/갑옷/배고픔/경험치/핫바를 숨깁니다. 보관함 화면의 HUD 버튼으로 바꾸면 저장됩니다.")
+                .translation("insight_addons.configuration.hudHidden").define("hudHidden", false);
         GLASS_SLOT_ALPHA = b.comment("유리 화면의 슬롯 칸 속 흰색 농도(0~255). 올리면 칸이 밝아지고, 0이면 칸 속이 완전히 투명해집니다.")
                 .translation("insight_addons.configuration.insightChestsIntegration.glassSlotAlpha").defineInRange("glassSlotAlpha", 16, 0, 255);
         FOLLOW_INSIGHT_POSITION = b.comment("true면 Sophisticated 화면도 InSight Chests의 guiPosition 설정(왼쪽/가운데/오른쪽)대로 옮깁니다.",

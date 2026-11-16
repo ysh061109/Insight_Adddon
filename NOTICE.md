@@ -15,3 +15,8 @@
 
 ## 상표
 이 프로젝트는 Mojang, Microsoft, 그리고 위에 언급된 모드의 제작자와 관련이 없는 비공식 애드온입니다.
+
+## Fancy Items (MIT)
+
+보관함 안 3D 아이템의 빛(회전·맥동하는 별빛 광선과 색 규칙)은 Fooze의 Fancy Items(https://github.com/Foozey/Fancy-Items, MIT License,
+Copyright (c) 2026 Fooze)의 `StarburstEffect`/`Color` 코드를 가져와 3D 아이템용으로 옮긴 것입니다. 이 효과는 Fancy Items가 설치되어 있을 때만(`itemGlow=auto`) 켜집니다.

@@ -179,7 +179,7 @@ final class AePile {
             b.still = 0;
             double ang = RNG.nextDouble() * Math.PI * 2;
             double el = (RNG.nextDouble() - 0.5) * 1.2;
-            double sp = (0.12 + RNG.nextDouble() * 0.12) * (InsightConfig.CHAOS_SPEED.get() / 100.0) * (0.35 + RNG.nextDouble() * 1.3);
+            double sp = 0.18 * (InsightConfig.CHAOS_SPEED.get() / 100.0) * (1.0 + (RNG.nextDouble() * 2 - 1) * InsightConfig.CHAOS_RANDOM.get() / 100.0 * 0.9);
             b.vx = Math.cos(ang) * Math.cos(el) * sp;
             b.vz = Math.sin(ang) * Math.cos(el) * sp;
             b.vy = Math.sin(el) * sp + 0.05;
@@ -230,11 +230,19 @@ final class AePile {
                 b.z = maxZ;
                 b.vz = -Math.abs(b.vz);
             }
-            // 가끔 방향을 틀어서 더 정신없게
+            // 가끔 방향을 틀어서 더 정신없게 (속력은 그대로)
             if (RNG.nextInt(25) == 0) {
+                double sp0 = Math.sqrt(b.vx * b.vx + b.vy * b.vy + b.vz * b.vz);
                 b.vx += (RNG.nextDouble() - 0.5) * 0.12;
                 b.vy += (RNG.nextDouble() - 0.5) * 0.12;
                 b.vz += (RNG.nextDouble() - 0.5) * 0.12;
+                double sp1 = Math.sqrt(b.vx * b.vx + b.vy * b.vy + b.vz * b.vz);
+                if (sp1 > 1.0e-6 && sp0 > 1.0e-6) {
+                    double k2 = sp0 / sp1;
+                    b.vx *= k2;
+                    b.vy *= k2;
+                    b.vz *= k2;
+                }
             }
             b.yaw += b.spinYaw;
             b.tilt += b.spinTilt;

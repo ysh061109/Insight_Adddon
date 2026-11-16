@@ -79,7 +79,12 @@ public final class ItemGlow {
         return textureReady;
     }
 
+    /** Fancy Items와 같은 색 규칙: 이름 색(흰색 제외) -> 희귀도 색, 일반 등급은 없음. 마법 부여 빛만 있으면 보라색 */
     private static int colorOf(ItemStack stack) {
+        Integer nameColor = findColor(stack.getHoverName());
+        if (nameColor != null && nameColor != 0xFFFFFF) {
+            return nameColor;
+        }
         Rarity rarity = stack.getRarity();
         Integer rgb = rarity.color().getColor();
         if (rarity != Rarity.COMMON && rgb != null) {
@@ -88,12 +93,41 @@ public final class ItemGlow {
         return stack.hasFoil() ? 0xB070FF : -1;
     }
 
+    private static Integer findColor(net.minecraft.network.chat.Component c) {
+        var color = c.getStyle().getColor();
+        if (color != null) {
+            return color.getValue();
+        }
+        for (var child : c.getSiblings()) {
+            Integer v = findColor(child);
+            if (v != null) {
+                return v;
+            }
+        }
+        return null;
+    }
+
+    // --- 아래 별빛(스타버스트) 효과는 Fancy Items(Fooze, MIT)의 StarburstEffect를 가져와 3D 아이템용으로 옮긴 것입니다. ---
+    private static final int RAYS = 9;
+    private static final float RAY_LENGTH = 0.5f;
+    private static final float RAY_WIDTH = 0.25f;
+    private static final float LENGTH_VAR = 0.1f;
+    private static final int LENGTH_VAR_COUNT = 3;
+    private static final float WIDTH_VAR = 0.05f;
+    private static final int WIDTH_VAR_COUNT = 2;
+    private static final float PULSE_LEN_MIN = 0.9f;
+    private static final float PULSE_LEN_MAX = 1.1f;
+    private static final float PULSE_W_MIN = 0.33f;
+    private static final float PULSE_W_MAX = 1.5f;
+    private static final int PULSE_DURATION = 80;
+    private static final int ROTATION_DURATION = 400;
+
     /**
-     * 현재 변환(아이템의 위치/회전/크기가 적용된 상태) 기준으로 카메라를 향한 후광을 그립니다.
-     * 아이템 본체를 그리기 전에 호출하면 후광이 아이템 뒤에 깔립니다.
+     * 현재 변환(아이템의 위치/회전/크기가 적용된 상태) 기준으로, 카메라를 향한 별빛(회전하고 맥동하는 광선)을 아이템 뒤에 그립니다.
+     * 아이템 본체를 그리기 전에 호출하면 광선이 아이템 뒤에 깔립니다.
      */
     public static void draw(PoseStack ps, MultiBufferSource buffers, ItemStack stack) {
-        if (stack == null || stack.isEmpty() || !ensureTexture()) {
+        if (stack == null || stack.isEmpty()) {
             return;
         }
         int rgb = colorOf(stack);
@@ -107,29 +141,35 @@ public final class ItemGlow {
             // 아이템 회전을 상쇄해서 카메라와 같은 방향으로 맞춘다
             Quaternionf local = new Quaternionf(item).invert().mul(cam);
 
+            float time = net.minecraft.Util.getMillis() / 50.0F;
+            int offset = Math.floorMod(ItemStack.hashItemAndComponents(stack), Math.max(PULSE_DURATION, ROTATION_DURATION));
+            float phase = ((float) Math.sin((time + offset) * Math.PI * 2.0F / PULSE_DURATION) + 1.0F) / 2.0F;
+            float pulseLength = PULSE_LEN_MIN + (PULSE_LEN_MAX - PULSE_LEN_MIN) * phase;
+            float pulseWidth = PULSE_W_MIN + (PULSE_W_MAX - PULSE_W_MIN) * phase;
+            float rotation = (float) ((time + offset) * Math.PI * 2.0D / ROTATION_DURATION);
+
             ps.pushPose();
             ps.mulPose(local);
-            Matrix4f m = ps.last().pose();
-            VertexConsumer vc = buffers.getBuffer(RenderType.entityTranslucentEmissive(TEXTURE));
-            float half = 0.95f;
+            ps.scale(1.5f, 1.5f, 1.5f);
+            VertexConsumer rays = buffers.getBuffer(RenderType.dragonRays());
             int r = (rgb >> 16) & 0xFF;
             int g = (rgb >> 8) & 0xFF;
             int b = rgb & 0xFF;
-            int a = 150;
-            vertex(vc, ps, m, -half, -half, 0f, 0f, 1f, r, g, b, a);
-            vertex(vc, ps, m, half, -half, 0f, 1f, 1f, r, g, b, a);
-            vertex(vc, ps, m, half, half, 0f, 1f, 0f, r, g, b, a);
-            vertex(vc, ps, m, -half, half, 0f, 0f, 0f, r, g, b, a);
+            for (int ray = 0; ray < RAYS; ray++) {
+                float length = pulseLength * (RAY_LENGTH + (ray % LENGTH_VAR_COUNT) * LENGTH_VAR);
+                float width = pulseWidth * (RAY_WIDTH + (ray % WIDTH_VAR_COUNT) * WIDTH_VAR);
+                float angle = (float) (ray * (Math.PI * 2.0D / RAYS)) + rotation;
+                ps.pushPose();
+                ps.mulPose(com.mojang.math.Axis.ZP.rotation(angle));
+                Matrix4f m = ps.last().pose();
+                rays.addVertex(m, 0f, 0f, 0f).setColor(r, g, b, 255);
+                rays.addVertex(m, width, length, 0f).setColor(r, g, b, 0);
+                rays.addVertex(m, -width, length, 0f).setColor(r, g, b, 0);
+                ps.popPose();
+            }
             ps.popPose();
         } catch (Throwable ignored) {
-            // 후광은 장식이므로 실패해도 아이템 표시에는 영향이 없다
+            // 빛은 장식이므로 실패해도 아이템 표시에는 영향이 없다
         }
-    }
-
-    private static void vertex(VertexConsumer vc, PoseStack ps, Matrix4f m, float x, float y, float z,
-                               float u, float v, int r, int g, int b, int a) {
-        vc.addVertex(m, x, y, z).setColor(r, g, b, a).setUv(u, v)
-                .setOverlay(OverlayTexture.NO_OVERLAY).setLight(LightTexture.FULL_BRIGHT)
-                .setNormal(ps.last(), 0f, 0f, 1f);
     }
 }

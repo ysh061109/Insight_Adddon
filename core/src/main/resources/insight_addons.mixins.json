@@ -27,6 +27,7 @@
     "DropCountMixin",
     "DropSizeMixin",
     "ChaosSimMixin",
+    "ChaosSlotMixin",
     "FancyGlowMixin"
   ],
   "injectors": {

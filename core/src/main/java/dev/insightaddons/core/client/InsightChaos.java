@@ -85,7 +85,7 @@ public final class InsightChaos {
                 fSleepTicks.setInt(it, 0);
                 double ang = RNG.nextDouble() * Math.PI * 2;
                 double el = (RNG.nextDouble() - 0.5) * 1.2;
-                double sp = (0.035 + RNG.nextDouble() * 0.05) * (InsightConfig.CHAOS_SPEED.get() / 100.0) * (0.35 + RNG.nextDouble() * 1.3);
+                double sp = 0.06 * (InsightConfig.CHAOS_SPEED.get() / 100.0) * (1.0 + (RNG.nextDouble() * 2 - 1) * InsightConfig.CHAOS_RANDOM.get() / 100.0 * 0.9);
                 fVX.setFloat(it, (float) (Math.cos(ang) * Math.cos(el) * sp));
                 fVZ.setFloat(it, (float) (Math.sin(ang) * Math.cos(el) * sp));
                 fVY.setFloat(it, (float) (Math.sin(el) * sp + 0.02));
@@ -160,9 +160,17 @@ public final class InsightChaos {
                     vz = -Math.abs(vz);
                 }
                 if (RNG.nextInt(25) == 0) {
+                    float s0 = (float) Math.sqrt(vx * vx + vy * vy + vz * vz);
                     vx += (RNG.nextFloat() - 0.5f) * 0.03f;
                     vy += (RNG.nextFloat() - 0.5f) * 0.03f;
                     vz += (RNG.nextFloat() - 0.5f) * 0.03f;
+                    float s1 = (float) Math.sqrt(vx * vx + vy * vy + vz * vz);
+                    if (s1 > 1.0e-6f && s0 > 1.0e-6f) {
+                        float k2 = s0 / s1;
+                        vx *= k2;
+                        vy *= k2;
+                        vz *= k2;
+                    }
                 }
                 if (end) {
                     // 끝: 속도를 줄이고 깨워서, 그 자리에서 InSight 물리(중력)로 떨어지게 한다

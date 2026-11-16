@@ -178,5 +178,10 @@
   "insight_addons.configuration.ae2.hideEmi": "단말기 열 때 EMI 끄기",
   "insight_addons.chaos.speed": "난장판 속도: %s%%",
   "insight_addons.window.alpha": "창 투명도: %s%%",
-  "insight_addons.configuration.chaosSpeed": "난장판 속도(%)"
+  "insight_addons.configuration.chaosSpeed": "난장판 속도(%)",
+  "insight_addons.chaos.random": "속도 랜덤: %s%%",
+  "insight_addons.hud.hide": "HUD 숨기기",
+  "insight_addons.hud.show": "HUD 보이기",
+  "insight_addons.configuration.chaosRandom": "난장판 속도 랜덤(%)",
+  "insight_addons.configuration.hudHidden": "보관함에서 HUD 숨김"
 }

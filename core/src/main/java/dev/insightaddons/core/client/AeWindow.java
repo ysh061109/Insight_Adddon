@@ -85,6 +85,9 @@ public final class AeWindow {
         int nx = x + w + 4 + 54 + 4;
         e.addListener(WidgetGuard.mine(new ConfigSlider(nx, y, 90, h, 20, 300, InsightConfig.CHAOS_SPEED.get(),
                 v -> Component.translatable("insight_addons.chaos.speed", v), ConfigSlider.save(InsightConfig.CHAOS_SPEED))));
+        e.addListener(WidgetGuard.mine(new ConfigSlider(nx + 94 + 104, y, 90, h, 0, 100, InsightConfig.CHAOS_RANDOM.get(),
+                v -> Component.translatable("insight_addons.chaos.random", v), ConfigSlider.save(InsightConfig.CHAOS_RANDOM))));
+        HudToggle.addButton(e, nx + 94 + 104 + 94, y - 3, 60);
         e.addListener(WidgetGuard.mine(new ConfigSlider(nx + 94, y, 100, h, 0, 255, InsightConfig.AE2_GLASS_ALPHA.get(),
                 v -> Component.translatable("insight_addons.window.alpha", Math.round(v * 100f / 255f)), ConfigSlider.save(InsightConfig.AE2_GLASS_ALPHA))));
     }
