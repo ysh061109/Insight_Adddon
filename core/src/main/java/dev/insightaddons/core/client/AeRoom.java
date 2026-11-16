@@ -19,10 +19,13 @@ final class AeRoom {
     static final double Z0 = -5.0;
     static final double Z1 = 5.0;
     /** 아이템 더미가 쌓이는 곳(바닥 중심)의 방 좌표 */
-    static final double PILE_X = -1.9;
-    static final double PILE_Z = 2.6;
+    static final double PILE_X = 0.0;
+    static final double PILE_Z = 3.0;
     /** 더미 구역의 확대 배율 (물리 상자 -> 방) */
     static final double PILE_K = 2.0;
+
+    /** ME 제어기(납작한 패드) 위에 아이템이 얹히도록 더미 바닥을 올리는 높이 */
+    static final double PAD_LIFT = 0.13;
 
     private static final double E = 0.004;
 
@@ -136,7 +139,7 @@ final class AeRoom {
         // 아이템 더미 구역 표시: 청록 테두리와 옅은 바탕
         double ax = PILE_X;
         double az = PILE_Z;
-        double y = Y0 + 6 * E;
+        double y = blocks ? Y0 + PAD_LIFT + 2 * E : Y0 + 6 * E;
         c.flatY(y, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az + arenaHalfD, CYAN, 40);
         double t = 0.05;
         c.flatY(y + E, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az - arenaHalfD + t, CYAN, 230);

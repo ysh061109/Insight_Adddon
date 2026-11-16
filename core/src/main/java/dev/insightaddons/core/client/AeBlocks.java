@@ -152,23 +152,23 @@ final class AeBlocks {
         double h = 0.375 * CABLE_FLAT + 0.01;
         double zc = 3.0;
         // 전부 바닥에 깐다: 바닥 십자(세로줄은 방 중앙, 가로줄은 앞쪽 z=3, 드라이브 벽 사이만) + 앞쪽 벽 아래 가로줄
+        // 바닥 케이블은 한가운데 ME 제어기(x -1..1, z 2..4)를 향해 모인다: 앞뒤로 중앙선, 좌우로 가로줄
         for (int i = 0; i < 10; i++) {
-            cable(ps, buffers, mc, 0, AeRoom.Y0 + h, AeRoom.Z0 + i + 0.5, 2);
+            double z = AeRoom.Z0 + i + 0.5;
+            if (z > 2.0 && z < 4.0) {
+                continue; // 제어기 자리
+            }
+            cable(ps, buffers, mc, 0, AeRoom.Y0 + h, z, 2);
         }
-        for (int i = 0; i < 6; i++) {
-            cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, zc, 0);
-        }
-        // 앞쪽 벽 가운데 세로선: 벽에 붙여 세로로 케이블을 세운다 (예전의 어두운 기둥 자리)
-        for (int k = 0; k < 3; k++) {
-            cable(ps, buffers, mc, 0, AeRoom.Y0 + 0.5 + k, AeRoom.Z1 - 0.2, 1);
-        }
-        // 예전에 ME 제어기가 있던 자리(바닥 중앙)에는 케이블을 촘촘히 깐다
-        for (int k = 0; k < 3; k++) {
-            cable(ps, buffers, mc, -1.0, AeRoom.Y0 + h, 2.0 + k, 2);
-            cable(ps, buffers, mc, 1.0, AeRoom.Y0 + h, 2.0 + k, 2);
+        for (double x : new double[]{-2.5, -1.5, 1.5, 2.5}) {
+            cable(ps, buffers, mc, x, AeRoom.Y0 + h, zc, 0);
         }
         for (int i = 0; i < 6; i++) {
             cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, AeRoom.Z1 - 0.4, 0);
+        }
+        // 앞쪽 벽 가운데 세로선: 벽에 붙여 세로로 케이블을 세운다
+        for (int k = 0; k < 3; k++) {
+            cable(ps, buffers, mc, 0, AeRoom.Y0 + 0.5 + k, AeRoom.Z1 - 0.2, 1);
         }
     }
 
@@ -196,6 +196,12 @@ final class AeBlocks {
             double theta = Math.atan2(-f.right().z, f.right().x);
             ps.mulPose(Axis.YP.rotation((float) theta));
             ps.scale((float) f.s(), (float) f.s(), (float) f.s());
+            // 바닥 한가운데: ME 제어기 2x2를 납작하게 깔아 발광 패드처럼 (방 좌표 x -1..1, z 2..4). 아이템은 이 위에 쌓인다
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 2; j++) {
+                    one(ps, buffers, mc, controller, ModelData.EMPTY, -1 + i, AeRoom.Y0, -(3 + j), 0.12f);
+                }
+            }
             // 양쪽 벽: 3단 x 8열 ME 드라이브 (앞면이 방 안쪽을 향함)
             for (int r = 0; r < 3; r++) {
                 for (int c = -4; c < 4; c++) {

@@ -210,7 +210,7 @@ public final class AeScene {
                 AeBlocks.render(ps, mc, buffers, frame, e);
             }
             ps.popPose();
-            Vec3 floorRel = frame.rel(AeRoom.PILE_X, AeRoom.Y0, AeRoom.PILE_Z);
+            Vec3 floorRel = frame.rel(AeRoom.PILE_X, AeRoom.Y0 + (useBlocks ? AeRoom.PAD_LIFT : 0), AeRoom.PILE_Z);
             Vec3 floorWorld = camPos.add(floorRel);
             AePile.render(ps, camera, camPos, mc, partial, a, buffers, floorWorld, right, roomUp, flat, chest, k);
             return;
