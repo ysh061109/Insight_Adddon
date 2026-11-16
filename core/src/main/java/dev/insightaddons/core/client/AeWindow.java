@@ -79,8 +79,13 @@ public final class AeWindow {
                 y = Math.max(2, acs.getGuiTop());
             }
         }
-        e.addListener(new Slider(x, y, w));
-        e.addListener(Button.builder(Component.translatable("insight_addons.chaos"), b -> AeScene.chaos())
-                .bounds(x + w + 4, y - 3, 54, 18).build());
+        e.addListener(WidgetGuard.mine(new Slider(x, y, w)));
+        e.addListener(WidgetGuard.mine(Button.builder(Component.translatable("insight_addons.chaos"), b -> AeScene.chaos())
+                .bounds(x + w + 4, y - 3, 54, 18).build()));
+        int nx = x + w + 4 + 54 + 4;
+        e.addListener(WidgetGuard.mine(new ConfigSlider(nx, y, 90, h, 20, 300, InsightConfig.CHAOS_SPEED.get(),
+                v -> Component.translatable("insight_addons.chaos.speed", v), ConfigSlider.save(InsightConfig.CHAOS_SPEED))));
+        e.addListener(WidgetGuard.mine(new ConfigSlider(nx + 94, y, 100, h, 0, 255, InsightConfig.AE2_GLASS_ALPHA.get(),
+                v -> Component.translatable("insight_addons.window.alpha", Math.round(v * 100f / 255f)), ConfigSlider.save(InsightConfig.AE2_GLASS_ALPHA))));
     }
 }

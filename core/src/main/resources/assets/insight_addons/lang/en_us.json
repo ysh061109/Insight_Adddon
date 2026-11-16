@@ -175,5 +175,8 @@
   "insight_addons.configuration.ae2.glassAlpha": "Glass window opacity (0-255)",
   "insight_addons.configuration.ae2.glassSlotAlpha": "Glass window slot brightness (0-255)",
   "insight_addons.configuration.ae2.overlayAlpha": "JEI/EMI overlay opacity (%)",
-  "insight_addons.configuration.ae2.hideEmi": "Hide EMI while terminal is open"
+  "insight_addons.configuration.ae2.hideEmi": "Hide EMI while terminal is open",
+  "insight_addons.chaos.speed": "Chaos speed: %s%%",
+  "insight_addons.window.alpha": "Window opacity: %s%%",
+  "insight_addons.configuration.chaosSpeed": "Chaos speed (%)"
 }

@@ -13,6 +13,7 @@ public final class InsightConfig {
     public static final ModConfigSpec.BooleanValue GLASS_SKIN;
     public static final ModConfigSpec.BooleanValue WINDOW_DRAG;
     public static final ModConfigSpec.IntValue GLASS_ALPHA;
+    public static final ModConfigSpec.IntValue CHAOS_SPEED;
     public static final ModConfigSpec.BooleanValue FOLLOW_INSIGHT_POSITION;
     public static final ModConfigSpec.IntValue DROP_RATIO;
     public static final ModConfigSpec.IntValue DROP_MAX_TOTAL;
@@ -52,6 +53,8 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.insightChestsIntegration.glassSkin").define("glassSkin", true);
         GLASS_ALPHA = b.comment("유리 패널의 투명도 값(0~255). -1이면 InSight Chests의 uiBackgroundOpacity 설정을 그대로 따릅니다.")
                 .translation("insight_addons.configuration.insightChestsIntegration.glassAlpha").defineInRange("glassAlpha", -1, -1, 255);
+        CHAOS_SPEED = b.comment("난장판 속도(%). 화면의 속도 슬라이더로도 바꿀 수 있고, 아이템마다 이 값 근처에서 제각각 랜덤 속도가 됩니다.")
+                .translation("insight_addons.configuration.chaosSpeed").defineInRange("chaosSpeed", 100, 20, 300);
         GLASS_SLOT_ALPHA = b.comment("유리 화면의 슬롯 칸 속 흰색 농도(0~255). 올리면 칸이 밝아지고, 0이면 칸 속이 완전히 투명해집니다.")
                 .translation("insight_addons.configuration.insightChestsIntegration.glassSlotAlpha").defineInRange("glassSlotAlpha", 16, 0, 255);
         FOLLOW_INSIGHT_POSITION = b.comment("true면 Sophisticated 화면도 InSight Chests의 guiPosition 설정(왼쪽/가운데/오른쪽)대로 옮깁니다.",

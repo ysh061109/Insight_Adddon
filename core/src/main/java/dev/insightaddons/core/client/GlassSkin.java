@@ -128,6 +128,10 @@ public final class GlassSkin {
     }
 
     /** InSight Chests와 같은 패널 알파: min(uiBackgroundOpacity*255, 35) */
+    public static int effectiveAlpha() {
+        return panelAlpha();
+    }
+
     private static int panelAlpha() {
         int override = InsightConfig.GLASS_ALPHA.get();
         if (override >= 0) {

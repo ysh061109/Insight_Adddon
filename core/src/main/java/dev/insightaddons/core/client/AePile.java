@@ -41,6 +41,8 @@ final class AePile {
     /** 난장판 남은 틱, 끝난 뒤 제자리로 돌아오는 틱 */
     private static int chaosTicks;
     private static int returnTicks;
+    /** 난장판 뒤에는 더미 구역 벽에 갇히지 않고, 날아가 있던 자리(방 전체) 그대로 떨어진다 */
+    private static boolean spread;
 
     private static final class Body {
         final Item item;
@@ -78,43 +80,44 @@ final class AePile {
     static void clear() {
         chaosTicks = 0;
         returnTicks = 0;
+        spread = false;
         BODIES.clear();
         PENDING.clear();
         LABEL_COUNT.clear();
         LABEL_ORDER.clear();
     }
 
-    private static int target(int count, int max) {
-        if (count <= 0 || max <= 0) {
-            return 0;
-        }
-        // 개수가 많을수록 조각이 많아지되, 로그로 완만하게 (몇 개든 보이게 하고 많은 건 수북하게)
-        double ratio = Math.log(1.0 + count) / Math.log(1.0 + Math.max(1, max));
-        int base = (int) Math.round(1 + (MAX_PER_KIND - 1) * ratio * ratio);
-        // 설정/슬라이더의 "아이템 비율"(%)로 조각 수를 늘리거나 줄인다
-        int scaled = (int) Math.round(base * InsightConfig.AE2_PHYSICS_RATIO.get() / 100.0);
-        return Math.max(1, Math.min(MAX_PER_KIND * 3, scaled));
-    }
-
     /** 단말기 목록이 갱신될 때마다 호출: 종류별 목표 조각 수에 맞춘다. */
     static void sync(Map<Item, Integer> data) {
         List<Map.Entry<Item, Integer>> sorted = new ArrayList<>(data.entrySet());
         sorted.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
-        int max = sorted.isEmpty() ? 0 : sorted.get(0).getValue();
+        int kinds = Math.min(MAX_KINDS, sorted.size());
+        long sum = 0;
+        for (int i = 0; i < kinds; i++) {
+            sum += Math.max(0, sorted.get(i).getValue());
+        }
+        // 조각 수를 실제 보유량에 비례하게 나눈다: 전체 예산(설정 physicsMax * 비율%)을 개수 비율대로 배분하고, 종류마다 최소 1조각
+        int cap = InsightConfig.AE2_PHYSICS_MAX.get();
+        int budget = Math.max(kinds, (int) Math.round(cap * InsightConfig.AE2_PHYSICS_RATIO.get() / 100.0));
+        budget = Math.min(budget, cap);
         Map<Item, Integer> want = new HashMap<>();
-        int total = 0;
         LABEL_COUNT.clear();
         LABEL_ORDER.clear();
-        for (int i = 0; i < Math.min(MAX_KINDS, sorted.size()); i++) {
+        int total = 0;
+        for (int i = 0; i < kinds; i++) {
             Map.Entry<Item, Integer> e = sorted.get(i);
-            int n = target(e.getValue(), max);
-            if (total + n > InsightConfig.AE2_PHYSICS_MAX.get()) {
-                n = Math.max(0, InsightConfig.AE2_PHYSICS_MAX.get() - total);
-            }
+            int n = sum <= 0 ? 1 : Math.max(1, (int) Math.round(e.getValue() * (double) budget / sum));
             total += n;
             want.put(e.getKey(), n);
             LABEL_COUNT.put(e.getKey(), e.getValue());
             LABEL_ORDER.add(e.getKey());
+        }
+        // 반올림으로 예산을 넘으면 가장 많은 종류부터 줄인다
+        for (int i = 0; i < kinds && total > cap; i++) {
+            Item it = sorted.get(i).getKey();
+            int cut = Math.min(want.get(it) - 1, total - cap);
+            want.put(it, want.get(it) - cut);
+            total -= cut;
         }
         // 현재 조각 수 세기
         Map<Item, Integer> have = new HashMap<>();
@@ -169,13 +172,14 @@ final class AePile {
         }
         chaosTicks = 160;
         returnTicks = 0;
+        spread = true;
         for (Body b : BODIES) {
             b.leaving = false;
             b.asleep = false;
             b.still = 0;
             double ang = RNG.nextDouble() * Math.PI * 2;
             double el = (RNG.nextDouble() - 0.5) * 1.2;
-            double sp = 0.12 + RNG.nextDouble() * 0.12;
+            double sp = (0.12 + RNG.nextDouble() * 0.12) * (InsightConfig.CHAOS_SPEED.get() / 100.0) * (0.35 + RNG.nextDouble() * 1.3);
             b.vx = Math.cos(ang) * Math.cos(el) * sp;
             b.vz = Math.sin(ang) * Math.cos(el) * sp;
             b.vy = Math.sin(el) * sp + 0.05;
@@ -319,18 +323,22 @@ final class AePile {
                     b.spinYaw *= 0.4f;
                     b.spinTilt *= 0.3f;
                 }
-                if (b.x < -HALF_W + R) {
-                    b.x = -HALF_W + R;
+                double wx = spread ? (3.4 - AeRoom.PILE_X) / AeRoom.PILE_K : HALF_W;
+                double wxn = spread ? (-3.4 - AeRoom.PILE_X) / AeRoom.PILE_K : -HALF_W;
+                double wzn = spread ? (0.5 - AeRoom.PILE_Z) / AeRoom.PILE_K : -HALF_D;
+                double wz = spread ? (4.6 - AeRoom.PILE_Z) / AeRoom.PILE_K : HALF_D;
+                if (b.x < wxn + R) {
+                    b.x = wxn + R;
                     b.vx = Math.abs(b.vx) * 0.2;
-                } else if (b.x > HALF_W - R) {
-                    b.x = HALF_W - R;
+                } else if (b.x > wx - R) {
+                    b.x = wx - R;
                     b.vx = -Math.abs(b.vx) * 0.2;
                 }
-                if (b.z < -HALF_D + R) {
-                    b.z = -HALF_D + R;
+                if (b.z < wzn + R) {
+                    b.z = wzn + R;
                     b.vz = Math.abs(b.vz) * 0.2;
-                } else if (b.z > HALF_D - R) {
-                    b.z = HALF_D - R;
+                } else if (b.z > wz - R) {
+                    b.z = wz - R;
                     b.vz = -Math.abs(b.vz) * 0.2;
                 }
             }

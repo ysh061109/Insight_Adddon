@@ -81,8 +81,21 @@ public final class ChestChaos {
                 }
             }
         }
-        e.addListener(Button.builder(Component.translatable("insight_addons.chaos"), b -> toggle(acs))
-                .bounds(x, y, w, h).build());
+        e.addListener(WidgetGuard.mine(Button.builder(Component.translatable("insight_addons.chaos"), b -> toggle(acs))
+                .bounds(x, y, w, h).build()));
+        // 난장판 속도 슬라이더: 버튼 왼쪽, 자리가 없으면 버튼 아래
+        int sw = 90;
+        int sx = x - sw - 4;
+        int sy = y + 3;
+        if (sx < 2) {
+            sx = x - (sw - w);
+            sy = y + h + 2;
+            if (sx < 2) {
+                sx = 2;
+            }
+        }
+        e.addListener(WidgetGuard.mine(new ConfigSlider(sx, sy, sw, 12, 20, 300, InsightConfig.CHAOS_SPEED.get(),
+                v -> Component.translatable("insight_addons.chaos.speed", v), ConfigSlider.save(InsightConfig.CHAOS_SPEED))));
     }
 
     private static void toggle(AbstractContainerScreen<?> acs) {
@@ -115,7 +128,7 @@ public final class ChestChaos {
                 p.x = p.hx;
                 p.y = p.hy;
                 double ang = RNG.nextDouble() * Math.PI * 2;
-                float sp = 200 + RNG.nextFloat() * 650; // 픽셀/초
+                float sp = (200 + RNG.nextFloat() * 650) * (InsightConfig.CHAOS_SPEED.get() / 100f) * (0.35f + RNG.nextFloat() * 1.3f); // 픽셀/초
                 p.vx = (float) (Math.cos(ang) * sp);
                 p.vy = (float) (Math.sin(ang) * sp);
                 p.spin = (RNG.nextFloat() - 0.5f) * 1100f;

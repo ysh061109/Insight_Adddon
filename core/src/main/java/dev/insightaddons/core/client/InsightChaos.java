@@ -85,7 +85,7 @@ public final class InsightChaos {
                 fSleepTicks.setInt(it, 0);
                 double ang = RNG.nextDouble() * Math.PI * 2;
                 double el = (RNG.nextDouble() - 0.5) * 1.2;
-                double sp = 0.035 + RNG.nextDouble() * 0.05;
+                double sp = (0.035 + RNG.nextDouble() * 0.05) * (InsightConfig.CHAOS_SPEED.get() / 100.0) * (0.35 + RNG.nextDouble() * 1.3);
                 fVX.setFloat(it, (float) (Math.cos(ang) * Math.cos(el) * sp));
                 fVZ.setFloat(it, (float) (Math.sin(ang) * Math.cos(el) * sp));
                 fVY.setFloat(it, (float) (Math.sin(el) * sp + 0.02));

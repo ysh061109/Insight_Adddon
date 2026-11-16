@@ -138,6 +138,16 @@ public final class ScreenEvents {
             x = acs.getGuiLeft() + acs.getXSize() - w - 4;
             y = Math.max(2, screen.height - h - 2);
         }
-        event.addListener(new DropRatioSlider(x, y, w, h));
+        event.addListener(WidgetGuard.mine(new DropRatioSlider(x, y, w, h)));
+        // 창 투명도 슬라이더: 비율 슬라이더 옆, 옆이 막혀 있으면 그 위/아래
+        int ax = x + w + 4;
+        int ay = y;
+        if (ax + 100 > screen.width - 2) {
+            ax = x;
+            ay = y - h - 2 >= 2 ? y - h - 2 : y + h + 2;
+        }
+        event.addListener(WidgetGuard.mine(new ConfigSlider(ax, ay, 100, h, 0, 255, GlassSkin.effectiveAlpha(),
+                v -> net.minecraft.network.chat.Component.translatable("insight_addons.window.alpha", Math.round(v * 100f / 255f)),
+                ConfigSlider.save(InsightConfig.GLASS_ALPHA))));
     }
 }

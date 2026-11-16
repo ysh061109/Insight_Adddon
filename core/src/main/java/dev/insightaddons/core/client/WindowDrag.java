@@ -54,6 +54,14 @@ public final class WindowDrag {
         return OFFSETS.computeIfAbsent(s.getClass().getName(), k -> new int[2]);
     }
 
+    /** 화면의 창 이동량(없으면 0,0). 다른 클래스가 마우스 좌표를 되돌릴 때 쓴다. */
+    public static int[] offsetOf(Screen s) {
+        if (!eligible(s)) {
+            return new int[2];
+        }
+        return off(s);
+    }
+
     private static void clamp(AbstractContainerScreen<?> s, int[] o) {
         int w = s.getXSize();
         int left = s.getGuiLeft();
@@ -74,6 +82,9 @@ public final class WindowDrag {
         int y = s.getGuiTop() + o[1];
         boolean inside = mx >= x && mx < x + s.getXSize() && my >= y && my < y + s.getYSize();
         if (!inside || !s.getMenu().getCarried().isEmpty() || s.getSlotUnderMouse() != null) {
+            return false;
+        }
+        if (WidgetGuard.overScrollbar(s, ax, ay)) {
             return false;
         }
         for (var child : s.children()) {
