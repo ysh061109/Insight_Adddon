@@ -10,7 +10,7 @@
 - `iron_inner/*.png`, `sophisticated_chest_inner.png`, `backpack_inner.png`: 직접 새로 그린 이미지입니다. (Iron Chests/Sophisticated의 이미지를 복사한 것이 아닙니다.)
 - `personal_steel_panel.png`: Mekanism(MIT License)의 개인 상자 모델 텍스처 일부를 가공한 것입니다. MIT 라이선스의 저작권 고지: Copyright (c) 2017-2025 Aidan C. Brady and Mekanism contributors.
 - `shulker_inner/*.png`: 마인크래프트 셜커 상자 텍스처에서 안쪽 바닥을 가공한 것입니다. 마인크래프트의 에셋은 Mojang Studios의 자산이며 Minecraft EULA를 따릅니다.
-- 로고/아이콘/버튼 이미지: 직접 만든 것이며, 로고 일부에 마인크래프트 상자·통 텍스처를 입체로 그려 넣었습니다.
+- 로고/아이콘/버튼 이미지: 직접 만든 것이며, 로고에는 마인크래프트 상자·통·셜커 상자·아이템 텍스처와 Mekanism(MIT)의 개인 상자·개인 통 텍스처를 입체로 그려 넣었습니다. 로고에는 Sophisticated Backpacks 등 All Rights Reserved 모드의 이미지는 쓰지 않습니다.
 - 그 밖의 텍스처(예: Create 금고 내부)는 파일을 포함하지 않고, 설치된 해당 모드의 텍스처를 실행 중에 참조만 합니다.
 
 ## 상표
