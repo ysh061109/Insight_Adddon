@@ -95,23 +95,24 @@ public final class ControlColumn {
         }
         int left = acs.getGuiLeft();
         int right = left + acs.getXSize();
+        // 보관함 창 자체도 장애물(버튼이 창 위에 얹히지 않도록)
+        obstacles.add(new int[]{left, acs.getGuiTop(), right, acs.getGuiTop() + acs.getYSize()});
         int tabs = soph ? 32 : 0;
         int leftX = left - 6 - W - tabs;
         int rightX = right + 6;
         boolean leftOk = leftX >= 2;
         boolean rightOk = rightX + W <= s.width - 2;
-        // 기본은 창 오른쪽 아래. 인벤토리/멘 배낭은 왼쪽 업그레이드 탭을 피해 왼쪽 아래. 모두 화면 아래쪽에 붙여 창 하단과 겹치지 않게 한다
-        boolean worn = ChestChaos.iconMode(s);
+        // AE2는 화면 왼쪽 아래 구석, 그 밖의 모든 보관함은 오른쪽 아래 구석(인벤토리 아래쪽)에 붙인다. 자리가 겹치면 위로 비킨다
         List<Integer> xs = new ArrayList<>();
-        if (worn) {
-            if (leftOk) xs.add(leftX);
-            if (rightOk) xs.add(rightX);
+        int cornerLeft = 2;
+        int cornerRight = Math.max(2, s.width - W - 2);
+        if (ae) {
+            xs.add(cornerLeft);
+            xs.add(cornerRight);
         } else {
-            if (rightOk) xs.add(rightX);
-            if (leftOk) xs.add(leftX);
+            xs.add(cornerRight);
+            xs.add(cornerLeft);
         }
-        xs.add(Math.max(2, s.width - W - 2));
-        xs.add(2);
         int bottomY = s.height - BOTTOM_MARGIN - total;
         int bestX = xs.get(0);
         int bestY = Math.max(TOP_MARGIN, bottomY);

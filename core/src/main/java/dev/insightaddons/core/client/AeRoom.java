@@ -29,6 +29,16 @@ final class AeRoom {
 
     private static final double E = 0.004;
 
+    /** 케이블을 묻는 바닥 홈(xa, xb, za, zb)과 깊이. 홈 부분은 바닥을 파내고 그 아래에 케이블을 둔다 */
+    static final double TRENCH_D = 1.0;
+    static final double[][] TRENCH = {
+            {-0.5, 0.5, Z0, 2.0},
+            {-4.0, -1.0, 2.5, 3.5},
+            {1.0, 4.0, 2.5, 3.5},
+            {-2.5, 2.5, 4.0, Z1},
+    };
+
+
     /** 방 좌표 -> 카메라 기준 좌표 */
     record Frame(Vec3 right, Vec3 up, Vec3 fwd, double s) {
         Vec3 rel(double x, double y, double z) {
@@ -42,6 +52,33 @@ final class AeRoom {
         int h = a * 374761393 + b * 668265263 + c * 2147483647;
         h = (h ^ (h >>> 13)) * 1274126177;
         return (h ^ (h >>> 16)) & 0x7fffffff;
+    }
+
+    /** 사각형 [xa,xb]x[za,zb]에서 홈 사각형들을 뺀 나머지를 그린다 */
+    private static void flatMinus(Ctx c, double y, double xa, double xb, double za, double zb, int col, int al, double[][] holes) {
+        java.util.List<double[]> rects = new java.util.ArrayList<>();
+        rects.add(new double[]{xa, xb, za, zb});
+        if (holes != null) {
+            for (double[] h : holes) {
+                java.util.List<double[]> next = new java.util.ArrayList<>();
+                for (double[] r : rects) {
+                    if (h[1] <= r[0] || h[0] >= r[1] || h[3] <= r[2] || h[2] >= r[3]) {
+                        next.add(r);
+                        continue;
+                    }
+                    double ix0 = Math.max(r[0], h[0]);
+                    double ix1 = Math.min(r[1], h[1]);
+                    if (r[0] < ix0) next.add(new double[]{r[0], ix0, r[2], r[3]});
+                    if (ix1 < r[1]) next.add(new double[]{ix1, r[1], r[2], r[3]});
+                    if (r[2] < h[2]) next.add(new double[]{ix0, ix1, r[2], h[2]});
+                    if (h[3] < r[3]) next.add(new double[]{ix0, ix1, h[3], r[3]});
+                }
+                rects = next;
+            }
+        }
+        for (double[] r : rects) {
+            c.flatY(y, r[0], r[1], r[2], r[3], col, al);
+        }
     }
 
     private static final class Ctx {
@@ -113,11 +150,23 @@ final class AeRoom {
     }
 
     private static void floor(Ctx c, double arenaHalfW, double arenaHalfD, boolean blocks) {
-        c.flatY(Y0, X0, X1, Z0, Z1, SEAM, 255);
+        double[][] holes = blocks && AeBlocks.busReady() ? TRENCH : null;
+        flatMinus(c, Y0, X0, X1, Z0, Z1, SEAM, 255, holes);
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 10; j++) {
                 int d = (hash(i, j, 1) % 13) - 6;
-                c.flatY(Y0 + E, X0 + i + 0.04, X0 + i + 0.96, Z0 + j + 0.04, Z0 + j + 0.96, shade(PANEL, d), 255);
+                flatMinus(c, Y0 + E, X0 + i + 0.04, X0 + i + 0.96, Z0 + j + 0.04, Z0 + j + 0.96, shade(PANEL, d), 255, holes);
+            }
+        }
+        if (holes != null) {
+            // 바닥을 판 홈: 바닥면과 옆면 (케이블이 이 안에 놓인다)
+            double yb = Y0 - TRENCH_D;
+            for (double[] h : holes) {
+                c.flatY(yb, h[0], h[1], h[2], h[3], 0x16161E, 255);
+                c.wallX(h[0], yb, Y0, h[2], h[3], 0x2E2E38, 255);
+                c.wallX(h[1], yb, Y0, h[2], h[3], 0x2E2E38, 255);
+                c.wallZ(h[2], h[0], h[1], yb, Y0, 0x2A2A34, 255);
+                c.wallZ(h[3], h[0], h[1], yb, Y0, 0x2A2A34, 255);
             }
         }
         // 보라색 네온 십자 (세로줄은 방 중앙, 가로줄은 앞쪽 z=3)

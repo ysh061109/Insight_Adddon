@@ -34,6 +34,8 @@ final class AeBlocks {
     private static BlockState driveRight;
     private static ModelData driveData = ModelData.EMPTY;
     private static boolean failed;
+    private static BlockState cableBus;
+    private static boolean busOk;
 
     private AeBlocks() {}
 
@@ -82,6 +84,11 @@ final class AeBlocks {
             driveLeft = with(d.defaultBlockState(), "facing", Direction.EAST.getSerializedName());
             driveRight = with(d.defaultBlockState(), "facing", Direction.WEST.getSerializedName());
             driveData = cells();
+            Block cb = block("cable_bus");
+            if (cb != null) {
+                cableBus = cb.defaultBlockState();
+                busOk = busData(java.util.Map.of(Direction.UP, false)) != null;
+            }
         } catch (Throwable t) {
             failed = true;
             dev.insightaddons.core.InsightAddons.LOGGER.warn("AE2 가상 상자 준비 실패: {}", t.toString());
@@ -104,6 +111,123 @@ final class AeBlocks {
         } catch (Throwable t) {
             dev.insightaddons.core.InsightAddons.LOGGER.info("AE2 드라이브 셀 모델 데이터를 만들지 못해 빈 드라이브로 그립니다: {}", t.toString());
             return ModelData.EMPTY;
+        }
+    }
+
+    /** 바닥 홈에 진짜 AE2 케이블 블록을 쓸 수 있는가(못 쓰면 기존 납작 케이블로 그린다) */
+    static boolean busReady() {
+        if (!tried) {
+            init();
+        }
+        return !failed && busOk;
+    }
+
+    private static final java.util.Map<Integer, ModelData> BUS_CACHE = new java.util.HashMap<>();
+
+    /**
+     * AE2 케이블 블록(밀집 스마트, 플루익스)의 모델 데이터. conns: 방향 -> true(옆 케이블과 이어짐) / false(드라이브·제어기 같은 장치와 이어짐).
+     * AE2 소스(1.21.1): appeng.client.render.cablebus.CableBusRenderState (PROPERTY, setCableType/CoreType/Color/ConnectionTypes/CableBusAdjacent/ChannelsOnSide).
+     * 실패하면 null.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static ModelData busData(java.util.Map<Direction, Boolean> conns) {
+        int key = 0;
+        for (var e : conns.entrySet()) {
+            key |= (1 << e.getKey().ordinal()) | (e.getValue() ? 1 << (8 + e.getKey().ordinal()) : 0);
+        }
+        ModelData cached = BUS_CACHE.get(key);
+        if (cached != null) {
+            return cached;
+        }
+        try {
+            Class<?> rsC = Class.forName("appeng.client.render.cablebus.CableBusRenderState");
+            Class<?> ctC = Class.forName("appeng.api.util.AECableType");
+            Class<?> colC = Class.forName("appeng.api.util.AEColor");
+            Class<?> coreC = Class.forName("appeng.client.render.cablebus.CableCoreType");
+            Object dense = Enum.valueOf((Class) ctC, "DENSE_SMART");
+            Object smart = Enum.valueOf((Class) ctC, "SMART");
+            Object clear = Enum.valueOf((Class) colC, "TRANSPARENT");
+            Object core = coreC.getMethod("fromCableType", ctC).invoke(null, dense);
+            Object rs = rsC.getConstructor().newInstance();
+            rsC.getMethod("setCableType", ctC).invoke(rs, dense);
+            rsC.getMethod("setCoreType", coreC).invoke(rs, core);
+            rsC.getMethod("setCableColor", colC).invoke(rs, clear);
+            java.util.EnumMap<Direction, Object> types = new java.util.EnumMap<>(Direction.class);
+            java.util.EnumSet<Direction> adj = java.util.EnumSet.noneOf(Direction.class);
+            java.util.EnumMap<Direction, Integer> ch = new java.util.EnumMap<>(Direction.class);
+            for (var e : conns.entrySet()) {
+                types.put(e.getKey(), e.getValue() ? dense : smart);
+                if (e.getValue()) {
+                    adj.add(e.getKey());
+                }
+                ch.put(e.getKey(), 8);
+            }
+            rsC.getMethod("setConnectionTypes", java.util.EnumMap.class).invoke(rs, types);
+            rsC.getMethod("setCableBusAdjacent", java.util.EnumSet.class).invoke(rs, adj);
+            rsC.getMethod("setChannelsOnSide", java.util.EnumMap.class).invoke(rs, ch);
+            ModelProperty prop = (ModelProperty) rsC.getField("PROPERTY").get(null);
+            ModelData data = ModelData.builder().with(prop, rs).build();
+            BUS_CACHE.put(key, data);
+            return data;
+        } catch (Throwable t) {
+            dev.insightaddons.core.InsightAddons.LOGGER.info("AE2 케이블 블록 모델 데이터를 만들지 못해 납작 케이블로 그립니다: {}", t.toString());
+            return null;
+        }
+    }
+
+    /** 바닥 홈 안의 케이블 한 칸. xc/zc: 방 좌표 중심, conns: 이어진 방향(방 +z는 블록 NORTH) */
+    private static void bus(PoseStack ps, MultiBufferSource buffers, Minecraft mc, double xc, double zc,
+                            java.util.Map<Direction, Boolean> conns) {
+        ModelData d = busData(conns);
+        if (d == null) {
+            return;
+        }
+        one(ps, buffers, mc, cableBus, d, xc - 0.5, AeRoom.Y0 - AeRoom.TRENCH_D, -zc - 0.5, 1f);
+    }
+
+    /** 홈 안 케이블망: 기존 십자 구조 그대로(중앙 세로줄, 제어기 양옆 가로줄, 앞쪽 가로줄)를 홈으로 옮기고, 양옆 드라이브 밑까지 이어서 드라이브와 연결한다 */
+    private static void busCables(PoseStack ps, MultiBufferSource buffers, Minecraft mc) {
+        final boolean B = true;
+        final boolean H = false;
+        // 중앙 세로줄(제어기 남쪽 면까지)
+        for (int i = 0; i < 7; i++) {
+            double z = AeRoom.Z0 + i + 0.5;
+            java.util.Map<Direction, Boolean> c = new java.util.EnumMap<>(Direction.class);
+            if (i > 0) {
+                c.put(Direction.SOUTH, B);
+            }
+            c.put(Direction.NORTH, i < 6 ? B : H);
+            bus(ps, buffers, mc, 0, z, c);
+        }
+        // 제어기 양옆 가로줄 (바깥 끝은 드라이브 밑에서 드라이브와 연결)
+        for (int sgn = -1; sgn <= 1; sgn += 2) {
+            Direction in = sgn < 0 ? Direction.EAST : Direction.WEST;
+            Direction out = sgn < 0 ? Direction.WEST : Direction.EAST;
+            for (int k = 0; k < 3; k++) {
+                double x = sgn * (1.5 + k);
+                java.util.Map<Direction, Boolean> c = new java.util.EnumMap<>(Direction.class);
+                c.put(in, k > 0 ? B : H); // 제일 안쪽은 제어기와 연결
+                if (k < 2) {
+                    c.put(out, B);
+                } else {
+                    c.put(Direction.UP, H); // 드라이브 바로 밑: 드라이브와 연결된 케이블
+                }
+                bus(ps, buffers, mc, x, 3.0, c);
+            }
+        }
+        // 앞쪽 가로줄 (가운데 칸은 제어기 북쪽 면과 연결)
+        for (int i = -2; i <= 2; i++) {
+            java.util.Map<Direction, Boolean> c = new java.util.EnumMap<>(Direction.class);
+            if (i > -2) {
+                c.put(Direction.WEST, B);
+            }
+            if (i < 2) {
+                c.put(Direction.EAST, B);
+            }
+            if (i == 0) {
+                c.put(Direction.SOUTH, H);
+            }
+            bus(ps, buffers, mc, i, 4.5, c);
         }
     }
 
@@ -154,29 +278,34 @@ final class AeBlocks {
             }
             cableStack = new ItemStack(it);
         }
+        boolean bus = busReady();
         double h = 0.375 * CABLE_FLAT + 0.004;
         double zc = 3.0;
-        // 전부 바닥에 깐다: 바닥 십자(세로줄은 방 중앙, 가로줄은 앞쪽 z=3, 드라이브 벽 사이만) + 앞쪽 벽 아래 가로줄
-        // 바닥 케이블은 한가운데 ME 제어기(x -1..1, z 2..4)를 향해 모인다: 앞뒤로 중앙선, 좌우로 가로줄
-        for (int i = 0; i < 10; i++) {
-            double z = AeRoom.Z0 + i + 0.5;
-            if (z > 2.0 && z < 4.0) {
-                continue; // 제어기 자리
+        if (bus) {
+            busCables(ps, buffers, mc);
+        } else {
+            // 전부 바닥에 깐다: 바닥 십자(세로줄은 방 중앙, 가로줄은 앞쪽 z=3, 드라이브 벽 사이만) + 앞쪽 벽 아래 가로줄
+            // 바닥 케이블은 한가운데 ME 제어기(x -1..1, z 2..4)를 향해 모인다: 앞뒤로 중앙선, 좌우로 가로줄
+            for (int i = 0; i < 10; i++) {
+                double z = AeRoom.Z0 + i + 0.5;
+                if (z > 2.0 && z < 4.0) {
+                    continue; // 제어기 자리
+                }
+                cable(ps, buffers, mc, 0, AeRoom.Y0 + h, z, 2);
             }
-            cable(ps, buffers, mc, 0, AeRoom.Y0 + h, z, 2);
-        }
-        // 중앙에서 양쪽 드라이브 쪽으로 뻗는 가로줄은 드라이브 밑을 따라가는 케이블에 이어진다
-        for (double x : new double[]{-2.2, -1.5, 1.5, 2.2}) {
-            cable(ps, buffers, mc, x, AeRoom.Y0 + h, zc, 0);
-        }
-        // 드라이브 바닥: 드라이브 앞면에 붙여 벽 끝까지 이어지는 케이블 (드라이브와 연결된 모양, 블록과 겹치지 않는다)
-        for (int i = 0; i < 10; i++) {
-            double z = AeRoom.Z0 + i + 0.5;
-            cable(ps, buffers, mc, -2.6, AeRoom.Y0 + h, z, 2);
-            cable(ps, buffers, mc, 2.6, AeRoom.Y0 + h, z, 2);
-        }
-        for (int i = 0; i < 5; i++) {
-            cable(ps, buffers, mc, -2.0 + i, AeRoom.Y0 + h, AeRoom.Z1 - 0.4, 0);
+            // 중앙에서 양쪽 드라이브 쪽으로 뻗는 가로줄은 드라이브 밑을 따라가는 케이블에 이어진다
+            for (double x : new double[]{-2.2, -1.5, 1.5, 2.2}) {
+                cable(ps, buffers, mc, x, AeRoom.Y0 + h, zc, 0);
+            }
+            // 드라이브 바닥: 드라이브 앞면에 붙여 벽 끝까지 이어지는 케이블 (드라이브와 연결된 모양, 블록과 겹치지 않는다)
+            for (int i = 0; i < 10; i++) {
+                double z = AeRoom.Z0 + i + 0.5;
+                cable(ps, buffers, mc, -2.6, AeRoom.Y0 + h, z, 2);
+                cable(ps, buffers, mc, 2.6, AeRoom.Y0 + h, z, 2);
+            }
+            for (int i = 0; i < 5; i++) {
+                cable(ps, buffers, mc, -2.0 + i, AeRoom.Y0 + h, AeRoom.Z1 - 0.4, 0);
+            }
         }
         // 앞쪽 벽 가운데 세로선: 벽에 붙여 세로로 케이블을 세운다
         // 바닥에서 천장까지 올라가서 천장에서 끝난다 (마지막 조각은 남은 높이만큼만)
