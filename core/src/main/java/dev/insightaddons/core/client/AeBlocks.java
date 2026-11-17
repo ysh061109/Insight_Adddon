@@ -226,8 +226,22 @@ final class AeBlocks {
             }
             if (i == 0) {
                 c.put(Direction.SOUTH, H);
+                c.put(Direction.UP, B); // 가운데 칸에서 천장까지 세로 케이블이 올라간다
             }
             bus(ps, buffers, mc, i, 4.5, c);
+        }
+        // 가운데 세로 케이블: 홈 안 케이블에서 바닥 위로 천장까지 이어진다 (마지막 칸은 남은 높이만큼)
+        double height = AeRoom.Y1 - AeRoom.Y0;
+        int cells = (int) Math.ceil(height - 0.01);
+        for (int k = 0; k < cells; k++) {
+            float sy = (float) Math.min(1.0, height - k);
+            java.util.Map<Direction, Boolean> c = new java.util.EnumMap<>(Direction.class);
+            c.put(Direction.DOWN, B);
+            c.put(Direction.UP, k < cells - 1 ? B : H);
+            ModelData d = busData(c);
+            if (d != null) {
+                one(ps, buffers, mc, cableBus, d, -0.5, AeRoom.Y0 + k, -4.5 - 0.5, sy);
+            }
         }
     }
 
@@ -306,6 +320,9 @@ final class AeBlocks {
             for (int i = 0; i < 5; i++) {
                 cable(ps, buffers, mc, -2.0 + i, AeRoom.Y0 + h, AeRoom.Z1 - 0.4, 0);
             }
+        }
+        if (bus) {
+            return; // 가운데 세로 케이블도 busCables가 이어서 그린다
         }
         // 앞쪽 벽 가운데 세로선: 벽에 붙여 세로로 케이블을 세운다
         // 바닥에서 천장까지 올라가서 천장에서 끝난다 (마지막 조각은 남은 높이만큼만)

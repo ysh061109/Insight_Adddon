@@ -106,12 +106,48 @@ public final class ControlColumn {
         List<Integer> xs = new ArrayList<>();
         int cornerLeft = 2;
         int cornerRight = Math.max(2, s.width - W - 2);
-        if (ae) {
+        boolean worn = ChestChaos.iconMode(s);
+        if (ae || worn) {
             xs.add(cornerLeft);
             xs.add(cornerRight);
         } else {
             xs.add(cornerRight);
             xs.add(cornerLeft);
+        }
+        // 그 밖의 Plus 보관함(InSight 유리 상자, 설치한 배낭 등): 버튼을 2열 격자로 플레이어 인벤토리 바로 아래 영역에 둔다
+        if (!ae && !worn && rows.size() >= 2) {
+            int colW = 84;
+            int cellH = 14;
+            int n = rows.size();
+            int rowsN = (n + 1) / 2;
+            int gridW = colW * 2 + 2;
+            int gridH = rowsN * cellH + (rowsN - 1) * 2;
+            int invLeft = acs.getGuiLeft();
+            var pl = net.minecraft.client.Minecraft.getInstance().player;
+            if (pl != null) {
+                int minX = Integer.MAX_VALUE;
+                for (var slot : acs.getMenu().slots) {
+                    if (slot.container == pl.getInventory()) {
+                        minX = Math.min(minX, slot.x);
+                    }
+                }
+                if (minX != Integer.MAX_VALUE) {
+                    invLeft = acs.getGuiLeft() + minX - 1;
+                }
+            }
+            int gx = Math.max(2, Math.min(invLeft, s.width - 2 - gridW));
+            int gy = acs.getGuiTop() + acs.getYSize() + 3;
+            if (gy + gridH <= s.height - 2 && !hits(obstacles, gx, gy, gridW, gridH)) {
+                for (int i = 0; i < n; i++) {
+                    AbstractWidget r = rows.get(i);
+                    r.setWidth(colW);
+                    r.setHeight(cellH);
+                    r.setX(gx + (i % 2) * (colW + 2));
+                    r.setY(gy + (i / 2) * (cellH + 2));
+                    e.addListener(WidgetGuard.mine(r));
+                }
+                return;
+            }
         }
         int bottomY = s.height - BOTTOM_MARGIN - total;
         int bestX = xs.get(0);
