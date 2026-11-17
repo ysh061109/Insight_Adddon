@@ -187,5 +187,6 @@
   "insight_addons.configuration.search": "설정 검색...",
   "insight_addons.configuration.tab.all": "전체",
   "insight_addons.configuration.noResults": "검색 결과가 없습니다",
-  "insight_addons.configuration.chaosIconMax": "난장판 아이콘 최대 개수"
+  "insight_addons.configuration.chaosIconMax": "난장판 아이콘 최대 개수",
+  "insight_addons.configuration.ae2.frontView": "정면 시점 맞추기"
 }

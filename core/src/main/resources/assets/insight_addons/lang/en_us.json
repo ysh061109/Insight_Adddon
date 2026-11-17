@@ -187,5 +187,6 @@
   "insight_addons.configuration.search": "Search settings...",
   "insight_addons.configuration.tab.all": "All",
   "insight_addons.configuration.noResults": "No results",
-  "insight_addons.configuration.chaosIconMax": "Chaos icon max count"
+  "insight_addons.configuration.chaosIconMax": "Chaos icon max count",
+  "insight_addons.configuration.ae2.frontView": "Face server room"
 }

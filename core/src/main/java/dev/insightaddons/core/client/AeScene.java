@@ -43,6 +43,9 @@ public final class AeScene {
     private static boolean open;
     private static int kinds;
     private static long total;
+    /** 열기 전 시선 각도(닫을 때 부드럽게 되돌린다), 없으면 NaN */
+    private static float savedPitch = Float.NaN;
+    private static final float FRONT_PITCH = 6f;
 
     private AeScene() {}
 
@@ -82,6 +85,7 @@ public final class AeScene {
         }
         long now = mc.level.getGameTime();
         open = AeTerminal.isTerminalScreen(mc.screen);
+        frontView(mc);
         prevAnim = anim;
         anim += ((open ? 1f : 0f) - anim) * 0.25f;
         if (!open && anim < 0.02f) {
@@ -141,6 +145,30 @@ public final class AeScene {
         total = sum;
         int maxShown = InsightConfig.AE2_MAX_SHOWN.get();
         shown = list.size() > maxShown ? new ArrayList<>(list.subList(0, maxShown)) : list;
+    }
+
+    /** 단말기를 열어 두는 동안 시선을 서버룸 정면(약간 아래)으로 부드럽게 맞추고, 닫으면 원래 각도로 되돌린다 */
+    private static void frontView(Minecraft mc) {
+        if (!InsightConfig.AE2_FRONT_VIEW.get() || !InsightConfig.AE2_PHYSICS.get() || mc.player == null) {
+            return;
+        }
+        var p = mc.player;
+        float cur = p.getXRot();
+        if (open) {
+            if (Float.isNaN(savedPitch)) {
+                savedPitch = cur;
+            }
+            p.xRotO = cur;
+            p.setXRot(cur + (FRONT_PITCH - cur) * 0.2f);
+        } else if (!Float.isNaN(savedPitch)) {
+            p.xRotO = cur;
+            float next = cur + (savedPitch - cur) * 0.25f;
+            p.setXRot(next);
+            if (Math.abs(savedPitch - next) < 0.3f) {
+                p.setXRot(savedPitch);
+                savedPitch = Float.NaN;
+            }
+        }
     }
 
     private static int slotOf(Item item) {
