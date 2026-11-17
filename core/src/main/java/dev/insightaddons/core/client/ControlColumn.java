@@ -100,32 +100,26 @@ public final class ControlColumn {
         int rightX = right + 6;
         boolean leftOk = leftX >= 2;
         boolean rightOk = rightX + W <= s.width - 2;
-        boolean preferRight = soph || GlassSkin.isStorageScreenClass(s);
+        // 기본은 창 오른쪽 아래. 인벤토리/멘 배낭은 왼쪽 업그레이드 탭을 피해 왼쪽 아래. 모두 화면 아래쪽에 붙여 창 하단과 겹치지 않게 한다
+        boolean worn = ChestChaos.iconMode(s);
         List<Integer> xs = new ArrayList<>();
-        if (preferRight) {
-            if (rightOk) xs.add(rightX);
+        if (worn) {
             if (leftOk) xs.add(leftX);
+            if (rightOk) xs.add(rightX);
         } else {
-            if (leftOk) xs.add(leftX);
             if (rightOk) xs.add(rightX);
+            if (leftOk) xs.add(leftX);
         }
         xs.add(Math.max(2, s.width - W - 2));
         xs.add(2);
+        int bottomY = s.height - BOTTOM_MARGIN - total;
         int bestX = xs.get(0);
-        int bestY = Math.max(TOP_MARGIN, Math.min(acs.getGuiTop(), s.height - BOTTOM_MARGIN - total));
+        int bestY = Math.max(TOP_MARGIN, bottomY);
         boolean found = false;
         outer:
         for (int cx : xs) {
-            for (int cy = Math.max(TOP_MARGIN, acs.getGuiTop()); cy + total <= s.height - BOTTOM_MARGIN; cy += 4) {
+            for (int cy = bottomY; cy >= TOP_MARGIN; cy -= 4) {
                 if (!hits(obstacles, cx, cy, W, total)) {
-                    bestX = cx;
-                    bestY = cy;
-                    found = true;
-                    break outer;
-                }
-            }
-            for (int cy = Math.max(TOP_MARGIN, acs.getGuiTop()) - 4; cy >= TOP_MARGIN; cy -= 4) {
-                if (cy + total <= s.height - BOTTOM_MARGIN && !hits(obstacles, cx, cy, W, total)) {
                     bestX = cx;
                     bestY = cy;
                     found = true;
@@ -134,7 +128,7 @@ public final class ControlColumn {
             }
         }
         int x = bestX;
-        int y = found ? bestY : Math.max(TOP_MARGIN, Math.min(acs.getGuiTop(), s.height - BOTTOM_MARGIN - total));
+        int y = bestY;
         for (AbstractWidget r : rows) {
             r.setX(x);
             r.setY(y);
