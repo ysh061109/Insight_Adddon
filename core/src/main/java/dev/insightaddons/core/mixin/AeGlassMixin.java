@@ -1,5 +1,6 @@
 package dev.insightaddons.core.mixin;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.insightaddons.core.client.AeGlass;
 import dev.insightaddons.core.client.AeTerminal;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,7 +21,21 @@ public abstract class AeGlassMixin {
     private void insightaddons$glass(GuiGraphics g, int offsetX, int offsetY, int mouseX, int mouseY, float partial, CallbackInfo ci) {
         if (AeGlass.on() && AeTerminal.isTerminalScreen(this)) {
             AeGlass.draw((AbstractContainerScreen<?>) (Object) this, g, offsetX, offsetY, mouseX, mouseY, partial);
-            ci.cancel();
+            if (AeGlass.orig() <= 0.02f) {
+                ci.cancel();
+            } else {
+                // 투명도를 올린 만큼 AE2 원래 창 그림을 겹쳐 그린다 (원래 그리기를 이어서 실행)
+                RenderSystem.enableBlend();
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.setShaderColor(1f, 1f, 1f, AeGlass.orig());
+            }
+        }
+    }
+
+    @Inject(method = "drawBG(Lnet/minecraft/client/gui/GuiGraphics;IIIIF)V", at = @At("RETURN"), remap = false, require = 0)
+    private void insightaddons$glassEnd(GuiGraphics g, int offsetX, int offsetY, int mouseX, int mouseY, float partial, CallbackInfo ci) {
+        if (AeGlass.on() && AeTerminal.isTerminalScreen(this)) {
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
         }
     }
 }

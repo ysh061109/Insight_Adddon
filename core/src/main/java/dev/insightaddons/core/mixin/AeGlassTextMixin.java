@@ -15,7 +15,7 @@ public abstract class AeGlassTextMixin {
     private static final String SEQUENCE_DRAW = "drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/util/FormattedCharSequence;IIIZ)I";
 
     private static boolean insightaddons$glassNow() {
-        return AeGlass.on() && AeTerminal.isTerminalScreen(Minecraft.getInstance().screen);
+        return AeGlass.on() && AeGlass.orig() < 0.5f && AeTerminal.isTerminalScreen(Minecraft.getInstance().screen);
     }
 
     @ModifyVariable(method = STRING_DRAW, at = @At("HEAD"), ordinal = 2, argsOnly = true, remap = false, require = 0)

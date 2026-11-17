@@ -24,15 +24,25 @@ public final class AeGlass {
         return (Math.max(0, Math.min(255, alpha)) << 24) | (rgb & 0xFFFFFF);
     }
 
+    /** 창 투명도를 올릴수록 AE2 원래 창이 되돌아온다: 0(완전 투명 유리) ~ 1(원래 창) */
+    public static float orig() {
+        return Math.max(0f, Math.min(1f, InsightConfig.AE2_GLASS_ALPHA.get() / 255f));
+    }
+
+    private static int fade(int argb) {
+        int a = (int) (((argb >>> 24) & 0xFF) * (1f - orig()));
+        return (a << 24) | (argb & 0xFFFFFF);
+    }
+
     public static void panel(GuiGraphics g, int x, int y, int w, int h) {
-        g.fill(x, y, x + w, y + h, argb(InsightConfig.AE2_GLASS_ALPHA.get(), 0x141428));
-        g.renderOutline(x, y, w, h, 0x45FFFFFF);
-        g.renderOutline(x + 1, y + 1, w - 2, h - 2, 0x18FFFFFF);
+        g.fill(x, y, x + w, y + h, fade(argb(InsightConfig.AE2_GLASS_ALPHA.get(), 0x141428)));
+        g.renderOutline(x, y, w, h, fade(0x45FFFFFF));
+        g.renderOutline(x + 1, y + 1, w - 2, h - 2, fade(0x18FFFFFF));
     }
 
     public static void cell(GuiGraphics g, int x, int y) {
-        g.fill(x + 1, y + 1, x + 17, y + 17, argb(InsightConfig.AE2_GLASS_SLOT_ALPHA.get(), 0xFFFFFF));
-        g.renderOutline(x, y, 18, 18, 0x36FFFFFF);
+        g.fill(x + 1, y + 1, x + 17, y + 17, fade(argb(InsightConfig.AE2_GLASS_SLOT_ALPHA.get(), 0xFFFFFF)));
+        g.renderOutline(x, y, 18, 18, fade(0x36FFFFFF));
     }
 
     /** 단말기 배경 대신 유리 패널과 모든 슬롯 칸을 그린다. 검색창은 원래 배경 그리기 안에서 그려지므로 같이 그려 준다. */
