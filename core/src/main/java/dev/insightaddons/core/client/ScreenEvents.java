@@ -21,7 +21,7 @@ public final class ScreenEvents {
 
     private ScreenEvents() {}
 
-    private static boolean insightPresent() {
+    static boolean insightPresent() {
         if (insightPresent == null) {
             insightPresent = ModList.get().isLoaded("insightchests");
         }
@@ -50,7 +50,7 @@ public final class ScreenEvents {
                 && mc.level.getBlockEntity(hit.getBlockPos()) != null;
     }
 
-    private static boolean isGlassChest(Object screen) {
+    static boolean isGlassChest(Object screen) {
         return screen != null && screen.getClass().getName().equals("com.mrsun.insightchests.client.gui.GlassChestScreen");
     }
 
@@ -107,47 +107,5 @@ public final class ScreenEvents {
                 pendingReset = false;
             }
         }
-    }
-
-    @SubscribeEvent
-    public static void onInit(ScreenEvent.Init.Post event) {
-        Screen screen = event.getScreen();
-        if (!insightPresent() || !(screen instanceof AbstractContainerScreen<?> acs)) {
-            return;
-        }
-        // 표시 비율 슬라이더: InSight 유리 보관함 화면과, 설치된 Sophisticated 배낭/보관함 화면에 둔다 (B키 배낭 제외)
-        boolean glass = screen.getClass().getName().equals("com.mrsun.insightchests.client.gui.GlassChestScreen");
-        boolean sophisticated = GlassSkin.isStorageScreenClass(screen) && GlassSkin.placed();
-        if (!glass && !sophisticated) {
-            return;
-        }
-        int w = 126;
-        int h = 12;
-        int x = acs.getGuiLeft();
-        int below = acs.getGuiTop() + acs.getYSize() + 3;
-        int y;
-        // 왼쪽 옆에는 배낭 업그레이드 탭이 붙으므로 절대 두지 않는다
-        if (below + h <= screen.height - 2) {
-            y = below;
-        } else if (acs.getGuiTop() - h - 3 >= 2) {
-            y = acs.getGuiTop() - h - 3;
-        } else if (acs.getGuiLeft() + acs.getXSize() + 4 + w <= screen.width - 2) {
-            x = acs.getGuiLeft() + acs.getXSize() + 4;
-            y = Math.min(screen.height - h - 2, acs.getGuiTop() + acs.getYSize() - h - 2);
-        } else {
-            x = acs.getGuiLeft() + acs.getXSize() - w - 4;
-            y = Math.max(2, screen.height - h - 2);
-        }
-        event.addListener(WidgetGuard.mine(new DropRatioSlider(x, y, w, h)));
-        // 창 투명도 슬라이더: 비율 슬라이더 옆, 옆이 막혀 있으면 그 위/아래
-        int ax = x + w + 4;
-        int ay = y;
-        if (ax + 100 > screen.width - 2) {
-            ax = x;
-            ay = y - h - 2 >= 2 ? y - h - 2 : y + h + 2;
-        }
-        event.addListener(WidgetGuard.mine(new ConfigSlider(ax, ay, 100, h, 0, 255, GlassSkin.effectiveAlpha(),
-                v -> net.minecraft.network.chat.Component.translatable("insight_addons.window.alpha", Math.round(v * 100f / 255f)),
-                ConfigSlider.save(InsightConfig.GLASS_ALPHA))));
     }
 }

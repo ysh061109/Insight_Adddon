@@ -47,6 +47,19 @@ public final class InsightBridge {
         return 0.25;
     }
 
+    /** InSight의 uiBackgroundOpacity를 지금 세션에서만 바꾼다(저장하지 않음) - 창 투명도 슬라이더를 실시간으로 반영하기 위해 */
+    @SuppressWarnings("unchecked")
+    public static void setUiOpacity(double v) {
+        init();
+        try {
+            if (client != null) {
+                ((ModConfigSpec.ConfigValue<Object>) fOpacity.get(client)).set(Math.max(0.0, Math.min(1.0, v)));
+            }
+        } catch (Throwable ignored) {
+            // 설정이 아직 로드되지 않은 경우 등
+        }
+    }
+
     /** "MIDDLE", "LEFT", "RIGHT" 중 하나. 기본 RIGHT */
     public static String guiPosition() {
         init();

@@ -183,5 +183,8 @@
   "insight_addons.hud.hide": "HUD 숨기기",
   "insight_addons.hud.show": "HUD 보이기",
   "insight_addons.configuration.chaosRandom": "난장판 속도 랜덤(%)",
-  "insight_addons.configuration.hudHidden": "보관함에서 HUD 숨김"
+  "insight_addons.configuration.hudHidden": "보관함에서 HUD 숨김",
+  "insight_addons.configuration.search": "설정 검색...",
+  "insight_addons.configuration.tab.all": "전체",
+  "insight_addons.configuration.noResults": "검색 결과가 없습니다"
 }

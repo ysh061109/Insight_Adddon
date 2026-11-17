@@ -20,7 +20,7 @@ import net.neoforged.neoforge.client.event.ScreenEvent;
 public final class HudToggle {
     private HudToggle() {}
 
-    private static Button button(int x, int y, int w) {
+    static Button button(int x, int y, int w) {
         Button[] self = new Button[1];
         self[0] = Button.builder(label(), b -> {
             InsightConfig.HUD_HIDDEN.set(!InsightConfig.HUD_HIDDEN.get());

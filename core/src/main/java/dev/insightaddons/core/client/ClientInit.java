@@ -1,8 +1,6 @@
 package dev.insightaddons.core.client;
 
-import net.minecraft.client.gui.screens.Screen;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 
@@ -15,13 +13,12 @@ public final class ClientInit {
 
     public static void register(ModContainer container) {
         container.registerExtensionPoint(IConfigScreenFactory.class, (modContainer, parent) -> {
-            if (ModList.get().isLoaded("yet_another_config_lib_v3")) {
-                Screen yacl = YaclScreen.create(parent);
-                if (yacl != null) {
-                    return yacl;
-                }
+            try {
+                return new SettingsScreen(parent);
+            } catch (Throwable t) {
+                dev.insightaddons.core.InsightAddons.LOGGER.warn("설정 화면을 만들지 못했습니다: {}", t.toString());
+                return new ConfigurationScreen(modContainer, parent);
             }
-            return new ConfigurationScreen(modContainer, parent);
         });
     }
 }

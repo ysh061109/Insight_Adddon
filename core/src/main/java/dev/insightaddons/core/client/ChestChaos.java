@@ -43,10 +43,14 @@ public final class ChestChaos {
     private static final Random RNG = new Random();
     private static final int MAX = 240;
     private static final long FLY_MS = 6000;
+    /** 날아다닌 뒤 창 바닥으로 떨어져 놓여 있는 시간(이 뒤에 원래 자리로 안착) */
+    private static final long FALL_MS = 2000;
     private static final long RETURN_MAX_MS = 4000;
     private static long start;
     private static long lastMs;
     private static boolean returning;
+    private static boolean falling;
+    private static long fallStart;
     private static long returnStart;
     private static Screen owner;
 
@@ -57,7 +61,7 @@ public final class ChestChaos {
         return !HIDDEN.isEmpty() && HIDDEN.contains(slot);
     }
 
-    private static boolean eligible(Screen s) {
+    static boolean eligible(Screen s) {
         if (!(s instanceof AbstractContainerScreen<?> acs) || s.getClass().getName().startsWith("appeng.")) {
             return false;
         }
@@ -73,45 +77,7 @@ public final class ChestChaos {
         return false;
     }
 
-    /** 오른쪽 바깥에 세로로 쌓는 조작 위젯 자리 (업그레이드 탭은 왼쪽이라 겹치지 않는다) */
-    @SubscribeEvent
-    public static void onInit(ScreenEvent.Init.Post e) {
-        Screen s = e.getScreen();
-        if (!eligible(s)) {
-            return;
-        }
-        AbstractContainerScreen<?> acs = (AbstractContainerScreen<?>) s;
-        int w = 100;
-        int right = acs.getGuiLeft() + acs.getXSize();
-        int x = right + 6;
-        int y = Math.max(2, acs.getGuiTop());
-        boolean side = x + w <= s.width - 2;
-        if (!side) {
-            // 오른쪽에 자리가 없으면 창 위쪽 줄(오른쪽 끝 기준, 왼쪽으로)로 둔다
-            x = Math.max(2, right - w);
-            y = acs.getGuiTop() - 20 >= 2 ? acs.getGuiTop() - 20 : Math.min(s.height - 20, acs.getGuiTop() + acs.getYSize() + 3);
-        }
-        int step = 14;
-        int cy = y;
-        if (side) {
-            e.addListener(WidgetGuard.mine(Button.builder(Component.translatable("insight_addons.chaos"), b -> toggle(acs))
-                    .bounds(x, cy, w, 18).build()));
-            cy += 20;
-            e.addListener(WidgetGuard.mine(new ConfigSlider(x, cy, w, 12, 20, 300, InsightConfig.CHAOS_SPEED.get(),
-                    v -> Component.translatable("insight_addons.chaos.speed", v), ConfigSlider.save(InsightConfig.CHAOS_SPEED))));
-            cy += step;
-            e.addListener(WidgetGuard.mine(new ConfigSlider(x, cy, w, 12, 0, 100, InsightConfig.CHAOS_RANDOM.get(),
-                    v -> Component.translatable("insight_addons.chaos.random", v), ConfigSlider.save(InsightConfig.CHAOS_RANDOM))));
-            cy += step + 4;
-            HudToggle.addButton(e, x, cy, w);
-        } else {
-            e.addListener(WidgetGuard.mine(Button.builder(Component.translatable("insight_addons.chaos"), b -> toggle(acs))
-                    .bounds(x, y, 48, 18).build()));
-            HudToggle.addButton(e, x - 54, y, 50);
-        }
-    }
-
-    private static void toggle(AbstractContainerScreen<?> acs) {
+    static void toggle(AbstractContainerScreen<?> acs) {
         if (InsightChaos.running()) {
             InsightChaos.stop();
         }
@@ -130,8 +96,10 @@ public final class ChestChaos {
         float r = InsightConfig.CHAOS_RANDOM.get() / 100f;
         int ox = WindowDrag.offsetOf(acs)[0];
         int oy = WindowDrag.offsetOf(acs)[1];
+        var invc = Minecraft.getInstance().player == null ? null : Minecraft.getInstance().player.getInventory();
         for (Slot slot : acs.getMenu().slots) {
-            if (!slot.hasItem()) {
+            // 보관함을 열었을 때는 보관함 칸의 아이템만 날리고, 내 인벤토리 칸은 그대로 둔다
+            if (!slot.hasItem() || slot.container == invc) {
                 continue;
             }
             int pieces = Math.max(1, Math.min(8, (slot.getItem().getCount() + 7) / 8));
@@ -149,7 +117,7 @@ public final class ChestChaos {
                 p.vx = (float) (Math.cos(ang) * sp);
                 p.vy = (float) (Math.sin(ang) * sp);
                 p.spin = (RNG.nextFloat() - 0.5f) * 900f * f;
-                p.baseSize = 0.8f + RNG.nextFloat() * 1.1f;
+                p.baseSize = 1f; // 처음 물리로 쌓여 있던 크기와 같게
                 p.size = 1f;
                 PARTS.add(p);
                 any = true;
@@ -163,10 +131,15 @@ public final class ChestChaos {
         returning = false;
     }
 
+    private static int oyOf(AbstractContainerScreen<?> acs) {
+        return WindowDrag.offsetOf(acs)[1];
+    }
+
     private static void clearAll() {
         PARTS.clear();
         HIDDEN.clear();
         returning = false;
+        falling = false;
     }
 
     private static void beginReturn() {
@@ -229,16 +202,43 @@ public final class ChestChaos {
         long now = System.currentTimeMillis();
         float dt = Math.min(0.05f, (now - lastMs) / 1000f);
         lastMs = now;
-        if (!returning && now - start > FLY_MS) {
+        if (!returning && !falling && now - start > FLY_MS) {
+            falling = true;
+            fallStart = now;
+        }
+        if (!returning && falling && now - fallStart > FALL_MS) {
             beginReturn();
         }
+        float floorY = acs.getGuiTop() + acs.getYSize() + oyOf(acs);
         int ox = WindowDrag.offsetOf(acs)[0];
         int oy = WindowDrag.offsetOf(acs)[1];
         boolean timeout = returning && now - returnStart > RETURN_MAX_MS;
         for (int i = PARTS.size() - 1; i >= 0; i--) {
             P p = PARTS.get(i);
             float sz16 = 16 * p.size;
-            if (!returning) {
+            if (!returning && falling) {
+                // 기존처럼 중력으로 창 바닥에 떨어져 튕기며 쌓인다
+                p.size = p.baseSize;
+                p.vy += 1800f * dt;
+                p.vx *= 1f - 1.2f * dt;
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.rot += p.spin * dt;
+                p.spin *= 1f - 2f * dt;
+                float fl = floorY - sz16;
+                if (p.y > fl) {
+                    p.y = fl;
+                    p.vy = -p.vy * 0.4f;
+                    p.vx *= 0.7f;
+                    if (Math.abs(p.vy) < 60f) {
+                        p.vy = 0f;
+                    }
+                }
+                if (p.x < 0 || p.x > s.width - sz16) {
+                    p.vx = -p.vx * 0.5f;
+                    p.x = Math.max(0, Math.min(s.width - sz16, p.x));
+                }
+            } else if (!returning) {
                 p.size = p.baseSize;
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;

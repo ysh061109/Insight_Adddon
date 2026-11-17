@@ -183,5 +183,8 @@
   "insight_addons.hud.hide": "Hide HUD",
   "insight_addons.hud.show": "Show HUD",
   "insight_addons.configuration.chaosRandom": "Chaos speed randomness (%)",
-  "insight_addons.configuration.hudHidden": "Hide HUD in containers"
+  "insight_addons.configuration.hudHidden": "Hide HUD in containers",
+  "insight_addons.configuration.search": "Search settings...",
+  "insight_addons.configuration.tab.all": "All",
+  "insight_addons.configuration.noResults": "No results"
 }
