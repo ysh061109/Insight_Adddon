@@ -41,7 +41,6 @@ public final class ChestChaos {
     private static final List<P> PARTS = new ArrayList<>();
     private static final Set<Slot> HIDDEN = Collections.newSetFromMap(new IdentityHashMap<>());
     private static final Random RNG = new Random();
-    private static final int MAX = 240;
     private static final long FLY_MS = 6000;
     /** 날아다닌 뒤 창 바닥으로 떨어져 놓여 있는 시간(이 뒤에 원래 자리로 안착) */
     private static final long FALL_MS = 2000;
@@ -118,7 +117,7 @@ public final class ChestChaos {
             }
             int pieces = Math.max(1, Math.min(8, (slot.getItem().getCount() + 7) / 8));
             boolean any = false;
-            for (int k = 0; k < pieces && PARTS.size() < MAX; k++) {
+            for (int k = 0; k < pieces && PARTS.size() < InsightConfig.CHAOS_ICON_MAX.get(); k++) {
                 P p = new P();
                 p.slot = slot;
                 p.stack = slot.getItem().copyWithCount(1);

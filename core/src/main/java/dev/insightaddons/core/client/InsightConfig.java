@@ -29,6 +29,7 @@ public final class InsightConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> FANCY_MOD_IDS;
     public static final ModConfigSpec.BooleanValue KEEP_ORIGINAL_SCREEN;
 
+    public static final ModConfigSpec.IntValue CHAOS_ICON_MAX;
     public static final ModConfigSpec.BooleanValue AE2_PHYSICS;
     public static final ModConfigSpec.IntValue AE2_PHYSICS_MAX;
     public static final ModConfigSpec.IntValue AE2_PHYSICS_RATIO;
@@ -59,6 +60,8 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.chaosSpeed").defineInRange("chaosSpeed", 100, 20, 300);
         CHAOS_RANDOM = b.comment("난장판에서 아이템마다 속도를 다르게 하는 정도(%). 0이면 모두 설정한 속도로 같이 움직이고, 높을수록 제각각 빠르고 느려집니다.")
                 .translation("insight_addons.configuration.chaosRandom").defineInRange("chaosRandom", 0, 0, 100);
+        CHAOS_ICON_MAX = b.comment("인벤토리/배낭 난장판에서 동시에 날아다니는 아이콘 조각의 최대 개수. 올리면 더 많이 날고 느려질 수 있습니다.")
+                .translation("insight_addons.configuration.chaosIconMax").defineInRange("chaosIconMax", 240, 20, 3000);
         HUD_HIDDEN = b.comment("보관함을 열었을 때 체력/갑옷/배고픔/경험치/핫바를 숨깁니다. 보관함 화면의 HUD 버튼으로 바꾸면 저장됩니다.")
                 .translation("insight_addons.configuration.hudHidden").define("hudHidden", false);
         GLASS_SLOT_ALPHA = b.comment("유리 화면의 슬롯 칸 속 흰색 농도(0~255). 올리면 칸이 밝아지고, 0이면 칸 속이 완전히 투명해집니다.")

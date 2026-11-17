@@ -85,6 +85,11 @@ final class AePile {
 
     private static final Map<Item, BakedModel> MODELS = new HashMap<>();
     private static final org.joml.Quaternionf ROT = new org.joml.Quaternionf();
+    /** 직전 동기화의 종류별 개수/기본 조각 수, 넣을 때 보이게 더해 둔 보너스 조각 */
+    private static final Map<Item, Integer> PREV_COUNT = new HashMap<>();
+    private static final Map<Item, Integer> PREV_BASE = new HashMap<>();
+    private static final Map<Item, Integer> BONUS = new HashMap<>();
+
     private static final List<Body> BODIES = new ArrayList<>();
     private static final List<Item> PENDING = new ArrayList<>();
     private static final Map<Item, Integer> LABEL_COUNT = new HashMap<>();
@@ -97,6 +102,9 @@ final class AePile {
         returnTicks = 0;
         spread = false;
         BODIES.clear();
+        PREV_COUNT.clear();
+        PREV_BASE.clear();
+        BONUS.clear();
         PENDING.clear();
         LABEL_COUNT.clear();
         LABEL_ORDER.clear();
@@ -121,7 +129,30 @@ final class AePile {
         int total = 0;
         for (int i = 0; i < kinds; i++) {
             Map.Entry<Item, Integer> e = sorted.get(i);
-            int n = sum <= 0 ? 1 : Math.max(1, (int) Math.round(e.getValue() * (double) budget / sum));
+            int base = sum <= 0 ? 1 : Math.max(1, (int) Math.round(e.getValue() * (double) budget / sum));
+            // 개수가 늘었는데 비례 계산상 조각 수가 그대로면, 넣은 것이 눈에 보이게 조각을 하나 더 쌓는다(보너스)
+            Item key = e.getKey();
+            Integer pc = PREV_COUNT.get(key);
+            Integer pb = PREV_BASE.get(key);
+            int bonus = BONUS.getOrDefault(key, 0);
+            if (pb != null && base > pb) {
+                bonus = Math.max(0, bonus - (base - pb));
+            }
+            if (pc != null && pb != null) {
+                if (e.getValue() > pc && base <= pb && bonusTotal() < Math.max(12, budget / 20)) {
+                    bonus++;
+                } else if (e.getValue() < pc && base >= pb && bonus > 0) {
+                    bonus--;
+                }
+            }
+            if (bonus > 0) {
+                BONUS.put(key, bonus);
+            } else {
+                BONUS.remove(key);
+            }
+            PREV_COUNT.put(key, e.getValue());
+            PREV_BASE.put(key, base);
+            int n = base + bonus;
             total += n;
             want.put(e.getKey(), n);
             LABEL_COUNT.put(e.getKey(), e.getValue());
@@ -183,6 +214,14 @@ final class AePile {
             }
             AeFx.sound(SoundEvents.ITEM_PICKUP, 1.2f, 0.35f);
         }
+    }
+
+    private static int bonusTotal() {
+        int t = 0;
+        for (int v : BONUS.values()) {
+            t += v;
+        }
+        return t;
     }
 
     /** 두 조각이 겹치면 밀어내고 충격을 나눈다 */
