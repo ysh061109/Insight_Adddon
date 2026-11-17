@@ -60,23 +60,13 @@ public final class ChestChaos {
         return !HIDDEN.isEmpty() && HIDDEN.contains(slot);
     }
 
+    /** 난장판 버튼을 다는 화면: Insight Plus가 적용되는 보관함(InSight 유리 상자, Sophisticated/Mekanism 개인 저장소)과 인벤토리. 일반 기계 화면은 제외 */
     static boolean eligible(Screen s) {
-        if (!(s instanceof AbstractContainerScreen<?> acs) || s.getClass().getName().startsWith("appeng.")) {
+        if (!(s instanceof AbstractContainerScreen<?>) || s.getClass().getName().startsWith("appeng.")) {
             return false;
         }
-        if (s instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen) {
-            return false;
-        }
-        if (s instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen) {
-            return true;
-        }
-        var inv = Minecraft.getInstance().player == null ? null : Minecraft.getInstance().player.getInventory();
-        for (Slot slot : acs.getMenu().slots) {
-            if (slot.container != inv) {
-                return true;
-            }
-        }
-        return false;
+        return s instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen
+                || ScreenEvents.isGlassChest(s) || GlassSkin.isStorageScreenClass(s);
     }
 
     /** 인벤토리·멘 배낭 화면: 3D로 쌓인 아이템이 없으므로 슬롯 아이콘 전체를 날리고 바닥에 떨어진 뒤 원래 자리로 안착시킨다 */
