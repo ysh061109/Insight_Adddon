@@ -123,7 +123,7 @@ final class AeBlocks {
 
     private static ItemStack cableStack;
     /** 케이블을 납작하게 눌러 바닥에 붙인다(아이템 모델 반두께 0.375 * 납작 비율 = 바닥 위 높이). */
-    private static final float CABLE_FLAT = 0.5f;
+    private static final float CABLE_FLAT = 0.38f;
 
     /** 액정(플루익스) ME 조밀 스마트 케이블 한 조각. 아이템 모델(길이 12/16)을 블록 1칸 길이로 늘려 이어 붙인다. axis: 0=x,1=y,2=z(방 기준) */
     private static void cable(PoseStack ps, MultiBufferSource buffers, Minecraft mc, double cx, double cy, double cz, int axis) {
@@ -154,7 +154,7 @@ final class AeBlocks {
             }
             cableStack = new ItemStack(it);
         }
-        double h = 0.375 * CABLE_FLAT + 0.01;
+        double h = 0.375 * CABLE_FLAT + 0.004;
         double zc = 3.0;
         // 전부 바닥에 깐다: 바닥 십자(세로줄은 방 중앙, 가로줄은 앞쪽 z=3, 드라이브 벽 사이만) + 앞쪽 벽 아래 가로줄
         // 바닥 케이블은 한가운데 ME 제어기(x -1..1, z 2..4)를 향해 모인다: 앞뒤로 중앙선, 좌우로 가로줄
@@ -165,11 +165,18 @@ final class AeBlocks {
             }
             cable(ps, buffers, mc, 0, AeRoom.Y0 + h, z, 2);
         }
-        for (double x : new double[]{-2.5, -1.5, 1.5, 2.5}) {
+        // 중앙에서 양쪽 드라이브 쪽으로 뻗는 가로줄은 드라이브 밑을 따라가는 케이블에 이어진다
+        for (double x : new double[]{-2.2, -1.5, 1.5, 2.2}) {
             cable(ps, buffers, mc, x, AeRoom.Y0 + h, zc, 0);
         }
-        for (int i = 0; i < 6; i++) {
-            cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, AeRoom.Z1 - 0.4, 0);
+        // 드라이브 바닥: 드라이브 앞면에 붙여 벽 끝까지 이어지는 케이블 (드라이브와 연결된 모양, 블록과 겹치지 않는다)
+        for (int i = 0; i < 10; i++) {
+            double z = AeRoom.Z0 + i + 0.5;
+            cable(ps, buffers, mc, -2.6, AeRoom.Y0 + h, z, 2);
+            cable(ps, buffers, mc, 2.6, AeRoom.Y0 + h, z, 2);
+        }
+        for (int i = 0; i < 5; i++) {
+            cable(ps, buffers, mc, -2.0 + i, AeRoom.Y0 + h, AeRoom.Z1 - 0.4, 0);
         }
         // 앞쪽 벽 가운데 세로선: 벽에 붙여 세로로 케이블을 세운다
         // 바닥에서 천장까지 올라가서 천장에서 끝난다 (마지막 조각은 남은 높이만큼만)
