@@ -36,7 +36,7 @@ final class AePile {
     private static final double HEIGHT = 1.25;
     private static final double R = 0.085;
     private static final int MAX_PER_KIND = 24;
-    private static final int MAX_KINDS = 256;
+    private static final int MAX_KINDS = 2048;
     private static final RandomSource RNG = RandomSource.create();
     /** 난장판 남은 틱, 끝난 뒤 제자리로 돌아오는 틱 */
     private static int chaosTicks;
@@ -97,7 +97,7 @@ final class AePile {
             sum += Math.max(0, sorted.get(i).getValue());
         }
         // 조각 수를 실제 보유량에 비례하게 나눈다: 전체 예산(설정 physicsMax * 비율%)을 개수 비율대로 배분하고, 종류마다 최소 1조각
-        int cap = InsightConfig.AE2_PHYSICS_MAX.get();
+        int cap = Math.max(InsightConfig.AE2_PHYSICS_MAX.get(), kinds); // 종류가 수천 개여도 종류마다 최소 1조각은 보여 준다
         int budget = Math.max(kinds, (int) Math.round(cap * InsightConfig.AE2_PHYSICS_RATIO.get() / 100.0));
         budget = Math.min(budget, cap);
         Map<Item, Integer> want = new HashMap<>();

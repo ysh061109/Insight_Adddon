@@ -29,7 +29,7 @@ public final class ControlColumn {
 
     private ControlColumn() {}
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = net.neoforged.bus.api.EventPriority.LOWEST)
     public static void onInit(ScreenEvent.Init.Post e) {
         Screen s = e.getScreen();
         if (!(s instanceof AbstractContainerScreen<?> acs)) {
@@ -86,6 +86,13 @@ public final class ControlColumn {
         int gap = Math.max(0, Math.min(2, (avail - sum) / Math.max(1, rows.size() - 1)));
         int total = sum + gap * (rows.size() - 1);
 
+        // 이미 화면에 있는 다른 버튼(다른 모드 포함)을 장애물로 모은다 (다른 모드가 늦게 붙여도 닿도록 LOWEST로 실행)
+        List<int[]> obstacles = new ArrayList<>();
+        for (var l : e.getListenersList()) {
+            if (l instanceof AbstractWidget w && w.visible && w.getWidth() > 0 && !rows.contains(w)) {
+                obstacles.add(new int[]{w.getX(), w.getY(), w.getX() + w.getWidth(), w.getY() + w.getHeight()});
+            }
+        }
         int left = acs.getGuiLeft();
         int right = left + acs.getXSize();
         int tabs = soph ? 32 : 0;
@@ -94,21 +101,54 @@ public final class ControlColumn {
         boolean leftOk = leftX >= 2;
         boolean rightOk = rightX + W <= s.width - 2;
         boolean preferRight = soph || GlassSkin.isStorageScreenClass(s);
-        int x;
+        List<Integer> xs = new ArrayList<>();
         if (preferRight) {
-            x = rightOk ? rightX : (leftOk ? leftX : Math.max(2, s.width - W - 2));
+            if (rightOk) xs.add(rightX);
+            if (leftOk) xs.add(leftX);
         } else {
-            x = leftOk ? leftX : (rightOk ? rightX : Math.max(2, s.width - W - 2));
+            if (leftOk) xs.add(leftX);
+            if (rightOk) xs.add(rightX);
         }
-        int y = Math.max(TOP_MARGIN, acs.getGuiTop());
-        if (y + total > s.height - BOTTOM_MARGIN) {
-            y = Math.max(2, s.height - BOTTOM_MARGIN - total);
+        xs.add(Math.max(2, s.width - W - 2));
+        xs.add(2);
+        int bestX = xs.get(0);
+        int bestY = Math.max(TOP_MARGIN, Math.min(acs.getGuiTop(), s.height - BOTTOM_MARGIN - total));
+        boolean found = false;
+        outer:
+        for (int cx : xs) {
+            for (int cy = Math.max(TOP_MARGIN, acs.getGuiTop()); cy + total <= s.height - BOTTOM_MARGIN; cy += 4) {
+                if (!hits(obstacles, cx, cy, W, total)) {
+                    bestX = cx;
+                    bestY = cy;
+                    found = true;
+                    break outer;
+                }
+            }
+            for (int cy = Math.max(TOP_MARGIN, acs.getGuiTop()) - 4; cy >= TOP_MARGIN; cy -= 4) {
+                if (cy + total <= s.height - BOTTOM_MARGIN && !hits(obstacles, cx, cy, W, total)) {
+                    bestX = cx;
+                    bestY = cy;
+                    found = true;
+                    break outer;
+                }
+            }
         }
+        int x = bestX;
+        int y = found ? bestY : Math.max(TOP_MARGIN, Math.min(acs.getGuiTop(), s.height - BOTTOM_MARGIN - total));
         for (AbstractWidget r : rows) {
             r.setX(x);
             r.setY(y);
             y += r.getHeight() + gap;
             e.addListener(WidgetGuard.mine(r));
         }
+    }
+
+    private static boolean hits(List<int[]> obs, int x, int y, int w, int h) {
+        for (int[] o : obs) {
+            if (x < o[2] + 2 && x + w > o[0] - 2 && y < o[3] + 2 && y + h > o[1] - 2) {
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -116,7 +116,7 @@ public final class InsightConfig {
         AE2_HIDE_EMI = b.comment("AE2 단말기를 여는 동안 EMI 화면 요소(검색창, 아이템 목록 등)를 끕니다. 기본은 꺼짐(반투명으로 표시되어 레시피 옮기기(+) 버튼도 그대로 씁니다). 반투명이 안 먹는 환경에서만 켜세요.")
                 .translation("insight_addons.configuration.ae2.hideEmi").define("hideEmiOverlay", false);
         AE2_PHYSICS_MAX = b.comment("물리 연출에서 동시에 그리는 아이템 조각의 최대 개수. 낮추면 가벼워집니다.")
-                .translation("insight_addons.configuration.ae2.physicsMax").defineInRange("pieceBudget", 600, 50, 1500);
+                .translation("insight_addons.configuration.ae2.physicsMax").defineInRange("pieceBudget", 600, 50, 3000);
         b.pop();
 
         SPEC = b.build();

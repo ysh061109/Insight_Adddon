@@ -68,6 +68,9 @@ public final class ChestChaos {
         if (s instanceof net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen) {
             return false;
         }
+        if (s instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen) {
+            return true;
+        }
         var inv = Minecraft.getInstance().player == null ? null : Minecraft.getInstance().player.getInventory();
         for (Slot slot : acs.getMenu().slots) {
             if (slot.container != inv) {
@@ -75,6 +78,12 @@ public final class ChestChaos {
             }
         }
         return false;
+    }
+
+    /** 인벤토리·멘 배낭 화면: 3D로 쌓인 아이템이 없으므로 슬롯 아이콘 전체를 날리고 바닥에 떨어진 뒤 원래 자리로 안착시킨다 */
+    static boolean iconMode(Screen s) {
+        return s instanceof net.minecraft.client.gui.screens.inventory.InventoryScreen
+                || (GlassSkin.isStorageScreenClass(s) && !GlassSkin.placed());
     }
 
     static void toggle(AbstractContainerScreen<?> acs) {
@@ -88,8 +97,13 @@ public final class ChestChaos {
             }
             return;
         }
-        // InSight가 쌓아 둔 실제 3D 물리 아이템이 있으면 그것들도 날린다
-        InsightChaos.start();
+        boolean icons = iconMode(acs);
+        // 일반 보관함: 쌓인 3D 아이템만 날아다니다 그 자리에 떨어진다 (인벤토리 아이콘은 그대로)
+        if (!icons && InsightChaos.start()) {
+            clearAll();
+            owner = acs;
+            return;
+        }
         clearAll();
         owner = acs;
         float f = InsightConfig.CHAOS_SPEED.get() / 100f;
@@ -99,7 +113,7 @@ public final class ChestChaos {
         var invc = Minecraft.getInstance().player == null ? null : Minecraft.getInstance().player.getInventory();
         for (Slot slot : acs.getMenu().slots) {
             // 보관함을 열었을 때는 보관함 칸의 아이템만 날리고, 내 인벤토리 칸은 그대로 둔다
-            if (!slot.hasItem() || slot.container == invc) {
+            if (!slot.hasItem() || (!icons && slot.container == invc)) {
                 continue;
             }
             int pieces = Math.max(1, Math.min(8, (slot.getItem().getCount() + 7) / 8));
