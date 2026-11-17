@@ -469,8 +469,6 @@ final class AePile {
                     }
                 }
             }
-                }
-            }
         }
         for (Body b : BODIES) {
             if (!b.leaving && !b.asleep) {
