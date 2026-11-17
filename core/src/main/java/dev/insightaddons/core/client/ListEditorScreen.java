@@ -243,9 +243,21 @@ public final class ListEditorScreen extends Screen {
 
     // ── 그리기 ──
 
+    /** Screen.render가 배경을 한 번 더 그려서 우리 글씨를 흐리게 덮지 않도록, 직접 한 번만 그린다 */
+    private boolean bgDone;
+
+    @Override
+    public void renderBackground(GuiGraphics g, int mx, int my, float pt) {
+        if (!bgDone) {
+            super.renderBackground(g, mx, my, pt);
+        }
+    }
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
+        bgDone = false;
         renderBackground(g, mx, my, pt);
+        bgDone = true;
         g.drawCenteredString(font, title, width / 2, 10, 0xFFFFFF);
         g.drawString(font, Component.translatable("insight_addons.configuration.listEditor.current", entries.size()), leftX, 38, 0xCFE8FF);
         g.fill(leftX - 1, listTop - 1, leftX + leftW + 1, listBottom + 1, 0xFF000000);

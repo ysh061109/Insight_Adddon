@@ -25,7 +25,7 @@ public final class AeWindow {
         return best;
     }
 
-    private static final class Slider extends AbstractSliderButton {
+    private static final class Slider extends AbstractSliderButton implements Wheel {
         Slider(int x, int y, int w, int h) {
             super(x, y, w, h, Component.empty(), stepOf(InsightConfig.AE2_PHYSICS_RATIO.get()) / 2.0);
             updateMessage();
@@ -33,6 +33,15 @@ public final class AeWindow {
 
         private int step() {
             return Math.max(0, Math.min(2, (int) Math.round(value * 2)));
+        }
+
+        @Override
+        public boolean wheel(double dir, boolean shift) {
+            int st = Math.max(0, Math.min(2, step() + (dir > 0 ? 1 : -1)));
+            value = st / 2.0;
+            updateMessage();
+            applyValue();
+            return true;
         }
 
         @Override

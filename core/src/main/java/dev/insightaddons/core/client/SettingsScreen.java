@@ -26,10 +26,10 @@ import java.util.Map;
  * 항목은 InsightConfig.SPEC에서 자동으로 읽으므로 항목을 추가해도 이 파일은 고칠 필요가 없습니다.
  */
 public final class SettingsScreen extends Screen {
-    private static final int TAB_W = 118;
+    private int tabW = 118;
     private static final int ROW_H = 24;
     private static final int HEADER_H = 18;
-    private static final int CTRL_W = 150;
+    private int ctrlW = 150;
 
     private static final String ALL = "";
 
@@ -144,9 +144,11 @@ public final class SettingsScreen extends Screen {
 
     @Override
     protected void init() {
-        listX = 12 + TAB_W + 10;
+        tabW = Math.max(70, Math.min(118, width / 5));
+        listX = 12 + tabW + 10;
         listY = 52;
         listW = Math.max(120, width - listX - 14);
+        ctrlW = Math.max(70, Math.min(150, listW * 2 / 5));
         listH = height - listY - 36;
 
         String old = search == null ? query : search.getValue();
@@ -163,11 +165,11 @@ public final class SettingsScreen extends Screen {
         // 카테고리 탭
         int ty = 52;
         addRenderableWidget(Button.builder(tabLabel(ALL, Component.translatable("insight_addons.configuration.tab.all")), b -> selectTab(ALL))
-                .bounds(12, ty, TAB_W, 20).build());
+                .bounds(12, ty, tabW, 20).build());
         ty += 22;
         for (Map.Entry<String, Component> e : sectionNames.entrySet()) {
             String key = e.getKey();
-            addRenderableWidget(Button.builder(tabLabel(key, e.getValue()), b -> selectTab(key)).bounds(12, ty, TAB_W, 20).build());
+            addRenderableWidget(Button.builder(tabLabel(key, e.getValue()), b -> selectTab(key)).bounds(12, ty, tabW, 20).build());
             ty += 22;
         }
 
@@ -240,25 +242,25 @@ public final class SettingsScreen extends Screen {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private AbstractWidget createWidget(Entry e) {
-        int x = listX + listW - CTRL_W - 8;
+        int x = listX + listW - ctrlW - 8;
         switch (e.kind) {
             case 0: {
                 ModConfigSpec.ConfigValue<Boolean> cv = (ModConfigSpec.ConfigValue<Boolean>) e.value;
                 return Button.builder(boolText(cv.get()), b -> {
                     commit(cv, !cv.get());
                     b.setMessage(boolText(cv.get()));
-                }).bounds(x, 0, CTRL_W, 18).build();
+                }).bounds(x, 0, ctrlW, 18).build();
             }
             case 1: {
                 ModConfigSpec.ConfigValue<Integer> cv = (ModConfigSpec.ConfigValue<Integer>) e.value;
                 Number[] r = range(cv);
-                return new NumSlider(x, CTRL_W, r[0].doubleValue(), r[1].doubleValue(), cv.get(), true,
+                return new NumSlider(x, ctrlW, r[0].doubleValue(), r[1].doubleValue(), cv.get(), true,
                         v -> commit(cv, (int) Math.round(v)));
             }
             case 2: {
                 ModConfigSpec.ConfigValue<Double> cv = (ModConfigSpec.ConfigValue<Double>) e.value;
                 Number[] r = range(cv);
-                return new NumSlider(x, CTRL_W, r[0].doubleValue(), r[1].doubleValue(), cv.get(), false,
+                return new NumSlider(x, ctrlW, r[0].doubleValue(), r[1].doubleValue(), cv.get(), false,
                         v -> commit(cv, Math.round(v * 100.0) / 100.0));
             }
             case 3: {
@@ -274,11 +276,11 @@ public final class SettingsScreen extends Screen {
                     }
                     commit(cv, order[(i + 1) % order.length]);
                     b.setMessage(choiceText(cv.get()));
-                }).bounds(x, 0, CTRL_W, 18).build();
+                }).bounds(x, 0, ctrlW, 18).build();
             }
             case 4: {
                 ModConfigSpec.ConfigValue<Object> cv = (ModConfigSpec.ConfigValue<Object>) e.value;
-                EditBox box = new EditBox(font, x, 0, CTRL_W, 18, e.label);
+                EditBox box = new EditBox(font, x, 0, ctrlW, 18, e.label);
                 box.setMaxLength(256);
                 box.setValue(String.valueOf(cv.get()));
                 box.setResponder(s -> {
@@ -307,11 +309,11 @@ public final class SettingsScreen extends Screen {
                     touched.add(cv);
                     Minecraft.getInstance().setScreen(new ListEditorScreen(this, cv, kind,
                             Component.translatable("insight_addons.configuration.listEditor.title")));
-                }).bounds(x, 0, CTRL_W, 18).build();
+                }).bounds(x, 0, ctrlW, 18).build();
             }
             case 6:
                 return Button.builder(Component.translatable("insight_addons.configuration.preview.openText"),
-                        b -> Minecraft.getInstance().setScreen(new PreviewScreen(this))).bounds(x, 0, CTRL_W, 18).build();
+                        b -> Minecraft.getInstance().setScreen(new PreviewScreen(this))).bounds(x, 0, ctrlW, 18).build();
             default:
                 return null;
         }
@@ -370,9 +372,21 @@ public final class SettingsScreen extends Screen {
         }
     }
 
+    /** Screen.render가 배경을 한 번 더 그려서 우리 글씨를 흐리게 덮지 않도록, 직접 한 번만 그린다 */
+    private boolean bgDone;
+
+    @Override
+    public void renderBackground(GuiGraphics g, int mx, int my, float pt) {
+        if (!bgDone) {
+            super.renderBackground(g, mx, my, pt);
+        }
+    }
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
+        bgDone = false;
         renderBackground(g, mx, my, pt);
+        bgDone = true;
         g.drawCenteredString(font, title, width / 2, 8, 0xFFFFFF);
 
         g.fill(listX - 2, listY - 2, listX + listW + 2, listY + listH + 2, 0x80000000);
@@ -406,11 +420,11 @@ public final class SettingsScreen extends Screen {
                 boolean hover = mx >= listX && mx < listX + listW && my >= y && my < y + ROW_H && my >= listY && my < listY + listH;
                 if (hover) {
                     g.fill(listX + 2, y, listX + listW - 2, y + ROW_H, 0x22FFFFFF);
-                    if (e.comment != null && !e.comment.isBlank() && mx < listX + listW - CTRL_W - 8) {
+                    if (e.comment != null && !e.comment.isBlank() && mx < listX + listW - ctrlW - 8) {
                         tip = Component.literal(e.comment.trim());
                     }
                 }
-                int maxLabel = listW - CTRL_W - 24;
+                int maxLabel = listW - ctrlW - 24;
                 g.drawString(font, font.plainSubstrByWidth(e.label.getString(), maxLabel), listX + 8, y + (ROW_H - 8) / 2, 0xE0E0E0);
             }
         }

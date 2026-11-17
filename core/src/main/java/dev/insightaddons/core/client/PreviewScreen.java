@@ -100,9 +100,21 @@ public final class PreviewScreen extends Screen {
                 .bounds(width / 2 + 5, y + 24, w, 20).build());
     }
 
+    /** Screen.render가 배경을 한 번 더 그려서 우리 글씨를 흐리게 덮지 않도록, 직접 한 번만 그린다 */
+    private boolean bgDone;
+
+    @Override
+    public void renderBackground(GuiGraphics g, int mx, int my, float pt) {
+        if (!bgDone) {
+            super.renderBackground(g, mx, my, pt);
+        }
+    }
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
+        bgDone = false;
         renderBackground(g, mx, my, pt);
+        bgDone = true;
         g.drawCenteredString(font, title, width / 2, 8, 0xFFFFFF);
 
         // 뒤 배경(투명도가 보이도록 줄무늬)

@@ -8,7 +8,7 @@ import java.util.function.IntConsumer;
 import java.util.function.IntFunction;
 
 /** 설정값(정수) 하나를 바로 바꾸는 범용 슬라이더. 값은 min~max 사이이고, 글씨는 label(값)으로 만든다. */
-public final class ConfigSlider extends AbstractSliderButton {
+public final class ConfigSlider extends AbstractSliderButton implements Wheel {
     private final int min;
     private final int max;
     private final IntFunction<Component> label;
@@ -35,6 +35,20 @@ public final class ConfigSlider extends AbstractSliderButton {
     @Override
     protected void applyValue() {
         apply.accept(val());
+    }
+
+    @Override
+    public boolean wheel(double dir, boolean shift) {
+        int range = max - min;
+        int step = shift ? Math.max(5, range / 10) : Math.max(1, range / 100);
+        int next = Math.max(min, Math.min(max, val() + (dir > 0 ? step : -step)));
+        if (next == val()) {
+            return true;
+        }
+        value = (next - min) / (double) range;
+        updateMessage();
+        applyValue();
+        return true;
     }
 
     public static IntConsumer save(ModConfigSpec.IntValue cfg) {

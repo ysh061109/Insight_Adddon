@@ -24,6 +24,10 @@ import java.util.Set;
 public final class WidgetGuard {
     private static final Set<Object> OURS = Collections.newSetFromMap(new IdentityHashMap<>());
     private static boolean active;
+    /** 눌러서 끌고 있는 우리 위젯(화면의 mouseDragged를 거치지 않고 직접 전달 - AE2 화면이 끌기를 막아서) */
+    private static net.minecraft.client.gui.components.AbstractWidget dragging;
+    private static net.minecraft.client.gui.components.AbstractWidget lastClicked;
+    private static long lastClickMs;
     private static Field scrollField;
     private static Method boundsM;
     private static boolean scrollTried;
@@ -86,6 +90,15 @@ public final class WidgetGuard {
         return false;
     }
 
+    private static net.minecraft.client.gui.components.AbstractWidget oursAt(Screen s, double ax, double ay) {
+        for (var c : s.children()) {
+            if (OURS.contains(c) && c instanceof net.minecraft.client.gui.components.AbstractWidget w && w.visible && c.isMouseOver(ax, ay)) {
+                return w;
+            }
+        }
+        return null;
+    }
+
     private static boolean hit(Screen s, double ax, double ay) {
         return overOurs(s, ax, ay) || scrollbarHit(s, ax, ay);
     }
@@ -103,7 +116,16 @@ public final class WidgetGuard {
             return;
         }
         active = true;
-        s.mouseClicked(ax, ay, e.getButton());
+        var w = oursAt(s, ax, ay);
+        if (w != null) {
+            dragging = w;
+            lastClicked = w;
+            lastClickMs = System.currentTimeMillis();
+            w.mouseClicked(ax, ay, e.getButton());
+        } else {
+            dragging = null;
+            s.mouseClicked(ax, ay, e.getButton());
+        }
         e.setCanceled(true);
     }
 
@@ -114,7 +136,11 @@ public final class WidgetGuard {
         }
         Screen s = e.getScreen();
         int[] o = WindowDrag.offsetOf(s);
-        s.mouseDragged(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getMouseButton(), e.getDragX(), e.getDragY());
+        if (dragging != null) {
+            dragging.mouseDragged(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getMouseButton(), e.getDragX(), e.getDragY());
+        } else {
+            s.mouseDragged(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getMouseButton(), e.getDragX(), e.getDragY());
+        }
         e.setCanceled(true);
     }
 
@@ -126,7 +152,12 @@ public final class WidgetGuard {
         active = false;
         Screen s = e.getScreen();
         int[] o = WindowDrag.offsetOf(s);
-        s.mouseReleased(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getButton());
+        if (dragging != null) {
+            dragging.mouseReleased(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getButton());
+            dragging = null;
+        } else {
+            s.mouseReleased(e.getMouseX() - o[0], e.getMouseY() - o[1], e.getButton());
+        }
         e.setCanceled(true);
     }
 
@@ -139,6 +170,18 @@ public final class WidgetGuard {
         int[] o = WindowDrag.offsetOf(s);
         double ax = e.getMouseX() - o[0];
         double ay = e.getMouseY() - o[1];
+        // 슬라이더 위(또는 방금 클릭한 슬라이더)에서 휠: 값이 바뀐다, 쉬프트면 크게
+        var w = oursAt(s, ax, ay);
+        Object target = w;
+        if (!(target instanceof Wheel) && lastClicked != null && System.currentTimeMillis() - lastClickMs < 3000
+                && lastClicked.visible && s.children().contains(lastClicked) && lastClicked.isMouseOver(ax, ay)) {
+            target = lastClicked;
+        }
+        if (target instanceof Wheel wh) {
+            wh.wheel(e.getScrollDeltaY(), net.minecraft.client.gui.screens.Screen.hasShiftDown());
+            e.setCanceled(true);
+            return;
+        }
         if (scrollbarHit(s, ax, ay)) {
             s.mouseScrolled(ax, ay, e.getScrollDeltaX(), e.getScrollDeltaY());
             e.setCanceled(true);
@@ -148,5 +191,7 @@ public final class WidgetGuard {
     @SubscribeEvent
     public static void onClosing(ScreenEvent.Closing e) {
         active = false;
+        dragging = null;
+        lastClicked = null;
     }
 }
