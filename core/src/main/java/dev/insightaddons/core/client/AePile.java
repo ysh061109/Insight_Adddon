@@ -9,6 +9,7 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -70,6 +71,20 @@ final class AePile {
         }
     }
 
+    private static final int HASH = 1 << 14;
+    private static final int[] head = new int[HASH];
+    private static int[] gx = new int[0];
+    private static int[] gy = new int[0];
+    private static int[] gz = new int[0];
+    private static int[] nxt = new int[0];
+
+    private static int hash(int x, int y, int z) {
+        int h = x * 73856093 ^ y * 19349663 ^ z * 83492791;
+        return (h ^ (h >>> 15)) & (HASH - 1);
+    }
+
+    private static final Map<Item, BakedModel> MODELS = new HashMap<>();
+    private static final org.joml.Quaternionf ROT = new org.joml.Quaternionf();
     private static final List<Body> BODIES = new ArrayList<>();
     private static final List<Item> PENDING = new ArrayList<>();
     private static final Map<Item, Integer> LABEL_COUNT = new HashMap<>();
@@ -137,16 +152,21 @@ final class AePile {
             }
         }
         boolean removed = false;
+        Map<Item, List<Body>> byItem = new HashMap<>();
+        for (Body b : BODIES) {
+            if (!b.leaving) {
+                byItem.computeIfAbsent(b.item, k -> new ArrayList<>()).add(b);
+            }
+        }
         for (Map.Entry<Item, Integer> e : have.entrySet()) {
             int diff = e.getValue() - want.getOrDefault(e.getKey(), 0);
-            for (int i = BODIES.size() - 1; i >= 0 && diff > 0; i--) {
-                Body b = BODIES.get(i);
-                if (b.item == e.getKey() && !b.leaving) {
-                    b.leaving = true;
-                    b.leaveTick = 0;
-                    diff--;
-                    removed = true;
-                }
+            List<Body> list = byItem.get(e.getKey());
+            for (int i = list == null ? -1 : list.size() - 1; i >= 0 && diff > 0; i--) {
+                Body b = list.get(i);
+                b.leaving = true;
+                b.leaveTick = 0;
+                diff--;
+                removed = true;
             }
         }
         // 목록에서 사라진 종류
@@ -162,6 +182,59 @@ final class AePile {
                 b.still = 0;
             }
             AeFx.sound(SoundEvents.ITEM_PICKUP, 1.2f, 0.35f);
+        }
+    }
+
+    /** 두 조각이 겹치면 밀어내고 충격을 나눈다 */
+    private static void collide(Body a, Body c) {
+        double dx = c.x - a.x;
+        double dy = c.y - a.y;
+        double dz = c.z - a.z;
+        double d2 = dx * dx + dy * dy + dz * dz;
+        double min = R * 1.9;
+        // 살짝 겹친 정도(쉬고 있는 접촉)는 무시해서 끝없이 꿈틀대지 않게 한다
+        double lim = min * 0.94;
+        if (d2 < lim * lim && d2 > 1.0e-8) {
+            double sa = a.vx * a.vx + a.vy * a.vy + a.vz * a.vz;
+            double sc = c.vx * c.vx + c.vy * c.vy + c.vz * c.vz;
+            // 잠든 조각은 상대가 충분히 빠를 때만 깨운다
+            if (a.asleep && sc < 4.0e-4) {
+                return;
+            }
+            if (c.asleep && sa < 4.0e-4) {
+                return;
+            }
+            double d = Math.sqrt(d2);
+            double push = (min - d);
+            double wa = a.asleep ? 0.0 : (c.asleep ? 1.0 : 0.5);
+            double wc = c.asleep ? 0.0 : (a.asleep ? 1.0 : 0.5);
+            double nx = dx / d;
+            double ny = dy / d;
+            double nz = dz / d;
+            a.x -= nx * push * wa;
+            a.y -= ny * push * wa;
+            a.z -= nz * push * wa;
+            c.x += nx * push * wc;
+            c.y += ny * push * wc;
+            c.z += nz * push * wc;
+            if (wa > 0) {
+                a.asleep = false;
+                a.still = 0;
+            }
+            if (wc > 0) {
+                c.asleep = false;
+                c.still = 0;
+            }
+            double rel = (c.vx - a.vx) * nx + (c.vy - a.vy) * ny + (c.vz - a.vz) * nz;
+            if (rel < 0) {
+                double imp = rel * 0.5 * 0.3;
+                a.vx += nx * imp * wa * 2;
+                a.vy += ny * imp * wa * 2;
+                a.vz += nz * imp * wa * 2;
+                c.vx -= nx * imp * wc * 2;
+                c.vy -= ny * imp * wc * 2;
+                c.vz -= nz * imp * wc * 2;
+            }
         }
     }
 
@@ -350,66 +423,52 @@ final class AePile {
                     b.vz = -Math.abs(b.vz) * 0.2;
                 }
             }
-            // 서로 겹치면 밀어낸다 (구 충돌, O(n^2) 이지만 조각 수가 적다)
+            // 서로 겹치면 밀어낸다 (구 충돌): 공간 해시 격자로 이웃 칸만 검사해서 수천 개도 가볍게
+            final double cell = R * 1.9;
+            if (gx.length < n) {
+                gx = new int[n + 256];
+                gy = new int[n + 256];
+                gz = new int[n + 256];
+                nxt = new int[n + 256];
+            }
+            java.util.Arrays.fill(head, -1);
             for (int i = 0; i < n; i++) {
                 Body a = BODIES.get(i);
                 if (a.leaving) {
                     continue;
                 }
-                for (int j = i + 1; j < n; j++) {
-                    Body c = BODIES.get(j);
-                    if (c.leaving || (a.asleep && c.asleep)) {
-                        continue;
-                    }
-                    double dx = c.x - a.x;
-                    double dy = c.y - a.y;
-                    double dz = c.z - a.z;
-                    double d2 = dx * dx + dy * dy + dz * dz;
-                    double min = R * 1.9;
-                    // 살짝 겹친 정도(쉬고 있는 접촉)는 무시해서 끝없이 꿈틀대지 않게 한다
-                    double lim = min * 0.94;
-                    if (d2 < lim * lim && d2 > 1.0e-8) {
-                        double sa = a.vx * a.vx + a.vy * a.vy + a.vz * a.vz;
-                        double sc = c.vx * c.vx + c.vy * c.vy + c.vz * c.vz;
-                        // 잠든 조각은 상대가 충분히 빠를 때만 깨운다
-                        if (a.asleep && sc < 4.0e-4) {
-                            continue;
-                        }
-                        if (c.asleep && sa < 4.0e-4) {
-                            continue;
-                        }
-                        double d = Math.sqrt(d2);
-                        double push = (min - d);
-                        double wa = a.asleep ? 0.0 : (c.asleep ? 1.0 : 0.5);
-                        double wc = c.asleep ? 0.0 : (a.asleep ? 1.0 : 0.5);
-                        double nx = dx / d;
-                        double ny = dy / d;
-                        double nz = dz / d;
-                        a.x -= nx * push * wa;
-                        a.y -= ny * push * wa;
-                        a.z -= nz * push * wa;
-                        c.x += nx * push * wc;
-                        c.y += ny * push * wc;
-                        c.z += nz * push * wc;
-                        if (wa > 0) {
-                            a.asleep = false;
-                            a.still = 0;
-                        }
-                        if (wc > 0) {
-                            c.asleep = false;
-                            c.still = 0;
-                        }
-                        double rel = (c.vx - a.vx) * nx + (c.vy - a.vy) * ny + (c.vz - a.vz) * nz;
-                        if (rel < 0) {
-                            double imp = rel * 0.5 * 0.3;
-                            a.vx += nx * imp * wa * 2;
-                            a.vy += ny * imp * wa * 2;
-                            a.vz += nz * imp * wa * 2;
-                            c.vx -= nx * imp * wc * 2;
-                            c.vy -= ny * imp * wc * 2;
-                            c.vz -= nz * imp * wc * 2;
+                gx[i] = (int) Math.floor(a.x / cell);
+                gy[i] = (int) Math.floor(a.y / cell);
+                gz[i] = (int) Math.floor(a.z / cell);
+                int h = hash(gx[i], gy[i], gz[i]);
+                nxt[i] = head[h];
+                head[h] = i;
+            }
+            for (int i = 0; i < n; i++) {
+                Body a = BODIES.get(i);
+                if (a.leaving || a.asleep) {
+                    continue; // 잠든 조각은 깨어 있는 이웃 쪽에서 검사된다
+                }
+                for (int ox = -1; ox <= 1; ox++) {
+                    for (int oy = -1; oy <= 1; oy++) {
+                        for (int oz = -1; oz <= 1; oz++) {
+                            int cx = gx[i] + ox;
+                            int cy = gy[i] + oy;
+                            int cz = gz[i] + oz;
+                            for (int j = head[hash(cx, cy, cz)]; j != -1; j = nxt[j]) {
+                                if (j == i || gx[j] != cx || gy[j] != cy || gz[j] != cz) {
+                                    continue;
+                                }
+                                Body c = BODIES.get(j);
+                                if (!c.asleep && j < i) {
+                                    continue; // 깨어 있는 쌍은 한 번만
+                                }
+                                collide(a, c);
+                            }
                         }
                     }
+                }
+            }
                 }
             }
         }
@@ -461,30 +520,52 @@ final class AePile {
 
     private static void drawBodies(PoseStack ps, Camera camera, Vec3 camPos, Minecraft mc, float partial, float a,
                                    MultiBufferSource.BufferSource buffers, Vec3 floor, Vec3 right, Vec3 up, Vec3 flat, Vec3 chest, double k) {
+        var look = camera.getLookVector();
+        var ir = mc.getItemRenderer();
+        MODELS.clear();
+        double fx = floor.x, fy = floor.y, fz = floor.z;
+        double rx = right.x * k, ry = right.y * k, rz = right.z * k;
+        double ux = up.x * k, uy = up.y * k, uz = up.z * k;
+        double qx = flat.x * k, qy = flat.y * k, qz = flat.z * k;
+        double t = partial;
         for (Body b : BODIES) {
-            double t = partial;
             double lx = b.px + (b.x - b.px) * t;
             double ly = b.py + (b.y - b.py) * t;
             double lz = b.pz + (b.z - b.pz) * t;
-            Vec3 pos = floor.add(right.scale(lx * k)).add(up.scale(ly * k)).add(flat.scale(lz * k));
+            double wx = fx + rx * lx + ux * ly + qx * lz;
+            double wy = fy + ry * lx + uy * ly + qy * lz;
+            double wz = fz + rz * lx + uz * ly + qz * lz;
             float scale = (float) (0.17f * a * k);
             if (b.leaving) {
                 double f = Math.min(1.0, (b.leaveTick + partial) / 14.0);
                 double ease = 1 - Math.pow(1 - f, 3);
-                pos = pos.add(chest.subtract(pos).scale(ease)).add(0, Math.sin(f * Math.PI) * 0.25, 0);
+                wx += (chest.x - wx) * ease;
+                wy += (chest.y - wy) * ease + Math.sin(f * Math.PI) * 0.25;
+                wz += (chest.z - wz) * ease;
                 scale *= (float) (1.0 - 0.5 * f);
             }
-            if (pos.distanceToSqr(camPos) > 40 * 40) {
+            double dx = wx - camPos.x;
+            double dy = wy - camPos.y;
+            double dz = wz - camPos.z;
+            if (dx * dx + dy * dy + dz * dz > 40 * 40) {
                 continue;
             }
+            // 카메라 뒤쪽에 있는 조각은 그리지 않는다 (보이지 않으므로 화면은 같다)
+            if (dx * look.x() + dy * look.y() + dz * look.z() < -0.35 * scale - 0.1) {
+                continue;
+            }
+            ItemStack icon = AeDraw.icon(b.item);
+            BakedModel model = MODELS.get(b.item);
+            if (model == null) {
+                model = ir.getModel(icon, mc.level, null, 0);
+                MODELS.put(b.item, model);
+            }
             ps.pushPose();
-            ps.translate(pos.x - camPos.x, pos.y - camPos.y, pos.z - camPos.z);
-            ps.mulPose(Axis.YP.rotationDegrees(b.yaw));
-            ps.mulPose(Axis.XP.rotationDegrees(b.tilt));
-            ps.mulPose(Axis.ZP.rotationDegrees(b.roll));
+            ps.translate(dx, dy, dz);
+            ps.mulPose(ROT.rotationYXZ((float) Math.toRadians(b.yaw), (float) Math.toRadians(b.tilt), (float) Math.toRadians(b.roll)));
             ps.scale(scale, scale, scale);
-            mc.getItemRenderer().renderStatic(AeDraw.icon(b.item), ItemDisplayContext.FIXED,
-                    LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, ps, buffers, mc.level, 0);
+            ir.render(icon, ItemDisplayContext.FIXED, false, ps, buffers,
+                    LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, model);
             ps.popPose();
         }
         buffers.endBatch();
