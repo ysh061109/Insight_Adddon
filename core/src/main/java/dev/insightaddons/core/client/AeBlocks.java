@@ -127,6 +127,11 @@ final class AeBlocks {
 
     /** 액정(플루익스) ME 조밀 스마트 케이블 한 조각. 아이템 모델(길이 12/16)을 블록 1칸 길이로 늘려 이어 붙인다. axis: 0=x,1=y,2=z(방 기준) */
     private static void cable(PoseStack ps, MultiBufferSource buffers, Minecraft mc, double cx, double cy, double cz, int axis) {
+        cable(ps, buffers, mc, cx, cy, cz, axis, 1.0);
+    }
+
+    /** len: 블록 1칸 길이에 대한 비율(천장에 닿는 마지막 조각을 짧게 자를 때 쓴다) */
+    private static void cable(PoseStack ps, MultiBufferSource buffers, Minecraft mc, double cx, double cy, double cz, int axis, double len) {
         ps.pushPose();
         ps.translate(cx, cy, -cz);
         ps.scale(fade, fade, fade);
@@ -135,7 +140,7 @@ final class AeBlocks {
         } else if (axis == 1) {
             ps.mulPose(Axis.XP.rotationDegrees(90));
         }
-        ps.scale(1f, CABLE_FLAT, 16f / 12f);
+        ps.scale(1f, CABLE_FLAT, (float) (16f / 12f * len));
         mc.getItemRenderer().renderStatic(cableStack, ItemDisplayContext.NONE, LightTexture.FULL_BRIGHT,
                 OverlayTexture.NO_OVERLAY, ps, buffers, mc.level, 0);
         ps.popPose();
@@ -167,8 +172,11 @@ final class AeBlocks {
             cable(ps, buffers, mc, -2.5 + i, AeRoom.Y0 + h, AeRoom.Z1 - 0.4, 0);
         }
         // 앞쪽 벽 가운데 세로선: 벽에 붙여 세로로 케이블을 세운다
-        for (int k = 0; k < 3; k++) {
-            cable(ps, buffers, mc, 0, AeRoom.Y0 + 0.5 + k, AeRoom.Z1 - 0.2, 1);
+        // 바닥에서 천장까지 올라가서 천장에서 끝난다 (마지막 조각은 남은 높이만큼만)
+        double height = AeRoom.Y1 - AeRoom.Y0;
+        for (int k = 0; k * 1.0 < height - 0.01; k++) {
+            double len = Math.min(1.0, height - k);
+            cable(ps, buffers, mc, 0, AeRoom.Y0 + k + len / 2, AeRoom.Z1 - 0.2, 1, len);
         }
     }
 
