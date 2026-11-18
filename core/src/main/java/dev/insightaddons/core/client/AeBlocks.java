@@ -185,9 +185,9 @@ final class AeBlocks {
         one(ps, buffers, mc, cableBus, d, xc - 0.5, AeRoom.Y0 - AeRoom.TRENCH_D, -zc - 0.5, 1f);
     }
 
-    /** 케이블 칸을 ME 제어기 블록 격자에 맞춘 위치: 제어기(x -1..1, z 2..4)의 한 블록 면 한가운데로 곧바로 들어가도록 한다 */
-    private static final double CX = 0.5;
-    private static final double CROSS_Z = 2.5;
+    /** 케이블 칸 위치: 제어기(x -1..1, z 2..4)의 각 면 정중앙에 맞춰 좌우 대칭을 지킨다 */
+    private static final double CX = 0.0;
+    private static final double CROSS_Z = 3.0;
 
     /** 홈 안 케이블망: 기존 십자 구조 그대로(세로줄, 제어기 양옆 가로줄, 앞쪽 가로줄)를 홈으로 옮기고, 양옆 드라이브 밑까지 이어서 드라이브와 연결한다 */
     private static void busCables(PoseStack ps, MultiBufferSource buffers, Minecraft mc) {
@@ -220,13 +220,13 @@ final class AeBlocks {
             }
         }
         // 앞쪽 가로줄 (제어기 북쪽 면의 한 칸과 연결, 모두 블록 격자에 맞춘다)
-        for (int i = 0; i < 6; i++) {
-            double x = -2.5 + i;
+        for (int i = 0; i < 7; i++) {
+            double x = -3.0 + i;
             java.util.Map<Direction, Boolean> c = new java.util.EnumMap<>(Direction.class);
             if (i > 0) {
                 c.put(Direction.WEST, B);
             }
-            if (i < 5) {
+            if (i < 6) {
                 c.put(Direction.EAST, B);
             }
             if (x == CX) {
