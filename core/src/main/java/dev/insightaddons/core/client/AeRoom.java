@@ -27,16 +27,24 @@ final class AeRoom {
     /** ME 제어기(납작한 패드) 위에 아이템이 얹히도록 더미 바닥을 올리는 높이 */
     static final double PAD_LIFT = 0.13;
 
+    /** 제어기 윗면 높이: 바닥 홈에 묻힌 진짜 케이블 모드에서는 바닥과 같은 높이(조금만 띄움), 아니면 납작 패드 두께 */
+    static double padLift() {
+        return AeBlocks.busReady() ? 0.02 : PAD_LIFT;
+    }
+
     private static final double E = 0.004;
 
     /** 케이블을 묻는 바닥 홈(xa, xb, za, zb)과 깊이. 홈 부분은 바닥을 파내고 그 아래에 케이블을 둔다 */
     static final double TRENCH_D = 1.0;
+    /** {xa, xb, za, zb, 옆면 생략 비트(1=xa,2=xb,4=za,8=zb)}: 제어기·다른 홈과 맞닿은 면은 벽을 그리지 않는다 */
     static final double[][] TRENCH = {
-            {-0.5, 0.5, Z0, 2.0},
-            {-4.0, -1.0, 2.5, 3.5},
-            {1.0, 4.0, 2.5, 3.5},
-            {-2.5, 2.5, 4.0, Z1},
+            {-0.5, 0.5, Z0, 2.0, 8},
+            {-4.0, -1.0, 2.5, 3.5, 2},
+            {1.0, 4.0, 2.5, 3.5, 1},
+            {-2.5, 2.5, 4.0, Z1, 4},
+            {-1.0, 1.0, 2.0, 4.0, 15}, // ME 제어기가 들어앉는 구덩이: 케이블과 같은 높이라 옆면 연결이 보인다
     };
+
 
 
     /** 방 좌표 -> 카메라 기준 좌표 */
@@ -163,10 +171,11 @@ final class AeRoom {
             double yb = Y0 - TRENCH_D;
             for (double[] h : holes) {
                 c.flatY(yb, h[0], h[1], h[2], h[3], 0x16161E, 255);
-                c.wallX(h[0], yb, Y0, h[2], h[3], 0x2E2E38, 255);
-                c.wallX(h[1], yb, Y0, h[2], h[3], 0x2E2E38, 255);
-                c.wallZ(h[2], h[0], h[1], yb, Y0, 0x2A2A34, 255);
-                c.wallZ(h[3], h[0], h[1], yb, Y0, 0x2A2A34, 255);
+                int skip = (int) h[4];
+                if ((skip & 1) == 0) c.wallX(h[0], yb, Y0, h[2], h[3], 0x2E2E38, 255);
+                if ((skip & 2) == 0) c.wallX(h[1], yb, Y0, h[2], h[3], 0x2E2E38, 255);
+                if ((skip & 4) == 0) c.wallZ(h[2], h[0], h[1], yb, Y0, 0x2A2A34, 255);
+                if ((skip & 8) == 0) c.wallZ(h[3], h[0], h[1], yb, Y0, 0x2A2A34, 255);
             }
         }
         // 보라색 네온 십자 (세로줄은 방 중앙, 가로줄은 앞쪽 z=3)
@@ -188,7 +197,7 @@ final class AeRoom {
         // 아이템 더미 구역 표시: 청록 테두리와 옅은 바탕
         double ax = PILE_X;
         double az = PILE_Z;
-        double y = blocks ? Y0 + PAD_LIFT + 2 * E : Y0 + 6 * E;
+        double y = blocks ? Y0 + padLift() + 2 * E : Y0 + 6 * E;
         c.flatY(y, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az + arenaHalfD, CYAN, 40);
         double t = 0.05;
         c.flatY(y + E, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az - arenaHalfD + t, CYAN, 230);

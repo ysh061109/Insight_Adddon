@@ -360,7 +360,12 @@ final class AeBlocks {
             // 바닥 한가운데: ME 제어기 2x2를 납작하게 깔아 발광 패드처럼 (방 좌표 x -1..1, z 2..4). 아이템은 이 위에 쌓인다
             for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 2; j++) {
-                    one(ps, buffers, mc, controller, ModelData.EMPTY, -1 + i, AeRoom.Y0, -(3 + j), 0.12f);
+                    if (busReady()) {
+                        // 케이블과 같은 높이의 구덩이에 제어기를 완전한 블록으로 앉혀서 케이블이 옆면에 곧바로 이어지게 한다
+                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1 + i, AeRoom.Y0 - AeRoom.TRENCH_D, -(3 + j), 1f);
+                    } else {
+                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1 + i, AeRoom.Y0, -(3 + j), 0.12f);
+                    }
                 }
             }
             // 양쪽 벽: 3단 x 8열 ME 드라이브 (앞면이 방 안쪽을 향함)
