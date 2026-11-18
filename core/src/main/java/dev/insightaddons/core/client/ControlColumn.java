@@ -47,14 +47,19 @@ public final class ControlColumn {
             InsightBridge.setUiOpacity(InsightConfig.GLASS_ALPHA.get() / 255.0);
         }
         List<AbstractWidget> rows = new ArrayList<>();
+        List<String> ids = new ArrayList<>();
         int h = 14;
         if (ae) {
+            ids.add("ratio");
             rows.add(AeWindow.ratioSlider(0, 0, W, h));
+            ids.add("alpha");
             rows.add(new ConfigSlider(0, 0, W, h, 0, 255, InsightConfig.AE2_GLASS_ALPHA.get(),
                     v -> Component.translatable("insight_addons.window.alpha", Math.round(v * 100f / 255f)),
                     ConfigSlider.save(InsightConfig.AE2_GLASS_ALPHA)));
         } else if (glass || soph) {
+            ids.add("ratio");
             rows.add(new DropRatioSlider(0, 0, W, h));
+            ids.add("alpha");
             var save = ConfigSlider.save(InsightConfig.GLASS_ALPHA);
             rows.add(new ConfigSlider(0, 0, W, h, 0, 255, GlassSkin.effectiveAlpha(),
                     v -> Component.translatable("insight_addons.window.alpha", Math.round(v * 100f / 255f)),
@@ -65,14 +70,25 @@ public final class ControlColumn {
         }
         if (chaos) {
             Runnable go = ae ? AeScene::chaos : () -> ChestChaos.toggle(acs);
+            ids.add("chaos");
             rows.add(Button.builder(Component.translatable("insight_addons.chaos"), b -> go.run()).bounds(0, 0, W, 18).build());
+            ids.add("speed");
             rows.add(new ConfigSlider(0, 0, W, h, 20, 300, InsightConfig.CHAOS_SPEED.get(),
                     v -> Component.translatable("insight_addons.chaos.speed", v), ConfigSlider.save(InsightConfig.CHAOS_SPEED)));
+            ids.add("random");
             rows.add(new ConfigSlider(0, 0, W, h, 0, 100, InsightConfig.CHAOS_RANDOM.get(),
                     v -> Component.translatable("insight_addons.chaos.random", v), ConfigSlider.save(InsightConfig.CHAOS_RANDOM)));
         }
         if (ae || glass || soph) {
+            ids.add("hud");
             rows.add(HudToggle.button(0, 0, W));
+        }
+        // 버튼 배치 설정에서 숨긴 버튼은 빼고, 나머지는 위치를 옮긴 만큼 이동시킨다
+        for (int i = rows.size() - 1; i >= 0; i--) {
+            if (!InsightConfig.layoutShow(ids.get(i))) {
+                rows.remove(i);
+                ids.remove(i);
+            }
         }
         if (rows.isEmpty()) {
             return;
@@ -144,6 +160,7 @@ public final class ControlColumn {
                     r.setHeight(cellH);
                     r.setX(gx + (i % 2) * (colW + 2));
                     r.setY(gy + (i / 2) * (cellH + 2));
+                    shift(r, ids.get(i), s);
                     e.addListener(WidgetGuard.mine(r));
                 }
                 return;
@@ -166,12 +183,20 @@ public final class ControlColumn {
         }
         int x = bestX;
         int y = bestY;
+        int idx = 0;
         for (AbstractWidget r : rows) {
             r.setX(x);
             r.setY(y);
             y += r.getHeight() + gap;
+            shift(r, ids.get(idx++), s);
             e.addListener(WidgetGuard.mine(r));
         }
+    }
+
+    /** 버튼 배치 설정의 이동량을 적용하고 화면 밖으로 나가지 않게 한다 */
+    private static void shift(AbstractWidget r, String id, Screen s) {
+        r.setX(Math.max(0, Math.min(s.width - r.getWidth(), r.getX() + InsightConfig.layoutDx(id))));
+        r.setY(Math.max(0, Math.min(s.height - r.getHeight(), r.getY() + InsightConfig.layoutDy(id))));
     }
 
     private static boolean hits(List<int[]> obs, int x, int y, int w, int h) {

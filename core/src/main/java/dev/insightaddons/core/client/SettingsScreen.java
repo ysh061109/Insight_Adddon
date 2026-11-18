@@ -82,6 +82,10 @@ public final class SettingsScreen extends Screen {
             }
             String sKey = se.getKey();
             sectionNames.put(sKey, Component.translatable("insight_addons.configuration." + sKey));
+            if ("buttonLayout".equals(sKey)) {
+                entries.add(new Entry(sKey, "editor", Component.translatable("insight_addons.configuration.layout.open"),
+                        null, null, 7));
+            }
             if ("insightChestsIntegration".equals(sKey)) {
                 entries.add(new Entry(sKey, "preview", Component.translatable("insight_addons.configuration.preview.open"),
                         null, null, 6));
@@ -314,6 +318,9 @@ public final class SettingsScreen extends Screen {
             case 6:
                 return Button.builder(Component.translatable("insight_addons.configuration.preview.openText"),
                         b -> Minecraft.getInstance().setScreen(new PreviewScreen(this))).bounds(x, 0, ctrlW, 18).build();
+            case 7:
+                return Button.builder(Component.translatable("insight_addons.configuration.layout.openText"),
+                        b -> Minecraft.getInstance().setScreen(new LayoutScreen(this))).bounds(x, 0, ctrlW, 18).build();
             default:
                 return null;
         }

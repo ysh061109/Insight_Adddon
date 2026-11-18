@@ -29,7 +29,36 @@ public final class InsightConfig {
     public static final ModConfigSpec.ConfigValue<List<? extends String>> FANCY_MOD_IDS;
     public static final ModConfigSpec.BooleanValue KEEP_ORIGINAL_SCREEN;
 
+    /** 보관함을 열 때 나오는 조작 버튼들의 배치(기본 배치 기준 이동량, 표시 여부) */
+    public static final String[] LAYOUT_IDS = {"ratio", "alpha", "chaos", "speed", "random", "hud"};
+    public static final ModConfigSpec.IntValue[] LAYOUT_DX = new ModConfigSpec.IntValue[LAYOUT_IDS.length];
+    public static final ModConfigSpec.IntValue[] LAYOUT_DY = new ModConfigSpec.IntValue[LAYOUT_IDS.length];
+    public static final ModConfigSpec.BooleanValue[] LAYOUT_SHOW = new ModConfigSpec.BooleanValue[LAYOUT_IDS.length];
     public static final ModConfigSpec.IntValue CHAOS_ICON_MAX;
+
+    private static int layoutIndex(String id) {
+        for (int i = 0; i < LAYOUT_IDS.length; i++) {
+            if (LAYOUT_IDS[i].equals(id)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static boolean layoutShow(String id) {
+        int i = layoutIndex(id);
+        return i < 0 || LAYOUT_SHOW[i].get();
+    }
+
+    public static int layoutDx(String id) {
+        int i = layoutIndex(id);
+        return i < 0 ? 0 : LAYOUT_DX[i].get();
+    }
+
+    public static int layoutDy(String id) {
+        int i = layoutIndex(id);
+        return i < 0 ? 0 : LAYOUT_DY[i].get();
+    }
     public static final ModConfigSpec.BooleanValue AE2_FRONT_VIEW;
     public static final ModConfigSpec.BooleanValue AE2_PHYSICS;
     public static final ModConfigSpec.IntValue AE2_PHYSICS_MAX;
@@ -123,6 +152,18 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.ae2.frontView").define("frontView", true);
         AE2_PHYSICS_MAX = b.comment("물리 연출에서 동시에 그리는 아이템 조각의 최대 개수. 낮추면 가벼워집니다.")
                 .translation("insight_addons.configuration.ae2.physicsMax").defineInRange("pieceBudget", 600, 50, 3000);
+        b.pop();
+
+        b.translation("insight_addons.configuration.buttonLayout").push("buttonLayout");
+        for (int i = 0; i < LAYOUT_IDS.length; i++) {
+            String id = LAYOUT_IDS[i];
+            LAYOUT_SHOW[i] = b.comment("보관함을 열 때 이 버튼을 표시합니다.")
+                    .translation("insight_addons.configuration.layout." + id + ".show").define(id + "Show", true);
+            LAYOUT_DX[i] = b.comment("기본 위치에서 가로로 옮길 양(GUI 픽셀, 오른쪽이 +).")
+                    .translation("insight_addons.configuration.layout." + id + ".x").defineInRange(id + "X", 0, -1500, 1500);
+            LAYOUT_DY[i] = b.comment("기본 위치에서 세로로 옮길 양(GUI 픽셀, 아래쪽이 +).")
+                    .translation("insight_addons.configuration.layout." + id + ".y").defineInRange(id + "Y", 0, -1500, 1500);
+        }
         b.pop();
 
         SPEC = b.build();
