@@ -185,7 +185,11 @@ final class AeBlocks {
         one(ps, buffers, mc, cableBus, d, xc - 0.5, AeRoom.Y0 - AeRoom.TRENCH_D, -zc - 0.5, 1f);
     }
 
-    /** 홈 안 케이블망: 기존 십자 구조 그대로(중앙 세로줄, 제어기 양옆 가로줄, 앞쪽 가로줄)를 홈으로 옮기고, 양옆 드라이브 밑까지 이어서 드라이브와 연결한다 */
+    /** 케이블 칸을 ME 제어기 블록 격자에 맞춘 위치: 제어기(x -1..1, z 2..4)의 한 블록 면 한가운데로 곧바로 들어가도록 한다 */
+    private static final double CX = 0.5;
+    private static final double CROSS_Z = 2.5;
+
+    /** 홈 안 케이블망: 기존 십자 구조 그대로(세로줄, 제어기 양옆 가로줄, 앞쪽 가로줄)를 홈으로 옮기고, 양옆 드라이브 밑까지 이어서 드라이브와 연결한다 */
     private static void busCables(PoseStack ps, MultiBufferSource buffers, Minecraft mc) {
         final boolean B = true;
         final boolean H = false;
@@ -197,38 +201,39 @@ final class AeBlocks {
                 c.put(Direction.SOUTH, B);
             }
             c.put(Direction.NORTH, i < 6 ? B : H);
-            bus(ps, buffers, mc, 0, z, c);
+            bus(ps, buffers, mc, CX, z, c);
         }
         // 제어기 양옆 가로줄 (바깥 끝은 드라이브 밑에서 드라이브와 연결)
         for (int sgn = -1; sgn <= 1; sgn += 2) {
             Direction in = sgn < 0 ? Direction.EAST : Direction.WEST;
             Direction out = sgn < 0 ? Direction.WEST : Direction.EAST;
-            for (int k = 0; k < 2; k++) {
-                double x = sgn * (2.5 + k);
+            for (int k = 0; k < 3; k++) {
+                double x = sgn * (1.5 + k);
                 java.util.Map<Direction, Boolean> c = new java.util.EnumMap<>(Direction.class);
                 c.put(in, k > 0 ? B : H); // 제일 안쪽은 제어기와 연결
-                if (k < 1) {
+                if (k < 2) {
                     c.put(out, B);
                 } else {
                     c.put(Direction.UP, H); // 드라이브 바로 밑: 드라이브와 연결된 케이블
                 }
-                bus(ps, buffers, mc, x, 3.0, c);
+                bus(ps, buffers, mc, x, CROSS_Z, c);
             }
         }
-        // 앞쪽 가로줄 (가운데 칸은 제어기 북쪽 면과 연결)
-        for (int i = -2; i <= 2; i++) {
+        // 앞쪽 가로줄 (제어기 북쪽 면의 한 칸과 연결, 모두 블록 격자에 맞춘다)
+        for (int i = 0; i < 6; i++) {
+            double x = -2.5 + i;
             java.util.Map<Direction, Boolean> c = new java.util.EnumMap<>(Direction.class);
-            if (i > -2) {
+            if (i > 0) {
                 c.put(Direction.WEST, B);
             }
-            if (i < 2) {
+            if (i < 5) {
                 c.put(Direction.EAST, B);
             }
-            if (i == 0) {
+            if (x == CX) {
                 c.put(Direction.SOUTH, H);
-                c.put(Direction.UP, B); // 가운데 칸에서 천장까지 세로 케이블이 올라간다
+                c.put(Direction.UP, B); // 이 칸에서 천장까지 세로 케이블이 올라간다
             }
-            bus(ps, buffers, mc, i, 4.5, c);
+            bus(ps, buffers, mc, x, 4.5, c);
         }
         // 가운데 세로 케이블: 홈 안 케이블에서 바닥 위로 천장까지 이어진다 (마지막 칸은 남은 높이만큼)
         double height = AeRoom.Y1 - AeRoom.Y0;
@@ -240,7 +245,7 @@ final class AeBlocks {
             c.put(Direction.UP, k < cells - 1 ? B : H);
             ModelData d = busData(c);
             if (d != null) {
-                one(ps, buffers, mc, cableBus, d, -0.5, AeRoom.Y0 + k, -4.5 - 0.5, sy);
+                one(ps, buffers, mc, cableBus, d, CX - 0.5, AeRoom.Y0 + k, -4.5 - 0.5, sy);
             }
         }
     }
@@ -358,13 +363,13 @@ final class AeBlocks {
             ps.mulPose(Axis.YP.rotation((float) theta));
             ps.scale((float) f.s(), (float) f.s(), (float) f.s());
             // 바닥 한가운데: ME 제어기 2x2를 납작하게 깔아 발광 패드처럼 (방 좌표 x -1..1, z 2..4). 아이템은 이 위에 쌓인다
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 2; j++) {
                     if (busReady()) {
                         // 케이블과 같은 높이의 구덩이에 제어기를 완전한 블록으로 앉혀서 케이블이 옆면에 곧바로 이어지게 한다
-                        one(ps, buffers, mc, controller, ModelData.EMPTY, -2 + i, AeRoom.Y0 - AeRoom.TRENCH_D, -(3 + j), 1f);
+                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1 + i, AeRoom.Y0 - AeRoom.TRENCH_D, -(3 + j), 1f);
                     } else {
-                        one(ps, buffers, mc, controller, ModelData.EMPTY, -2 + i, AeRoom.Y0, -(3 + j), 0.12f);
+                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1 + i, AeRoom.Y0, -(3 + j), 0.12f);
                     }
                 }
             }
