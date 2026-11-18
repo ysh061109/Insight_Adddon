@@ -133,23 +133,38 @@ public final class ControlColumn {
         // 그 밖의 Plus 보관함(InSight 유리 상자, 설치한 배낭, 개인 저장소 등): 창 오른쪽 아래, 플레이어 인벤토리 바로 아래에 2열 격자로 붙인다.
         // 창이 화면 밖으로 잘려 있거나 아래에 자리가 없으면 창을 화면 안으로(필요하면 위로) 옮겨서 항상 이 자리를 만든다.
         if (!ae && !worn && rows.size() >= 2) {
-            int colW = 84;
             int cellH = 14;
             int n = rows.size();
-            int rowsN = (n + 1) / 2;
-            int gridW = colW * 2 + 2;
-            int gridH = rowsN * cellH + (rowsN - 1) * 2;
+            // 창 아래 자리가 모자라면 열을 늘려(2→3→4열) 낮게 만든다
+            int cols = 2;
+            int colW = 84;
+            int gridW = 0;
+            int gridH = 0;
+            for (cols = 2; cols <= 4; cols++) {
+                colW = cols == 2 ? 84 : (cols == 3 ? 76 : 62);
+                int rowsN = (n + cols - 1) / cols;
+                gridW = colW * cols + 2 * (cols - 1);
+                gridH = rowsN * cellH + (rowsN - 1) * 2;
+                int room = s.height - 2 - (acs.getGuiTop() + acs.getYSize() + 3 + WindowDrag.offsetOf(s)[1]);
+                if (gridH <= room) {
+                    break;
+                }
+            }
+            cols = Math.min(cols, 4);
             WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, 3 + gridH);
             int[] wo = WindowDrag.offsetOf(s);
             int gx = acs.getGuiLeft() + acs.getXSize() - gridW;
+            if (gx + wo[0] < 2) {
+                gx = 2 - wo[0];
+            }
             int gy = acs.getGuiTop() + acs.getYSize() + 3;
-            if (gy + wo[1] + gridH <= s.height - 2 && gx + wo[0] >= 2) {
+            if (gy + wo[1] + gridH <= s.height - 2) {
                 for (int i = 0; i < n; i++) {
                     AbstractWidget r = rows.get(i);
                     r.setWidth(colW);
                     r.setHeight(cellH);
-                    r.setX(gx + (i % 2) * (colW + 2));
-                    r.setY(gy + (i / 2) * (cellH + 2));
+                    r.setX(gx + (i % cols) * (colW + 2));
+                    r.setY(gy + (i / cols) * (cellH + 2));
                     shift(r, ids.get(i), s);
                     e.addListener(WidgetGuard.mine(r));
                 }
