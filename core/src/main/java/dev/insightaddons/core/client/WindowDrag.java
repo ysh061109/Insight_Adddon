@@ -69,11 +69,17 @@ public final class WindowDrag {
      * 창(+양옆 탭, 아래 버튼 격자)이 화면 밖으로 나가 있으면 화면 안으로 옮긴다. 처음 열릴 때의 기본 위치가 잘려 있거나,
      * 버튼 둘 자리가 아래에 없을 때 쓴다. 사용자가 끌어 둔 위치는 필요한 만큼만 보정한다.
      */
+    private static final java.util.Set<String> TOPPED = new java.util.HashSet<>();
+
     public static void fit(AbstractContainerScreen<?> s, int extraLeft, int extraRight, int below) {
         if (!eligible(s)) {
             return;
         }
         int[] o = off(s);
+        // 처음 열릴 때(사용자가 옮기기 전)는 창을 화면 위 끝까지 올려서 아래에 버튼 자리를 넉넉히 남긴다
+        if (TOPPED.add(s.getClass().getName()) && o[0] == 0 && o[1] == 0) {
+            o[1] = 2 - s.getGuiTop();
+        }
         int left = s.getGuiLeft() + o[0] - extraLeft;
         int right = s.getGuiLeft() + o[0] + s.getXSize() + extraRight;
         int top = s.getGuiTop() + o[1];

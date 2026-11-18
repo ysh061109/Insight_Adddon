@@ -141,31 +141,35 @@ public final class ControlColumn {
             int colW = 84;
             int gridW = 0;
             int gridH = 0;
+            int gapY = 4; // 창 바로 아래와 격자 사이 여백(겹치지 않게)
+            // 먼저 2열 높이로 창을 위로 올려 자리를 만들고, 그래도 모자라면 열을 늘려 낮춘다
+            int rows2 = (n + 1) / 2;
+            WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, gapY + rows2 * cellH + (rows2 - 1) * 3);
             for (cols = 2; cols <= 4; cols++) {
                 colW = cols == 2 ? 84 : (cols == 3 ? 76 : 62);
                 int rowsN = (n + cols - 1) / cols;
                 gridW = colW * cols + 2 * (cols - 1);
-                gridH = rowsN * cellH + (rowsN - 1) * 2;
-                int room = s.height - 2 - (acs.getGuiTop() + acs.getYSize() + 3 + WindowDrag.offsetOf(s)[1]);
+                gridH = rowsN * cellH + (rowsN - 1) * 3;
+                int room = s.height - 2 - (acs.getGuiTop() + acs.getYSize() + gapY + WindowDrag.offsetOf(s)[1]);
                 if (gridH <= room) {
                     break;
                 }
             }
             cols = Math.min(cols, 4);
-            WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, 3 + gridH);
+            WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, gapY + gridH);
             int[] wo = WindowDrag.offsetOf(s);
             int gx = acs.getGuiLeft() + acs.getXSize() - gridW;
             if (gx + wo[0] < 2) {
                 gx = 2 - wo[0];
             }
-            int gy = acs.getGuiTop() + acs.getYSize() + 3;
+            int gy = acs.getGuiTop() + acs.getYSize() + gapY;
             if (gy + wo[1] + gridH <= s.height - 2) {
                 for (int i = 0; i < n; i++) {
                     AbstractWidget r = rows.get(i);
                     r.setWidth(colW);
                     r.setHeight(cellH);
                     r.setX(gx + (i % cols) * (colW + 2));
-                    r.setY(gy + (i / cols) * (cellH + 2));
+                    r.setY(gy + (i / cols) * (cellH + 3));
                     shift(r, ids.get(i), s);
                     e.addListener(WidgetGuard.mine(r));
                 }

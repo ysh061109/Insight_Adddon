@@ -50,6 +50,42 @@ public final class ScreenEvents {
                 && mc.level.getBlockEntity(hit.getBlockPos()) != null;
     }
 
+    /** Sophisticated 메뉴가 블록에서 열렸는지(true)/손에 든·멘 배낭으로 열렸는지(false)/알 수 없는지(null) */
+    private static Boolean openedFromBlock(Screen screen) {
+        if (!(screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?> acs)) {
+            return null;
+        }
+        Object menu = acs.getMenu();
+        try {
+            for (Class<?> c = menu.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+                for (var f : c.getDeclaredFields()) {
+                    if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
+                        continue;
+                    }
+                    String tn = f.getType().getName();
+                    if (!tn.contains("Context")) {
+                        continue;
+                    }
+                    f.setAccessible(true);
+                    Object v = f.get(menu);
+                    if (v == null) {
+                        continue;
+                    }
+                    String n = v.getClass().getName();
+                    if (n.contains("$Block")) {
+                        return Boolean.TRUE;
+                    }
+                    if (n.contains("$Item") || n.contains("$AnotherPlayer") || n.contains("$Anonymous")) {
+                        return Boolean.FALSE;
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+            // 알 수 없으면 기존 판단을 쓴다
+        }
+        return null;
+    }
+
     static boolean isGlassChest(Object screen) {
         return screen != null && screen.getClass().getName().equals("com.mrsun.insightchests.client.gui.GlassChestScreen");
     }
@@ -76,7 +112,9 @@ public final class ScreenEvents {
         Screen current = event.getCurrentScreen();
         // 저장소 화면 -> 설정 화면처럼 이어지는 경우는 이전 판단을 그대로 쓴다
         if (current == null || !GlassSkin.isStorageScreenClass(current)) {
-            GlassSkin.setPlaced(lookingAtPlacedSophisticated(mc));
+            Boolean byMenu = openedFromBlock(next);
+            // 메뉴가 "배낭 아이템"으로 열렸다고 알려 주면(B키), 설치된 배낭을 바라보고 있어도 설치형으로 보지 않는다
+            GlassSkin.setPlaced(byMenu != null ? (byMenu && lookingAtPlacedSophisticated(mc)) : lookingAtPlacedSophisticated(mc));
         }
         if (GlassSkin.placed()) {
             EmiBridge.hide();

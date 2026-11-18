@@ -9,6 +9,7 @@
     "IronChestsCompatMixin",
     "KeepOriginalScreenMixin",
     "KeepCameraOnSwitchMixin",
+    "KeepPileOnSwitchMixin",
     "AeGuiAlphaMixin",
     "AeGlassMixin",
     "AeGlassTextMixin",
