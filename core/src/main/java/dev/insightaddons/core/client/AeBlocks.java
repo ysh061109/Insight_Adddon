@@ -207,11 +207,11 @@ final class AeBlocks {
         for (int sgn = -1; sgn <= 1; sgn += 2) {
             Direction in = sgn < 0 ? Direction.EAST : Direction.WEST;
             Direction out = sgn < 0 ? Direction.WEST : Direction.EAST;
-            for (int k = 0; k < 3; k++) {
-                double x = sgn * (1.5 + k);
+            for (int k = 0; k < 2; k++) {
+                double x = sgn * (2.0 + k);
                 java.util.Map<Direction, Boolean> c = new java.util.EnumMap<>(Direction.class);
                 c.put(in, k > 0 ? B : H); // 제일 안쪽은 제어기와 연결
-                if (k < 2) {
+                if (k < 1) {
                     c.put(out, B);
                 } else {
                     c.put(Direction.UP, H); // 드라이브 바로 밑: 드라이브와 연결된 케이블
@@ -362,14 +362,14 @@ final class AeBlocks {
             double theta = Math.atan2(-f.right().z, f.right().x);
             ps.mulPose(Axis.YP.rotation((float) theta));
             ps.scale((float) f.s(), (float) f.s(), (float) f.s());
-            // 바닥 한가운데: ME 제어기 2x2를 납작하게 깔아 발광 패드처럼 (방 좌표 x -1..1, z 2..4). 아이템은 이 위에 쌓인다
-            for (int i = 0; i < 2; i++) {
+            // 바닥 한가운데: ME 제어기를 쌓이는 칸(방 좌표 x -1.5..1.5, z 2..4)에만 깐다. 아이템은 이 위에 쌓인다
+            for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 2; j++) {
                     if (busReady()) {
                         // 케이블과 같은 높이의 구덩이에 제어기를 완전한 블록으로 앉혀서 케이블이 옆면에 곧바로 이어지게 한다
-                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1 + i, AeRoom.Y0 - AeRoom.TRENCH_D, -(3 + j), 1f);
+                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1.5 + i, AeRoom.Y0 - AeRoom.TRENCH_D, -(3 + j), 1f);
                     } else {
-                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1 + i, AeRoom.Y0, -(3 + j), 0.12f);
+                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1.5 + i, AeRoom.Y0, -(3 + j), 0.12f);
                     }
                 }
             }

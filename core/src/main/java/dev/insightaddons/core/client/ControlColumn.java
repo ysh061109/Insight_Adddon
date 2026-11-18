@@ -122,7 +122,8 @@ public final class ControlColumn {
         List<Integer> xs = new ArrayList<>();
         int cornerLeft = 2;
         int cornerRight = Math.max(2, s.width - W - 2);
-        boolean worn = ChestChaos.iconMode(s);
+        // 손에 든/멘 배낭과 플레이어 인벤토리만 왼쪽 아래. Mekanism 개인 상자·통 등은 일반 보관함처럼 인벤토리 아래 격자
+        boolean worn = ChestChaos.iconMode(s) && !s.getClass().getName().startsWith("mekanism.");
         if (ae || worn) {
             xs.add(cornerLeft);
             xs.add(cornerRight);
