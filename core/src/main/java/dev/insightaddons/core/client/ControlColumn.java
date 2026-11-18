@@ -130,7 +130,8 @@ public final class ControlColumn {
             xs.add(cornerRight);
             xs.add(cornerLeft);
         }
-        // 그 밖의 Plus 보관함(InSight 유리 상자, 설치한 배낭 등): 버튼을 2열 격자로 플레이어 인벤토리 바로 아래 영역에 둔다
+        // 그 밖의 Plus 보관함(InSight 유리 상자, 설치한 배낭, 개인 저장소 등): 창 오른쪽 아래, 플레이어 인벤토리 바로 아래에 2열 격자로 붙인다.
+        // 창이 화면 밖으로 잘려 있거나 아래에 자리가 없으면 창을 화면 안으로(필요하면 위로) 옮겨서 항상 이 자리를 만든다.
         if (!ae && !worn && rows.size() >= 2) {
             int colW = 84;
             int cellH = 14;
@@ -138,28 +139,38 @@ public final class ControlColumn {
             int rowsN = (n + 1) / 2;
             int gridW = colW * 2 + 2;
             int gridH = rowsN * cellH + (rowsN - 1) * 2;
-            int invLeft = acs.getGuiLeft();
-            var pl = net.minecraft.client.Minecraft.getInstance().player;
-            if (pl != null) {
-                int minX = Integer.MAX_VALUE;
-                for (var slot : acs.getMenu().slots) {
-                    if (slot.container == pl.getInventory()) {
-                        minX = Math.min(minX, slot.x);
-                    }
-                }
-                if (minX != Integer.MAX_VALUE) {
-                    invLeft = acs.getGuiLeft() + minX - 1;
-                }
-            }
-            int gx = Math.max(2, Math.min(invLeft, s.width - 2 - gridW));
+            WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, 3 + gridH);
+            int[] wo = WindowDrag.offsetOf(s);
+            int gx = acs.getGuiLeft() + acs.getXSize() - gridW;
             int gy = acs.getGuiTop() + acs.getYSize() + 3;
-            if (gy + gridH <= s.height - 2 && !hits(obstacles, gx, gy, gridW, gridH)) {
+            if (gy + wo[1] + gridH <= s.height - 2 && gx + wo[0] >= 2) {
                 for (int i = 0; i < n; i++) {
                     AbstractWidget r = rows.get(i);
                     r.setWidth(colW);
                     r.setHeight(cellH);
                     r.setX(gx + (i % 2) * (colW + 2));
                     r.setY(gy + (i / 2) * (cellH + 2));
+                    shift(r, ids.get(i), s);
+                    e.addListener(WidgetGuard.mine(r));
+                }
+                return;
+            }
+        }
+        // 인벤토리/멘 배낭: 창 왼쪽 옆에 바짝 붙이고, 아이템이 가리지 않도록 창 아래쪽 높이에 맞춘다(자리가 없으면 오른쪽 옆)
+        if (worn) {
+            int wx = acs.getGuiLeft() - 4 - W;
+            if (wx < 2) {
+                wx = acs.getGuiLeft() + acs.getXSize() + 4;
+            }
+            int wy = Math.min(s.height - BOTTOM_MARGIN / 2 - total, acs.getGuiTop() + acs.getYSize() - total);
+            wy = Math.max(TOP_MARGIN, wy);
+            if (wx + W <= s.width - 2 && !hits(obstacles, wx, wy, W, total)) {
+                int yy = wy;
+                for (int i = 0; i < rows.size(); i++) {
+                    AbstractWidget r = rows.get(i);
+                    r.setX(wx);
+                    r.setY(yy);
+                    yy += r.getHeight() + gap;
                     shift(r, ids.get(i), s);
                     e.addListener(WidgetGuard.mine(r));
                 }

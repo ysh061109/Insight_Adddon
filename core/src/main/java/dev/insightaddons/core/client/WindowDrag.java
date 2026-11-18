@@ -65,6 +65,37 @@ public final class WindowDrag {
         return off(s);
     }
 
+    /**
+     * 창(+양옆 탭, 아래 버튼 격자)이 화면 밖으로 나가 있으면 화면 안으로 옮긴다. 처음 열릴 때의 기본 위치가 잘려 있거나,
+     * 버튼 둘 자리가 아래에 없을 때 쓴다. 사용자가 끌어 둔 위치는 필요한 만큼만 보정한다.
+     */
+    public static void fit(AbstractContainerScreen<?> s, int extraLeft, int extraRight, int below) {
+        if (!eligible(s)) {
+            return;
+        }
+        int[] o = off(s);
+        int left = s.getGuiLeft() + o[0] - extraLeft;
+        int right = s.getGuiLeft() + o[0] + s.getXSize() + extraRight;
+        int top = s.getGuiTop() + o[1];
+        int bottom = top + s.getYSize() + below;
+        int dx = 0;
+        int dy = 0;
+        if (right > s.width - 2) {
+            dx = s.width - 2 - right;
+        }
+        if (left + dx < 2) {
+            dx = 2 - left;
+        }
+        if (bottom > s.height - 2) {
+            dy = s.height - 2 - bottom;
+        }
+        if (top + dy < 2) {
+            dy = 2 - top;
+        }
+        o[0] += dx;
+        o[1] += dy;
+    }
+
     private static void clamp(AbstractContainerScreen<?> s, int[] o) {
         int w = s.getXSize();
         int left = s.getGuiLeft();
