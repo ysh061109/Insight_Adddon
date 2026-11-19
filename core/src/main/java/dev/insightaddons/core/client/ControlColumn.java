@@ -150,7 +150,7 @@ public final class ControlColumn {
             int gapY = 8; // 창 바로 아래와 격자 사이 여백(겹치지 않게)
             // 먼저 2열 높이로 창을 위로 올려 자리를 만들고, 그래도 모자라면 열을 늘려 낮춘다
             int rows2 = (n + 1) / 2;
-            WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, gapY + rows2 * cellH + (rows2 - 1) * 5);
+            WindowDrag.fit(acs, soph ? 32 : 0, 28, gapY + rows2 * cellH + (rows2 - 1) * 5);
             for (cols = 2; cols <= 4; cols++) {
                 colW = cols == 2 ? 84 : (cols == 3 ? 76 : 62);
                 int rowsN = (n + cols - 1) / cols;
@@ -162,7 +162,7 @@ public final class ControlColumn {
                 }
             }
             cols = Math.min(cols, 4);
-            WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, gapY + gridH);
+            WindowDrag.fit(acs, soph ? 32 : 0, 28, gapY + gridH);
             int[] wo = WindowDrag.offsetOf(s);
             int gx = acs.getGuiLeft() + acs.getXSize() - gridW;
             if (gx + wo[0] < 2) {
@@ -181,6 +181,12 @@ public final class ControlColumn {
                 }
                 return;
             }
+        }
+        // 배낭(B키)·AE2 단말기 창도 양옆 탭/툴바까지 포함해 화면 밖으로 잘려 있으면 안으로 옮긴다
+        if (ae) {
+            WindowDrag.fitInside(acs, 0, 24);
+        } else if (worn) {
+            WindowDrag.fitInside(acs, 32, 28);
         }
         // 인벤토리/멘 배낭: 창 왼쪽 옆에 바짝 붙이고, 아이템이 가리지 않도록 창 아래쪽 높이에 맞춘다(자리가 없으면 오른쪽 옆)
         if (worn) {

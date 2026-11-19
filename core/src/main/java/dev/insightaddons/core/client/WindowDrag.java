@@ -71,13 +71,23 @@ public final class WindowDrag {
      */
     private static final java.util.Set<String> USER = new java.util.HashSet<>();
 
+    /** 위·오른쪽 끝으로 붙이고(직접 옮기지 않았다면) 화면 안에 들어오게 보정 */
     public static void fit(AbstractContainerScreen<?> s, int extraLeft, int extraRight, int below) {
+        fit(s, extraLeft, extraRight, below, true);
+    }
+
+    /** 위치는 그대로 두고, 창(+양옆 탭)이 화면 밖으로 잘려 있을 때만 안으로 옮긴다 (배낭·AE2 단말기용) */
+    public static void fitInside(AbstractContainerScreen<?> s, int extraLeft, int extraRight) {
+        fit(s, extraLeft, extraRight, 0, false);
+    }
+
+    private static void fit(AbstractContainerScreen<?> s, int extraLeft, int extraRight, int below, boolean auto) {
         if (!eligible(s)) {
             return;
         }
         int[] o = off(s);
         // 사용자가 직접 옮기지 않았다면 열 때마다 창을 화면 위 끝·오른쪽 끝(오른쪽 탭 같은 기능 버튼이 잘리지 않는 선까지)으로 붙여서 아래에 버튼 자리를 넉넉히 남긴다
-        if (!USER.contains(s.getClass().getName())) {
+        if (auto && !USER.contains(s.getClass().getName())) {
             o[1] = 2 - s.getGuiTop();
             o[0] = Math.max(0, s.width - 2 - (s.getGuiLeft() + s.getXSize() + extraRight));
         }
