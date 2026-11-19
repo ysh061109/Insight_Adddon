@@ -140,42 +140,59 @@ public final class ControlColumn {
         // 그 밖의 Plus 보관함(InSight 유리 상자, 설치한 배낭, 개인 저장소 등): 창 오른쪽 아래, 플레이어 인벤토리 바로 아래에 2열 격자로 붙인다.
         // 창이 화면 밖으로 잘려 있거나 아래에 자리가 없으면 창을 화면 안으로(필요하면 위로) 옮겨서 항상 이 자리를 만든다.
         if (!ae && !worn && rows.size() >= 2) {
-            int cellH = 14;
             int n = rows.size();
-            // 창 아래 자리가 모자라면 열을 늘려(2→3→4열) 낮게 만든다
-            int cols = 2;
-            int colW = 84;
-            int gridW = 0;
-            int gridH = 0;
-            int gapY = 8; // 창 바로 아래와 격자 사이 여백(겹치지 않게)
-            // 먼저 2열 높이로 창을 위로 올려 자리를 만들고, 그래도 모자라면 열을 늘려 낮춘다
-            int rows2 = (n + 1) / 2;
-            WindowDrag.fit(acs, soph ? 32 : 0, 28, gapY + rows2 * cellH + (rows2 - 1) * 5);
-            for (cols = 2; cols <= 4; cols++) {
-                colW = cols == 2 ? 84 : (cols == 3 ? 76 : 62);
-                int rowsN = (n + cols - 1) / cols;
-                gridW = colW * cols + 2 * (cols - 1);
-                gridH = rowsN * cellH + (rowsN - 1) * 5;
-                int room = s.height - 2 - (acs.getGuiTop() + acs.getYSize() + gapY + WindowDrag.offsetOf(s)[1]);
-                if (gridH <= room) {
-                    break;
+            int extraL = soph ? 32 : 0;
+            int extraR = 28; // 오른쪽에 붙는 기능 버튼(배낭 설정, 보안 버튼 등) 자리
+            int gapY = 6;
+            int vgap = 4;
+            // 1) 창 + 아래 버튼 격자를 한 덩어리로 보고 화면 오른쪽 가운데에 둔다. GUI 크기가 커서 안 들어가면 열을 늘리고 버튼을 낮춘다
+            for (int cellH : new int[]{14, 12}) {
+                for (int cols = 2; cols <= 4; cols++) {
+                    int colW = cols == 2 ? 84 : (cols == 3 ? 76 : 62);
+                    int rowsN = (n + cols - 1) / cols;
+                    int gridW = colW * cols + 2 * (cols - 1);
+                    int gridH = rowsN * cellH + (rowsN - 1) * vgap;
+                    int blockH = acs.getYSize() + gapY + gridH;
+                    if (blockH > s.height - 4 || gridW > s.width - 4) {
+                        continue;
+                    }
+                    WindowDrag.place(acs, blockH, extraL, extraR);
+                    int[] wo = WindowDrag.offsetOf(s);
+                    int gx = acs.getGuiLeft() + acs.getXSize() - gridW;
+                    if (gx + wo[0] < 2) {
+                        gx = 2 - wo[0];
+                    }
+                    int gy = acs.getGuiTop() + acs.getYSize() + gapY;
+                    for (int i = 0; i < n; i++) {
+                        AbstractWidget r = rows.get(i);
+                        r.setWidth(colW);
+                        r.setHeight(cellH);
+                        r.setX(gx + (i % cols) * (colW + 2));
+                        r.setY(gy + (i / cols) * (cellH + vgap));
+                        shift(r, ids.get(i), s, wo);
+                        e.addListener(WidgetGuard.mine(r));
+                    }
+                    return;
                 }
             }
-            cols = Math.min(cols, 4);
-            WindowDrag.fit(acs, soph ? 32 : 0, 28, gapY + gridH);
-            int[] wo = WindowDrag.offsetOf(s);
-            int gx = acs.getGuiLeft() + acs.getXSize() - gridW;
-            if (gx + wo[0] < 2) {
-                gx = 2 - wo[0];
-            }
-            int gy = acs.getGuiTop() + acs.getYSize() + gapY;
-            if (gy + wo[1] + gridH <= s.height - 2) {
-                for (int i = 0; i < n; i++) {
+            // 2) 창이 너무 커서 아래에 자리가 없으면, 창 왼쪽 옆에 버튼 한 줄(세로)로 두고 창은 오른쪽 가운데에
+            int leftBlock = extraL + W + 6;
+            if (acs.getXSize() + leftBlock + extraR + 4 <= s.width) {
+                int sideH = 0;
+                for (AbstractWidget r : rows) {
+                    sideH += r.getHeight();
+                }
+                sideH += 2 * (rows.size() - 1);
+                WindowDrag.place(acs, acs.getYSize(), leftBlock, extraR);
+                int[] wo = WindowDrag.offsetOf(s);
+                int x = acs.getGuiLeft() - leftBlock;
+                int y = acs.getGuiTop() + Math.max(0, (acs.getYSize() - sideH) / 2);
+                for (int i = 0; i < rows.size(); i++) {
                     AbstractWidget r = rows.get(i);
-                    r.setWidth(colW);
-                    r.setHeight(cellH);
-                    r.setX(gx + (i % cols) * (colW + 2));
-                    r.setY(gy + (i / cols) * (cellH + 5));
+                    r.setWidth(W);
+                    r.setX(x);
+                    r.setY(y);
+                    y += r.getHeight() + 2;
                     shift(r, ids.get(i), s, wo);
                     e.addListener(WidgetGuard.mine(r));
                 }

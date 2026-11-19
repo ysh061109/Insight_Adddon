@@ -76,6 +76,23 @@ public final class WindowDrag {
         fit(s, extraLeft, extraRight, below, true);
     }
 
+    /**
+     * 창 + 아래 버튼(합쳐서 blockH 높이)을 화면 오른쪽 가운데에 둔다(직접 옮기지 않았다면). 오른쪽 기능 버튼(extraRight)과
+     * 왼쪽 탭/버튼 열(extraLeft)이 잘리지 않는 선까지 붙이고, 그래도 넘치면 화면 안으로 보정한다.
+     */
+    public static void place(AbstractContainerScreen<?> s, int blockH, int extraLeft, int extraRight) {
+        if (!eligible(s)) {
+            return;
+        }
+        int[] o = off(s);
+        if (!USER.contains(s.getClass().getName())) {
+            int top = Math.max(2, (s.height - blockH) / 2);
+            o[1] = top - s.getGuiTop();
+            o[0] = s.width - 2 - (s.getGuiLeft() + s.getXSize() + extraRight);
+        }
+        fit(s, extraLeft, extraRight, blockH - s.getYSize(), false);
+    }
+
     /** 위치는 그대로 두고, 창(+양옆 탭)이 화면 밖으로 잘려 있을 때만 안으로 옮긴다 (배낭·AE2 단말기용) */
     public static void fitInside(AbstractContainerScreen<?> s, int extraLeft, int extraRight) {
         fit(s, extraLeft, extraRight, 0, false);
