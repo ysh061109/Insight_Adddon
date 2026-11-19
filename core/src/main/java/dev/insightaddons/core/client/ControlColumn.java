@@ -163,6 +163,10 @@ public final class ControlColumn {
                         gx = 2 - wo[0];
                     }
                     int gy = acs.getGuiTop() + acs.getYSize() + gapY;
+                    // 창을 실제로 옮기지 못했거나 계산이 어긋나 격자가 화면 밖으로 나가면, 이 배치는 버리고 다음 배치를 시도한다
+                    if (gy + wo[1] + gridH > s.height - 2 || gx + wo[0] < 0 || gx + wo[0] + gridW > s.width) {
+                        continue;
+                    }
                     for (int i = 0; i < n; i++) {
                         AbstractWidget r = rows.get(i);
                         r.setWidth(colW);
@@ -187,7 +191,8 @@ public final class ControlColumn {
                 int[] wo = WindowDrag.offsetOf(s);
                 int x = acs.getGuiLeft() - leftBlock;
                 int y = acs.getGuiTop() + Math.max(0, (acs.getYSize() - sideH) / 2);
-                for (int i = 0; i < rows.size(); i++) {
+                boolean sideOk = x + wo[0] >= 2 && y + wo[1] >= 0 && y + wo[1] + sideH <= s.height;
+                for (int i = 0; sideOk && i < rows.size(); i++) {
                     AbstractWidget r = rows.get(i);
                     r.setWidth(W);
                     r.setX(x);
@@ -196,7 +201,9 @@ public final class ControlColumn {
                     shift(r, ids.get(i), s, wo);
                     e.addListener(WidgetGuard.mine(r));
                 }
-                return;
+                if (sideOk) {
+                    return;
+                }
             }
         }
         // 배낭(B키)·AE2 단말기 창도 양옆 탭/툴바까지 포함해 화면 밖으로 잘려 있으면 안으로 옮긴다
