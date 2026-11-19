@@ -176,7 +176,7 @@ public final class ControlColumn {
                     r.setHeight(cellH);
                     r.setX(gx + (i % cols) * (colW + 2));
                     r.setY(gy + (i / cols) * (cellH + 5));
-                    shift(r, ids.get(i), s);
+                    shift(r, ids.get(i), s, wo);
                     e.addListener(WidgetGuard.mine(r));
                 }
                 return;
@@ -232,8 +232,13 @@ public final class ControlColumn {
 
     /** 버튼 배치 설정의 이동량을 적용하고 화면 밖으로 나가지 않게 한다 */
     private static void shift(AbstractWidget r, String id, Screen s) {
-        r.setX(Math.max(0, Math.min(s.width - r.getWidth(), r.getX() + InsightConfig.layoutDx(id))));
-        r.setY(Math.max(0, Math.min(s.height - r.getHeight(), r.getY() + InsightConfig.layoutDy(id))));
+        shift(r, id, s, new int[2]);
+    }
+
+    /** 창을 옮긴 만큼(wo) 위젯도 같이 옮겨져 그려지므로, 화면 안에 들어오는지는 그 이동량을 더해서 따진다(안 그러면 아래 줄이 위로 눌려 겹친다) */
+    private static void shift(AbstractWidget r, String id, Screen s, int[] wo) {
+        r.setX(Math.max(-wo[0], Math.min(s.width - r.getWidth() - wo[0], r.getX() + InsightConfig.layoutDx(id))));
+        r.setY(Math.max(-wo[1], Math.min(s.height - r.getHeight() - wo[1], r.getY() + InsightConfig.layoutDy(id))));
     }
 
     private static boolean hits(List<int[]> obs, int x, int y, int w, int h) {

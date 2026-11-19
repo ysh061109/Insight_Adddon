@@ -69,21 +69,17 @@ public final class WindowDrag {
      * 창(+양옆 탭, 아래 버튼 격자)이 화면 밖으로 나가 있으면 화면 안으로 옮긴다. 처음 열릴 때의 기본 위치가 잘려 있거나,
      * 버튼 둘 자리가 아래에 없을 때 쓴다. 사용자가 끌어 둔 위치는 필요한 만큼만 보정한다.
      */
-    private static final java.util.Set<String> TOPPED = new java.util.HashSet<>();
+    private static final java.util.Set<String> USER = new java.util.HashSet<>();
 
     public static void fit(AbstractContainerScreen<?> s, int extraLeft, int extraRight, int below) {
         if (!eligible(s)) {
             return;
         }
         int[] o = off(s);
-        // 처음 열릴 때(사용자가 옮기기 전)는 창을 화면 위 끝까지 올려서 아래에 버튼 자리를 넉넉히 남긴다
-        if (TOPPED.add(s.getClass().getName()) && o[0] == 0 && o[1] == 0) {
+        // 사용자가 직접 옮기지 않았다면 열 때마다 창을 화면 위 끝·오른쪽 끝(오른쪽 탭 같은 기능 버튼이 잘리지 않는 선까지)으로 붙여서 아래에 버튼 자리를 넉넉히 남긴다
+        if (!USER.contains(s.getClass().getName())) {
             o[1] = 2 - s.getGuiTop();
-            // 오른쪽 끝까지(오른쪽 탭 같은 기능 버튼이 잘리지 않는 선까지) 붙인다
-            int toRight = s.width - 2 - (s.getGuiLeft() + s.getXSize() + extraRight);
-            if (toRight > 0) {
-                o[0] = toRight;
-            }
+            o[0] = Math.max(0, s.width - 2 - (s.getGuiLeft() + s.getXSize() + extraRight));
         }
         int left = s.getGuiLeft() + o[0] - extraLeft;
         int right = s.getGuiLeft() + o[0] + s.getXSize() + extraRight;
@@ -186,6 +182,7 @@ public final class WindowDrag {
         }
         if (e.getButton() == 2) {
             // 마우스 가운데 버튼: 어디서든 창을 원래 자리로
+            USER.remove(s.getClass().getName());
             o[0] = 0;
             o[1] = 0;
             dragging = false;
@@ -208,6 +205,7 @@ public final class WindowDrag {
                 lastPressY = e.getMouseY();
             }
             if (dbl) {
+                USER.remove(s.getClass().getName());
                 o[0] = 0;
                 o[1] = 0;
                 dragging = false;
@@ -220,6 +218,7 @@ public final class WindowDrag {
             // 슬롯이나 버튼이 없는 빈 곳을 눌렀을 때만 끌기를 시작한다
             long now = System.currentTimeMillis();
             if (now - lastTitleClick < 350) {
+                USER.remove(s.getClass().getName());
                 o[0] = 0;
                 o[1] = 0;
                 dragging = false;
@@ -248,6 +247,7 @@ public final class WindowDrag {
         }
         int[] o = off(s);
         if (dragging && e.getMouseButton() == 0) {
+            USER.add(s.getClass().getName());
             o[0] += (int) Math.round(e.getDragX());
             o[1] += (int) Math.round(e.getDragY());
             clamp((AbstractContainerScreen<?>) s, o);
