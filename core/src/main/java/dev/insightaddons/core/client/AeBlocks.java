@@ -250,6 +250,74 @@ final class AeBlocks {
         }
     }
 
+    private static int[] frameColors;
+    private static int frameTime = 2;
+
+    /** ME 제어기 윗면 질감(애니메이션 프레임)의 밝은 부분 평균색. 제어기 색이 바뀔 때마다 이 값도 바뀐다. 못 읽으면 하늘색. */
+    static int controllerColor() {
+        try {
+            if (frameColors == null) {
+                frameColors = new int[0];
+                Minecraft mc = Minecraft.getInstance();
+                var model = mc.getBlockRenderer().getBlockModel(controller);
+                var quads = model.getQuads(controller, Direction.UP, net.minecraft.util.RandomSource.create(), ModelData.EMPTY, null);
+                if (quads.isEmpty()) {
+                    quads = model.getQuads(controller, null, net.minecraft.util.RandomSource.create(), ModelData.EMPTY, null);
+                }
+                if (!quads.isEmpty()) {
+                    var contents = quads.get(0).getSprite().contents();
+                    com.mojang.blaze3d.platform.NativeImage img = null;
+                    for (Class<?> c = contents.getClass(); c != null && img == null; c = c.getSuperclass()) {
+                        for (Field f : c.getDeclaredFields()) {
+                            if (f.getType() == com.mojang.blaze3d.platform.NativeImage.class) {
+                                f.setAccessible(true);
+                                img = (com.mojang.blaze3d.platform.NativeImage) f.get(contents);
+                                break;
+                            }
+                        }
+                    }
+                    if (img != null && img.getWidth() > 0) {
+                        int w = img.getWidth();
+                        int frames = Math.max(1, img.getHeight() / w);
+                        int[] cols = new int[frames];
+                        for (int fr = 0; fr < frames; fr++) {
+                            long r = 0;
+                            long g = 0;
+                            long b = 0;
+                            long n = 0;
+                            for (int y = 0; y < w; y++) {
+                                for (int x = 0; x < w; x++) {
+                                    int px = img.getPixelRGBA(x, fr * w + y); // ABGR
+                                    int pr = px & 0xFF;
+                                    int pg = (px >> 8) & 0xFF;
+                                    int pb = (px >> 16) & 0xFF;
+                                    int pa = (px >>> 24) & 0xFF;
+                                    int mx = Math.max(pr, Math.max(pg, pb));
+                                    int mn = Math.min(pr, Math.min(pg, pb));
+                                    if (pa > 128 && mx > 110 && mx - mn > 40) {
+                                        r += pr;
+                                        g += pg;
+                                        b += pb;
+                                        n++;
+                                    }
+                                }
+                            }
+                            cols[fr] = n == 0 ? 0x3CD2F0 : (int) (r / n) << 16 | (int) (g / n) << 8 | (int) (b / n);
+                        }
+                        frameColors = cols;
+                    }
+                }
+            }
+            if (frameColors.length > 0) {
+                long t = Minecraft.getInstance().level != null ? Minecraft.getInstance().level.getGameTime() : 0;
+                return frameColors[(int) ((t / Math.max(1, frameTime)) % frameColors.length)];
+            }
+        } catch (Throwable ignored) {
+            frameColors = new int[0];
+        }
+        return 0x3CD2F0;
+    }
+
     /** 페이드: 현재 열림 정도(0..1). 블록을 자기 중심 기준으로 이 비율만큼 줄여서 서서히 사라지게/나타나게 한다 */
     private static float fade = 1f;
 
@@ -363,13 +431,20 @@ final class AeBlocks {
             ps.mulPose(Axis.YP.rotation((float) theta));
             ps.scale((float) f.s(), (float) f.s(), (float) f.s());
             // 바닥 한가운데: ME 제어기를 쌓이는 칸(방 좌표 x -1.5..1.5, z 2..4)에만 깐다. 아이템은 이 위에 쌓인다
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 2; j++) {
-                    if (busReady()) {
-                        // 케이블과 같은 높이의 구덩이에 제어기를 완전한 블록으로 앉혀서 케이블이 옆면에 곧바로 이어지게 한다
-                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1.5 + i, AeRoom.Y0 - AeRoom.TRENCH_D, -(3 + j), 1f);
+            // 아이템이 쌓이는 구역(하늘색 테두리) 전체를 ME 제어기로 깐다. 기본 크기면 케이블 홈에 앉히고, 구역이 넓어지면 바닥에 납작하게 깐다
+            double hw = AeRoom.lastHalfW;
+            double hd = AeRoom.lastHalfD;
+            boolean pit = busReady() && Math.abs(hw - 1.5) < 0.3 && Math.abs(hd - 1.0) < 0.3;
+            int nx = pit ? 3 : Math.max(1, (int) Math.round(2 * hw));
+            int nz = pit ? 2 : Math.max(1, (int) Math.round(2 * hd));
+            double x0 = AeRoom.PILE_X - nx / 2.0;
+            double z0 = AeRoom.PILE_Z - nz / 2.0;
+            for (int i = 0; i < nx; i++) {
+                for (int j = 0; j < nz; j++) {
+                    if (pit) {
+                        one(ps, buffers, mc, controller, ModelData.EMPTY, x0 + i, AeRoom.Y0 - AeRoom.TRENCH_D, -(z0 + j + 1), 1f);
                     } else {
-                        one(ps, buffers, mc, controller, ModelData.EMPTY, -1.5 + i, AeRoom.Y0, -(3 + j), 0.12f);
+                        one(ps, buffers, mc, controller, ModelData.EMPTY, x0 + i, AeRoom.Y0, -(z0 + j + 1), 0.12f);
                     }
                 }
             }

@@ -148,8 +148,14 @@ final class AeRoom {
     private static final int PANEL = 0xC4C4CC;
     private static final int CYAN = 0x3CD2F0;
 
+    /** 가장 최근에 그린 아이템 더미 구역의 반쪽 크기 (제어기를 이 구역에 맞춰 깔 때 쓴다) */
+    static double lastHalfW = 1.5;
+    static double lastHalfD = 1.0;
+
     static void render(PoseStack ps, MultiBufferSource.BufferSource buffers, Frame f, float a, float time,
                        double arenaHalfW, double arenaHalfD, boolean blocks) {
+        lastHalfW = arenaHalfW;
+        lastHalfD = arenaHalfD;
         Ctx c = new Ctx(buffers.getBuffer(ModRenderTypes.QUADS_DEPTH), ps.last().pose(), f, a);
         floor(c, arenaHalfW, arenaHalfD, blocks);
         ceiling(c);
@@ -200,12 +206,13 @@ final class AeRoom {
         double ax = PILE_X;
         double az = PILE_Z;
         double y = blocks ? Y0 + padLift() + 2 * E : Y0 + 6 * E;
-        c.flatY(y, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az + arenaHalfD, CYAN, 40);
+        int line = blocks ? AeBlocks.controllerColor() : CYAN; // ME 제어기 색이 바뀌면 테두리도 따라 바뀐다
+        c.flatY(y, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az + arenaHalfD, line, 40);
         double t = 0.05;
-        c.flatY(y + E, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az - arenaHalfD + t, CYAN, 230);
-        c.flatY(y + E, ax - arenaHalfW, ax + arenaHalfW, az + arenaHalfD - t, az + arenaHalfD, CYAN, 230);
-        c.flatY(y + E, ax - arenaHalfW, ax - arenaHalfW + t, az - arenaHalfD, az + arenaHalfD, CYAN, 230);
-        c.flatY(y + E, ax + arenaHalfW - t, ax + arenaHalfW, az - arenaHalfD, az + arenaHalfD, CYAN, 230);
+        c.flatY(y + E, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az - arenaHalfD + t, line, 230);
+        c.flatY(y + E, ax - arenaHalfW, ax + arenaHalfW, az + arenaHalfD - t, az + arenaHalfD, line, 230);
+        c.flatY(y + E, ax - arenaHalfW, ax - arenaHalfW + t, az - arenaHalfD, az + arenaHalfD, line, 230);
+        c.flatY(y + E, ax + arenaHalfW - t, ax + arenaHalfW, az - arenaHalfD, az + arenaHalfD, line, 230);
     }
 
     private static void ceiling(Ctx c) {
