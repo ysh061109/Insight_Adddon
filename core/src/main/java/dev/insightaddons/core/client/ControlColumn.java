@@ -177,6 +177,8 @@ public final class ControlColumn {
                         shift(r, ids.get(i), s, wo);
                         e.addListener(WidgetGuard.mine(r));
                     }
+                    dev.insightaddons.core.InsightAddons.LOGGER.info("layout result: below cols={} cellH={} blockH={} offset=({},{}) grid=({},{})",
+                            cols, cellH, blockH, wo[0], wo[1], gx, gy);
                     return;
                 }
             }
