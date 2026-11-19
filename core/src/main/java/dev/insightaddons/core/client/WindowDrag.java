@@ -57,8 +57,20 @@ public final class WindowDrag {
                 && (ScreenEvents.isGlassChest(s) || GlassSkin.isStorageScreenClass(s) || AeTerminal.isTerminalScreen(s));
     }
 
+    /**
+     * 창 이동량을 기억하는 키. 같은 화면 클래스라도 설치된 배낭(아래 버튼 격자)과 B키로 연 멘 배낭(왼쪽 버튼)은
+     * 창 배치가 달라서 따로 기억한다. (안 그러면 설치 배낭에서 옮긴 위치가 멘 배낭에도 적용돼 오른쪽 탭이 잘린다)
+     */
+    private static String key(Screen s) {
+        String k = s.getClass().getName();
+        if (GlassSkin.isStorageScreenClass(s) && GlassSkin.placed()) {
+            k += "#placed";
+        }
+        return k;
+    }
+
     private static int[] off(Screen s) {
-        return OFFSETS.computeIfAbsent(s.getClass().getName(), k -> new int[2]);
+        return OFFSETS.computeIfAbsent(key(s), k -> new int[2]);
     }
 
     /** 화면의 창 이동량(없으면 0,0). 다른 클래스가 마우스 좌표를 되돌릴 때 쓴다. */
@@ -79,8 +91,8 @@ public final class WindowDrag {
 
     /** 직접 옮긴 위치를 버리고 자동 배치(오른쪽 가운데)로 되돌린다. 자동 배치 정보가 없으면 원래 자리(0,0) */
     private static void resetOffset(Screen s, int[] o) {
-        USER.remove(s.getClass().getName());
-        int[] p = PARAMS.get(s.getClass().getName());
+        USER.remove(key(s));
+        int[] p = PARAMS.get(key(s));
         if (p != null && s instanceof AbstractContainerScreen<?> acs) {
             int top = Math.max(2, (s.height - p[0]) / 2);
             o[1] = top - acs.getGuiTop();
@@ -106,8 +118,8 @@ public final class WindowDrag {
             return;
         }
         int[] o = off(s);
-        PARAMS.put(s.getClass().getName(), new int[]{blockH, extraLeft, extraRight});
-        if (!USER.contains(s.getClass().getName())) {
+        PARAMS.put(key(s), new int[]{blockH, extraLeft, extraRight});
+        if (!USER.contains(key(s))) {
             int top = Math.max(2, (s.height - blockH) / 2);
             o[1] = top - s.getGuiTop();
             o[0] = s.width - 2 - (s.getGuiLeft() + s.getXSize() + extraRight);
@@ -126,7 +138,7 @@ public final class WindowDrag {
         }
         int[] o = off(s);
         // 사용자가 직접 옮기지 않았다면 열 때마다 창을 화면 위 끝·오른쪽 끝(오른쪽 탭 같은 기능 버튼이 잘리지 않는 선까지)으로 붙여서 아래에 버튼 자리를 넉넉히 남긴다
-        if (auto && !USER.contains(s.getClass().getName())) {
+        if (auto && !USER.contains(key(s))) {
             o[1] = 2 - s.getGuiTop();
             o[0] = Math.max(0, s.width - 2 - (s.getGuiLeft() + s.getXSize() + extraRight));
         }
@@ -293,7 +305,7 @@ public final class WindowDrag {
         if (dragging && e.getMouseButton() == 0) {
             dragSum += Math.abs(e.getDragX()) + Math.abs(e.getDragY());
             if (dragSum > 6) {
-                USER.add(s.getClass().getName());
+                USER.add(key(s));
             }
             o[0] += (int) Math.round(e.getDragX());
             o[1] += (int) Math.round(e.getDragY());
