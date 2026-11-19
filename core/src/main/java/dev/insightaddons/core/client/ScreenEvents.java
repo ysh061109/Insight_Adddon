@@ -57,6 +57,23 @@ public final class ScreenEvents {
         }
         Object menu = acs.getMenu();
         try {
+            // 공개 메서드(getBackpackContext)가 있으면 그걸 먼저 쓴다 (리플렉션 접근 제한을 피한다)
+            try {
+                var m = menu.getClass().getMethod("getBackpackContext");
+                Object ctx = m.invoke(menu);
+                if (ctx != null) {
+                    String n = ctx.getClass().getName();
+                    dev.insightaddons.core.InsightAddons.LOGGER.info("placed detection: menu={} context={}", menu.getClass().getName(), n);
+                    if (n.contains("$Block")) {
+                        return Boolean.TRUE;
+                    }
+                    if (n.contains("$Item") || n.contains("$AnotherPlayer")) {
+                        return Boolean.FALSE;
+                    }
+                }
+            } catch (NoSuchMethodException ignored) {
+                // 배낭이 아닌 보관함은 아래 필드 검사로
+            }
             for (Class<?> c = menu.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
                 for (var f : c.getDeclaredFields()) {
                     if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
@@ -80,8 +97,8 @@ public final class ScreenEvents {
                     }
                 }
             }
-        } catch (Throwable ignored) {
-            // 알 수 없으면 기존 판단을 쓴다
+        } catch (Throwable t) {
+            dev.insightaddons.core.InsightAddons.LOGGER.info("placed detection failed: {}", t.toString());
         }
         return null;
     }
