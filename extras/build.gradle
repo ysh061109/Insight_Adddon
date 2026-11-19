@@ -44,6 +44,8 @@ dependencies {
 
 // 컴파일용 가짜(stub) 선언(EMI)은 jar에 넣지 않습니다. 실제 클래스는 EMI 안에 있습니다.
 jar {
+    // 배포 파일 이름: insight-chests-plus-extras-1.0-neoforge-1.21.1.jar
+    archiveFileName = "insight-chests-plus-extras-${project.version}-neoforge-${minecraft_version}.jar"
     exclude 'dev/emi/**'
 }
 
