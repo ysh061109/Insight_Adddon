@@ -36,6 +36,8 @@ neoForge {
 // 컴파일용 가짜(stub) 선언(InSight Chests, Sophisticated Core)은 jar에 넣지 않습니다.
 // 같은 이름의 클래스가 이 모드 jar에 들어가면 그 모드를 망가뜨릴 수 있으므로 반드시 제외합니다.
 jar {
+    // 배포 파일 이름: insight-chests-plus-1.0-neoforge-1.21.1.jar
+    archiveFileName = "insight-chests-plus-${project.version}-neoforge-${minecraft_version}.jar"
     exclude 'com/mrsun/**'
     exclude 'net/p3pp3rf1y/**'
 }
