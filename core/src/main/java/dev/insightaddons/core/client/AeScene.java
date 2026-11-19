@@ -147,7 +147,7 @@ public final class AeScene {
         shown = list.size() > maxShown ? new ArrayList<>(list.subList(0, maxShown)) : list;
     }
 
-    /** 단말기를 열어 두는 동안 시선을 서버룸 정면(약간 아래)으로 부드럽게 맞추고, 닫으면 원래 각도로 되돌린다 */
+    /** 단말기를 열어 두는 동안 시선을 서버룸 정면(약간 아래)으로 부드럽게 맞추고, 닫아도 그 각도를 유지한다 */
     private static void frontView(Minecraft mc) {
         if (!InsightConfig.AE2_FRONT_VIEW.get() || !InsightConfig.AE2_PHYSICS.get() || mc.player == null) {
             return;
@@ -160,14 +160,9 @@ public final class AeScene {
             }
             p.xRotO = cur;
             p.setXRot(cur + (FRONT_PITCH - cur) * 0.2f);
-        } else if (!Float.isNaN(savedPitch)) {
-            p.xRotO = cur;
-            float next = cur + (savedPitch - cur) * 0.25f;
-            p.setXRot(next);
-            if (Math.abs(savedPitch - next) < 0.3f) {
-                p.setXRot(savedPitch);
-                savedPitch = Float.NaN;
-            }
+        } else {
+            // 닫아도 시점을 원래 각도로 되돌리지 않는다
+            savedPitch = Float.NaN;
         }
     }
 

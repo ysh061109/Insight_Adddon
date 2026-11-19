@@ -207,7 +207,9 @@ final class AeRoom {
         double az = PILE_Z;
         double y = blocks ? Y0 + padLift() + 2 * E : Y0 + 6 * E;
         int line = blocks ? AeBlocks.controllerColor() : CYAN; // ME 제어기 색이 바뀌면 테두리도 따라 바뀐다
-        c.flatY(y, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az + arenaHalfD, line, 40);
+        if (!blocks) {
+            c.flatY(y, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az + arenaHalfD, line, 40);
+        }
         double t = 0.05;
         c.flatY(y + E, ax - arenaHalfW, ax + arenaHalfW, az - arenaHalfD, az - arenaHalfD + t, line, 230);
         c.flatY(y + E, ax - arenaHalfW, ax + arenaHalfW, az + arenaHalfD - t, az + arenaHalfD, line, 230);

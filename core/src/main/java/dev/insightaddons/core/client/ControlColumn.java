@@ -46,6 +46,12 @@ public final class ControlColumn {
         if (InsightConfig.GLASS_ALPHA.get() >= 0 && (glass || soph)) {
             InsightBridge.setUiOpacity(InsightConfig.GLASS_ALPHA.get() / 255.0);
         }
+        // 화면이 다시 초기화되며 이 이벤트가 또 올 때, 앞서 붙인 우리 버튼이 겹쳐 남지 않게 먼저 치운다
+        for (var l : new ArrayList<>(e.getListenersList())) {
+            if (WidgetGuard.isMine(l)) {
+                e.removeListener(l);
+            }
+        }
         List<AbstractWidget> rows = new ArrayList<>();
         List<String> ids = new ArrayList<>();
         int h = 14;
@@ -141,15 +147,15 @@ public final class ControlColumn {
             int colW = 84;
             int gridW = 0;
             int gridH = 0;
-            int gapY = 4; // 창 바로 아래와 격자 사이 여백(겹치지 않게)
+            int gapY = 8; // 창 바로 아래와 격자 사이 여백(겹치지 않게)
             // 먼저 2열 높이로 창을 위로 올려 자리를 만들고, 그래도 모자라면 열을 늘려 낮춘다
             int rows2 = (n + 1) / 2;
-            WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, gapY + rows2 * cellH + (rows2 - 1) * 3);
+            WindowDrag.fit(acs, soph ? 28 : 0, soph ? 28 : 0, gapY + rows2 * cellH + (rows2 - 1) * 5);
             for (cols = 2; cols <= 4; cols++) {
                 colW = cols == 2 ? 84 : (cols == 3 ? 76 : 62);
                 int rowsN = (n + cols - 1) / cols;
                 gridW = colW * cols + 2 * (cols - 1);
-                gridH = rowsN * cellH + (rowsN - 1) * 3;
+                gridH = rowsN * cellH + (rowsN - 1) * 5;
                 int room = s.height - 2 - (acs.getGuiTop() + acs.getYSize() + gapY + WindowDrag.offsetOf(s)[1]);
                 if (gridH <= room) {
                     break;
@@ -169,7 +175,7 @@ public final class ControlColumn {
                     r.setWidth(colW);
                     r.setHeight(cellH);
                     r.setX(gx + (i % cols) * (colW + 2));
-                    r.setY(gy + (i / cols) * (cellH + 3));
+                    r.setY(gy + (i / cols) * (cellH + 5));
                     shift(r, ids.get(i), s);
                     e.addListener(WidgetGuard.mine(r));
                 }

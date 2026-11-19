@@ -40,6 +40,10 @@ public final class WidgetGuard {
         return w;
     }
 
+    public static boolean isMine(Object w) {
+        return OURS.contains(w);
+    }
+
     private static boolean scrollbarHit(Screen s, double ax, double ay) {
         if (!(s instanceof AbstractContainerScreen<?> acs) || !AeTerminal.isTerminalScreen(s)) {
             return false;

@@ -79,6 +79,11 @@ public final class WindowDrag {
         // 처음 열릴 때(사용자가 옮기기 전)는 창을 화면 위 끝까지 올려서 아래에 버튼 자리를 넉넉히 남긴다
         if (TOPPED.add(s.getClass().getName()) && o[0] == 0 && o[1] == 0) {
             o[1] = 2 - s.getGuiTop();
+            // 오른쪽 끝까지(오른쪽 탭 같은 기능 버튼이 잘리지 않는 선까지) 붙인다
+            int toRight = s.width - 2 - (s.getGuiLeft() + s.getXSize() + extraRight);
+            if (toRight > 0) {
+                o[0] = toRight;
+            }
         }
         int left = s.getGuiLeft() + o[0] - extraLeft;
         int right = s.getGuiLeft() + o[0] + s.getXSize() + extraRight;
