@@ -44,6 +44,10 @@ public final class WindowDrag {
         return scissorDy;
     }
 
+    public static boolean dragEligible(Screen s) {
+        return eligible(s);
+    }
+
     private static boolean eligible(Screen s) {
         // Insight Plus가 적용되는 화면(InSight 유리 상자, Sophisticated/Mekanism 개인 저장소, AE2 단말기)에서만 창을 끌 수 있다.
         // 일반 기계(Mekanism 기계, AE 기계, 화로 등)는 건드리지 않는다.

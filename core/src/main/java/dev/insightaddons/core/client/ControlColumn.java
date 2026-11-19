@@ -141,6 +141,7 @@ public final class ControlColumn {
         // 창이 화면 밖으로 잘려 있거나 아래에 자리가 없으면 창을 화면 안으로(필요하면 위로) 옮겨서 항상 이 자리를 만든다.
         if (!ae && !worn && rows.size() >= 2) {
             int n = rows.size();
+            diag(acs, soph, glass);
             int extraL = soph ? 32 : 0;
             int extraR = 28; // 오른쪽에 붙는 기능 버튼(배낭 설정, 보안 버튼 등) 자리
             int gapY = 6;
@@ -257,6 +258,19 @@ public final class ControlColumn {
             y += r.getHeight() + gap;
             shift(r, ids.get(idx++), s);
             e.addListener(WidgetGuard.mine(r));
+        }
+    }
+
+    /** 문제 추적용: 이 화면의 창 크기·위치·이동 상태를 한 줄로 로그에 남긴다 (latest.log에서 "layout"으로 검색) */
+    private static void diag(AbstractContainerScreen<?> acs, boolean soph, boolean glass) {
+        try {
+            int[] o = WindowDrag.offsetOf(acs);
+            dev.insightaddons.core.InsightAddons.LOGGER.info(
+                    "layout screen={} scr={}x{} gui=({},{}) size={}x{} offset=({},{}) drag={} soph={} glass={}",
+                    acs.getClass().getName(), acs.width, acs.height, acs.getGuiLeft(), acs.getGuiTop(),
+                    acs.getXSize(), acs.getYSize(), o[0], o[1], WindowDrag.dragEligible(acs), soph, glass);
+        } catch (Throwable ignored) {
+            // 로그 실패는 무시
         }
     }
 
