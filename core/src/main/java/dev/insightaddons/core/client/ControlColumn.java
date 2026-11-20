@@ -141,22 +141,31 @@ public final class ControlColumn {
         }
         // 그 밖의 Plus 보관함(InSight 유리 상자, 설치한 배낭, 개인 저장소 등): 창 오른쪽 아래, 플레이어 인벤토리 바로 아래에 2열 격자로 붙인다.
         // 창이 화면 밖으로 잘려 있거나 아래에 자리가 없으면 창을 화면 안으로(필요하면 위로) 옮겨서 항상 이 자리를 만든다.
+        // 화면이 어두워 보이는 문제 추적용: 이 화면에서 기본 배경(어두운 막)을 막고 있는지 로그로 남긴다 (latest.log에서 "screen bg"로 검색)
+        dev.insightaddons.core.InsightAddons.LOGGER.info("screen bg: {} dimCancelled={} ae={} worn={} buttons={} scr={}x{}",
+                s.getClass().getName(), GlassSkin.isStorageScreen(s) || AeTerminal.isTerminalScreen(s), ae, worn, rows.size(), s.width, s.height);
         if (!ae && !worn && rows.size() >= 2) {
             int n = rows.size();
             diag(acs, soph, glass);
             int extraL = leftTabs ? 32 : 0;
             int extraR = 28; // 오른쪽에 붙는 기능 버튼(배낭 설정, 보안 버튼 등) 자리
-            int gapY = 6;
-            int vgap = 4;
-            // 1) 창 + 아래 버튼 격자를 한 덩어리로 보고 화면 오른쪽 가운데에 둔다. GUI 크기가 커서 안 들어가면 열을 늘리고 버튼을 낮춘다
-            for (int cellH : new int[]{14, 12}) {
-                for (int cols = 2; cols <= 4; cols++) {
-                    int colW = cols == 2 ? 84 : (cols == 3 ? 76 : 62);
+            // 1) 창 + 아래 버튼 격자를 한 덩어리로 보고 화면 오른쪽 가운데에 둔다. 아래에 자리가 모자라면 창을 위로 끝까지 올리고(WindowDrag.place),
+            //    그래도 모자라면 버튼을 낮추고 열을 늘려서 어떻게든 인벤토리 아래에 붙인다. (cellH, cols) 후보를 보기 좋은 순서로 시도한다
+            int[][] tries = {
+                    {14, 2}, {14, 3}, {14, 4}, {12, 2}, {12, 3}, {12, 4}, {12, 5}, {12, 6},
+                    {11, 4}, {11, 5}, {11, 6}, {11, 7}, {10, 5}, {10, 6}, {10, 7}, {9, 6}, {9, 7}};
+            for (int[] tr : tries) {
+                int cellH = tr[0];
+                int cols = tr[1];
+                {
+                    int colW = cols == 2 ? 84 : cols == 3 ? 76 : cols == 4 ? 62 : cols == 5 ? 50 : cols == 6 ? 42 : 36;
+                    int gapY = cellH >= 12 ? 6 : 3;
+                    int vgap = cellH >= 12 ? 4 : 2;
                     int rowsN = (n + cols - 1) / cols;
                     int gridW = colW * cols + 2 * (cols - 1);
                     int gridH = rowsN * cellH + (rowsN - 1) * vgap;
                     int blockH = acs.getYSize() + gapY + gridH;
-                    if (blockH > s.height - 4 || gridW > s.width - 4) {
+                    if (blockH > s.height - 3 || gridW > s.width - 4) {
                         continue;
                     }
                     WindowDrag.place(acs, blockH, extraL, extraR);
@@ -167,7 +176,7 @@ public final class ControlColumn {
                     }
                     int gy = acs.getGuiTop() + acs.getYSize() + gapY;
                     // 창을 실제로 옮기지 못했거나 계산이 어긋나 격자가 화면 밖으로 나가면, 이 배치는 버리고 다음 배치를 시도한다
-                    if (gy + wo[1] + gridH > s.height - 2 || gx + wo[0] < 0 || gx + wo[0] + gridW > s.width) {
+                    if (gy + wo[1] + gridH > s.height - 1 || gx + wo[0] < 0 || gx + wo[0] + gridW > s.width) {
                         continue;
                     }
                     for (int i = 0; i < n; i++) {
