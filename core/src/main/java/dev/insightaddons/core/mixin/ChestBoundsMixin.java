@@ -83,6 +83,38 @@ public abstract class ChestBoundsMixin {
         }
     }
 
+    private static final java.util.Set<String> WOODS = java.util.Set.of("oak", "spruce", "birch", "jungle", "acacia", "dark_oak",
+            "mangrove", "cherry", "bamboo", "crimson", "warped");
+
+    /** Sophisticated Storage 상자의 나무 종류(oak, birch ...)를 블록 엔티티에서 읽는다. 못 읽거나 칠한 상자면 oak */
+    private static String sophisticatedWood(BlockPos pos) {
+        try {
+            net.minecraft.client.multiplayer.ClientLevel level = net.minecraft.client.Minecraft.getInstance().level;
+            if (level == null || pos == null) {
+                return "oak";
+            }
+            net.minecraft.world.level.block.entity.BlockEntity be = level.getBlockEntity(pos);
+            if (be == null) {
+                return "oak";
+            }
+            Object r = be.getClass().getMethod("getWoodType").invoke(be);
+            if (r instanceof java.util.Optional<?> opt) {
+                r = opt.orElse(null);
+            }
+            if (r == null) {
+                return "oak";
+            }
+            String name = String.valueOf(r.getClass().getMethod("name").invoke(r));
+            int c = name.indexOf(':');
+            if (c >= 0) {
+                name = name.substring(c + 1);
+            }
+            return WOODS.contains(name) ? name : "oak";
+        } catch (Throwable t) {
+            return "oak";
+        }
+    }
+
     private static String tierOf(String path) {
         for (String t : new String[]{"netherite", "diamond", "gold", "iron", "copper"}) {
             if (path.contains(t)) {
@@ -120,9 +152,9 @@ public abstract class ChestBoundsMixin {
             // 통: 위가 뚫린 나무통. 안쪽 높이를 거의 끝까지 쓴다.
             minX = 0.14f; maxX = 0.86f; minZ = 0.14f; maxZ = 0.86f;
             minY = 0.07f; maxY = 0.93f;
-            // Mekanism 개인 통은 열린 뚜껑 안쪽 질감(어두운 강철에 초록 표시등)을 그대로 쓴다
+            // Mekanism 개인 통: 어두운 원래 질감 대신 밝은 회색 강철 + 초록 표시등으로 직접 그린 질감(너무 어두워 보이지 않게)
             cavity = "mekanism".equals(ns)
-                    ? ResourceLocation.fromNamespaceAndPath("mekanism", "textures/block/personal_barrel/top_open.png")
+                    ? ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/personal_barrel_inner.png")
                     : ResourceLocation.withDefaultNamespace("textures/block/barrel_bottom.png");
         } else if ("mekanism".equals(ns) && path.equals("personal_chest")) {
             // Mekanism 개인 상자: 상자 모양에 어두운 강철 느낌(진회색)의 바닥/벽
@@ -155,12 +187,11 @@ public abstract class ChestBoundsMixin {
             // Sophisticated Storage 상자: 상자 모양 안쪽. 등급 상자는 해당 금속, 나무 상자는 어두운 나무 바닥
             minX = 0.08f; maxX = 0.92f; minZ = 0.08f; maxZ = 0.92f;
             minY = 0.06f; maxY = 0.56f;
-            // 등급 상자는 금속 블록 질감 대신, 나무 바닥에 등급별 금속 테두리를 직접 그린 질감(iron_inner)을 쓴다.
-            // (Sophisticated Storage는 All Rights Reserved라 질감을 복사해 넣지 않고 비슷하게 새로 그렸다)
+            // 바닥은 이 상자의 나무 종류 판자 + 등급별 모서리 장식 색으로 직접 그린 질감(sophisticated_inner/<나무>_<등급>.png).
+            // Sophisticated Storage는 All Rights Reserved라 질감을 복사하지 않고, 상자 질감을 참고해 비슷하게 새로 그렸다
             String tier = tierOf(path);
-            cavity = tier != null
-                    ? ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/iron_inner/" + tier + ".png")
-                    : ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/sophisticated_chest_inner.png");
+            cavity = ResourceLocation.fromNamespaceAndPath("insight_addons",
+                    "textures/block/sophisticated_inner/" + sophisticatedWood(pos) + "_" + (tier != null ? tier : "wood") + ".png");
         } else if (ns.equals("sophisticatedbackpacks")) {
             // 배낭: 배낭 모델 안쪽 크기에 맞춰 좁고 통통하게. 내부는 InSight Chests 기본 방식으로 그린다.
             minX = 0.2f; maxX = 0.8f; minZ = 0.2f; maxZ = 0.8f;

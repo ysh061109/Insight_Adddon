@@ -8,7 +8,8 @@
 
 ## 이 모드에 포함된 텍스처
 - `iron_inner/*.png`, `sophisticated_chest_inner.png`, `backpack_inner.png`: 직접 새로 그린 이미지입니다. (Iron Chests/Sophisticated의 이미지를 복사한 것이 아닙니다.)
-- `personal_steel_panel.png`: Mekanism(MIT License)의 개인 상자 모델 텍스처 일부를 가공한 것입니다. MIT 라이선스의 저작권 고지: Copyright (c) 2017-2025 Aidan C. Brady and Mekanism contributors.
+- `personal_steel_panel.png`, `personal_barrel_inner.png`: 직접 새로 그린 밝은 회색 강철 이미지입니다(`tools/gen_inner_textures.py`로 생성). Mekanism의 이미지를 복사하지 않았습니다.
+- `sophisticated_inner/*.png`: Sophisticated Storage 상자의 나무 종류와 등급 장식 색을 참고해 직접 그린 판자 이미지입니다(`tools/gen_inner_textures.py`로 생성). Sophisticated Storage는 All Rights Reserved라 그 질감 파일은 복사하지 않았습니다.
 - `shulker_inner/*.png`: 마인크래프트 셜커 상자 텍스처에서 안쪽 바닥을 가공한 것입니다. 마인크래프트의 에셋은 Mojang Studios의 자산이며 Minecraft EULA를 따릅니다.
 - 로고/아이콘/버튼 이미지: 직접 만든 것이며, 로고에는 마인크래프트 상자·통·셜커 상자·아이템 텍스처와 Mekanism(MIT)의 개인 상자·개인 통 텍스처를 입체로 그려 넣었습니다. 로고에는 Sophisticated Backpacks 등 All Rights Reserved 모드의 이미지는 쓰지 않습니다.
 - 그 밖의 텍스처(예: Create 금고 내부)는 파일을 포함하지 않고, 설치된 해당 모드의 텍스처를 실행 중에 참조만 합니다.
