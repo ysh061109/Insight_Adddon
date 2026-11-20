@@ -119,10 +119,12 @@ final class AePile {
         for (int i = 0; i < kinds; i++) {
             sum += Math.max(0, sorted.get(i).getValue());
         }
-        // 조각 수를 실제 보유량에 비례하게 나눈다: 전체 예산(설정 physicsMax * 비율%)을 개수 비율대로 배분하고, 종류마다 최소 1조각
+        // 조각 수는 실제 보유량을 따른다: 비율 100%면 1개당 1조각(실제 개수 그대로), 비율을 낮추면 그만큼만.
+        // 보유량이 너무 많아 상한(physicsMax)을 넘을 때만 개수 비율대로 줄인다. 종류마다 최소 1조각.
+        // (예전에는 보유량과 관계없이 상한만큼 항상 채워서 4개인데 수백 조각이 쌓였다)
         int cap = Math.max(InsightConfig.AE2_PHYSICS_MAX.get(), kinds); // 종류가 수천 개여도 종류마다 최소 1조각은 보여 준다
-        int budget = Math.max(kinds, (int) Math.round(cap * InsightConfig.AE2_PHYSICS_RATIO.get() / 100.0));
-        budget = Math.min(budget, cap);
+        long wanted = Math.round(sum * (InsightConfig.AE2_PHYSICS_RATIO.get() / 100.0));
+        int budget = (int) Math.min(cap, Math.max(kinds, wanted));
         Map<Item, Integer> want = new HashMap<>();
         LABEL_COUNT.clear();
         LABEL_ORDER.clear();

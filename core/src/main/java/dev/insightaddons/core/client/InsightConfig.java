@@ -134,7 +134,7 @@ public final class InsightConfig {
                 .translation("insight_addons.configuration.ae2.pileBox").define("pileBox", true);
         AE2_MAX_SHOWN = b.comment("AE2 단말기를 열었을 때 3D로 보여줄 아이템 종류의 최대 개수 (많이 든 순)")
                 .translation("insight_addons.configuration.ae2.maxShown").defineInRange("maxShown", 40, 8, 80);
-        AE2_PHYSICS_RATIO = b.comment("서버룸에 쌓이는 아이템 조각 수의 비율(%). 단말기 창 아래 슬라이더로도 바꿀 수 있습니다. 100이 기본입니다.")
+        AE2_PHYSICS_RATIO = b.comment("서버룸에 쌓이는 아이템 조각 수의 비율(%). 100이면 실제 개수 그대로(1개=1조각)이고, 너무 많으면 최대 조각 수(pieceBudget)까지만 쌓입니다. 단말기 창 아래 슬라이더로도 바꿀 수 있습니다.")
                 .translation("insight_addons.configuration.ae2.pileRatio").defineInRange("pileRatio", 100, 10, 300);
         AE2_GUI_ALPHA = b.comment("서버룸 연출이 켜져 있을 때 AE2 단말기 창 배경의 불투명도(%). 낮출수록 뒤의 서버룸이 비쳐 보입니다. 100이면 원래대로입니다.")
                 .translation("insight_addons.configuration.ae2.guiAlpha").defineInRange("guiAlpha", 60, 20, 100);

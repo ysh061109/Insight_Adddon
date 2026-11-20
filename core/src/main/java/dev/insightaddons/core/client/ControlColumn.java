@@ -119,7 +119,9 @@ public final class ControlColumn {
         int right = left + acs.getXSize();
         // 보관함 창 자체도 장애물(버튼이 창 위에 얹히지 않도록)
         obstacles.add(new int[]{left, acs.getGuiTop(), right, acs.getGuiTop() + acs.getYSize()});
-        int tabs = soph ? 32 : 0;
+        // 왼쪽 탭(업그레이드 탭 등)이 붙는 건 Sophisticated 화면뿐이다. Mekanism 개인 저장소는 탭이 없어서 그 자리를 비우지 않는다
+        boolean leftTabs = soph && !s.getClass().getName().startsWith("mekanism.");
+        int tabs = leftTabs ? 32 : 0;
         int leftX = left - 6 - W - tabs;
         int rightX = right + 6;
         boolean leftOk = leftX >= 2;
@@ -142,7 +144,7 @@ public final class ControlColumn {
         if (!ae && !worn && rows.size() >= 2) {
             int n = rows.size();
             diag(acs, soph, glass);
-            int extraL = soph ? 32 : 0;
+            int extraL = leftTabs ? 32 : 0;
             int extraR = 28; // 오른쪽에 붙는 기능 버튼(배낭 설정, 보안 버튼 등) 자리
             int gapY = 6;
             int vgap = 4;

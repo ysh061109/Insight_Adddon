@@ -25,9 +25,10 @@ import java.lang.reflect.Field;
 @Mixin(targets = "com.mrsun.insightchests.physics.ChestBoundingBox", remap = false)
 public abstract class ChestBoundsMixin {
     private static Constructor<?> ctor;
-    private static Field fDouble, fEnder, fIron, fFacing, fType, fCavity;
+    private static Field fDouble, fEnder, fIron, fFacing, fType, fCavity, fMinX, fMaxX, fMinZ, fMaxZ;
     private static boolean failed;
     private static boolean logged;
+    private static boolean loggedDouble;
 
     /** 블록 모델의 파티클 아이콘(블록을 대표하는 질감)을 textures/...png 경로로 바꾼다 */
     private static ResourceLocation particleTexture(BlockState state) {
@@ -154,8 +155,11 @@ public abstract class ChestBoundsMixin {
             // Sophisticated Storage 상자: 상자 모양 안쪽. 등급 상자는 해당 금속, 나무 상자는 어두운 나무 바닥
             minX = 0.08f; maxX = 0.92f; minZ = 0.08f; maxZ = 0.92f;
             minY = 0.06f; maxY = 0.56f;
+            // 등급 상자는 금속 블록 질감 대신, 나무 바닥에 등급별 금속 테두리를 직접 그린 질감(iron_inner)을 쓴다.
+            // (Sophisticated Storage는 All Rights Reserved라 질감을 복사해 넣지 않고 비슷하게 새로 그렸다)
             String tier = tierOf(path);
-            cavity = tier != null ? metalBlock(tier)
+            cavity = tier != null
+                    ? ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/iron_inner/" + tier + ".png")
                     : ResourceLocation.fromNamespaceAndPath("insight_addons", "textures/block/sophisticated_chest_inner.png");
         } else if (ns.equals("sophisticatedbackpacks")) {
             // 배낭: 배낭 모델 안쪽 크기에 맞춰 좁고 통통하게. 내부는 InSight Chests 기본 방식으로 그린다.
@@ -215,11 +219,35 @@ public abstract class ChestBoundsMixin {
                 fFacing = cls.getField("facing");
                 fType = cls.getField("chestType");
                 fCavity = cls.getField("cavityTexture");
+                fMinX = cls.getField("minX");
+                fMaxX = cls.getField("maxX");
+                fMinZ = cls.getField("minZ");
+                fMaxZ = cls.getField("maxZ");
                 ctor = cls.getConstructor(float.class, float.class, float.class, float.class, float.class, float.class,
                         boolean.class, Direction.class, fType.getType(), boolean.class, ResourceLocation.class, boolean.class);
             }
             if (generic && fIron.getBoolean(old)) {
                 return;  // 철 상자류는 InSight가 이미 맞게 그린다
+            }
+            // 두 개를 붙인 큰 상자: InSight가 계산한 가로 범위(두 칸)를 그대로 쓴다. 안 그러면 한 칸 크기로 덮어써서 한쪽에만 쌓인다.
+            // 높이와 질감만 우리 값을 쓴다.
+            if (fDouble.getBoolean(old)) {
+                float oMinX = fMinX.getFloat(old);
+                float oMaxX = fMaxX.getFloat(old);
+                float oMinZ = fMinZ.getFloat(old);
+                float oMaxZ = fMaxZ.getFloat(old);
+                if (!loggedDouble) {
+                    loggedDouble = true;
+                    dev.insightaddons.core.InsightAddons.LOGGER.info("InSight 큰 상자 원래 범위: {} -> x {}~{}, z {}~{} (이 범위를 그대로 씁니다)", id, oMinX, oMaxX, oMinZ, oMaxZ);
+                }
+                minX = oMinX; maxX = oMaxX; minZ = oMinZ; maxZ = oMaxZ;
+            } else if (state.hasProperty(net.minecraft.world.level.block.ChestBlock.TYPE)
+                    && state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) != net.minecraft.world.level.block.state.properties.ChestType.SINGLE
+                    && !loggedDouble) {
+                // 두 칸짜리인데 InSight가 큰 상자로 인식하지 않은 경우: 원인 추적용 로그만 남긴다
+                loggedDouble = true;
+                dev.insightaddons.core.InsightAddons.LOGGER.info("큰 상자 블록인데 InSight가 큰 상자로 보지 않음: {} type={} 원래 범위 x {}~{}, z {}~{}", id,
+                        state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE), fMinX.getFloat(old), fMaxX.getFloat(old), fMinZ.getFloat(old), fMaxZ.getFloat(old));
             }
             Object fixed = ctor.newInstance(minX, maxX, minY, maxY, minZ, maxZ,
                     fDouble.getBoolean(old), fFacing.get(old), fType.get(old),
